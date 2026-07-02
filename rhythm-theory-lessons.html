@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theory Basics: Rhythm — Guitar Lesson Series</title>
+<style>
+  /* =============================================
+     TOKEN SYSTEM
+     Palette: deep charcoal bg, warm rosewood mid,
+     amber highlight, ivory text, slate accents
+  ============================================= */
+  :root {
+    --bg:        #111210;
+    --bg2:       #1a1c18;
+    --bg3:       #22251f;
+    --wood:      #3d2a1e;
+    --wood-hi:   #5a3a26;
+    --amber:     #d4882a;
+    --amber-lo:  #7a4a0e;
+    --amber-dim: #3a2406;
+    --ivory:     #e8e2d5;
+    --muted:     #8a8578;
+    --fret:      #c8a84b;
+    --string:    #b0956a;
+    --active:    #d4882a;
+    --green:     #4caf82;
+    --red:       #c0513a;
+    --blue:      #4a8cc0;
+    --radius:    6px;
+    --mono:      'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 2px solid var(--wood-hi);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 18px,
+      rgba(196,168,75,0.04) 18px, rgba(196,168,75,0.04) 19px
+    );
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ivory);
+    position: relative;
+  }
+  header h1 span { color: var(--amber); }
+  header p.subtitle {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-top: 0.35rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    position: relative;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--wood);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .progress-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--amber);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label { white-space: nowrap; color: var(--amber); }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: calc(100vh - 140px); }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--wood);
+    padding: 1.25rem 0;
+    position: sticky;
+    top: 48px;
+    height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+  aside h2 {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    padding: 0 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--wood);
+  }
+  .lesson-nav { list-style: none; }
+  .lesson-nav li button {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0.65rem 1.25rem;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: background 0.15s, color 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .lesson-nav li button:hover {
+    background: var(--bg3);
+    color: var(--ivory);
+  }
+  .lesson-nav li button.active {
+    background: var(--amber-dim);
+    color: var(--amber);
+    border-left-color: var(--amber);
+  }
+  .lesson-nav li button.done .nav-status { color: var(--green); }
+  .nav-status {
+    font-size: 0.7rem;
+    margin-left: auto;
+    color: var(--wood-hi);
+  }
+  .nav-num {
+    width: 20px;
+    text-align: right;
+    color: var(--amber-lo);
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    max-width: 860px;
+  }
+
+  .lesson-pane { display: none; }
+  .lesson-pane.active { display: block; }
+
+  .lesson-tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    margin-bottom: 0.4rem;
+  }
+  .lesson-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--ivory);
+    margin-bottom: 0.25rem;
+  }
+  .lesson-subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--wood);
+    margin: 2rem 0;
+  }
+
+  /* ── CONCEPT BOXES ── */
+  .concept {
+    background: var(--bg2);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .concept h3 {
+    font-size: 0.9rem;
+    font-family: var(--mono);
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+  .concept p { font-size: 0.92rem; color: var(--ivory); margin-bottom: 0.5rem; }
+  .concept p:last-child { margin-bottom: 0; }
+
+  /* ── NOTE VALUE VISUALISER ── */
+  .note-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .note-card {
+    background: var(--bg3);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1rem;
+    min-width: 130px;
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s;
+  }
+  .note-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+  .note-card.playing { border-color: var(--green); background: rgba(76,175,130,0.08); }
+  .note-symbol {
+    font-size: 2.8rem;
+    line-height: 1.1;
+    color: var(--fret);
+    margin-bottom: 0.4rem;
+    font-family: var(--mono);
+  }
+  .note-name { font-size: 0.82rem; color: var(--amber); font-family: var(--mono); }
+  .note-beats { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+  .note-fraction {
+    font-size: 1.1rem;
+    color: var(--ivory);
+    font-weight: 700;
+    margin-top: 0.3rem;
+    font-family: var(--mono);
+  }
+
+  /* ── BEAT GRID (RHYTHM VISUALISER) ── */
+  .rhythm-engine {
+    background: var(--bg2);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .rhythm-engine h3 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+  .beat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.6rem;
+  }
+  .beat-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    width: 72px;
+    flex-shrink: 0;
+    text-align: right;
+    padding-right: 0.6rem;
+  }
+  .beat-cell {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid var(--wood);
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    font-family: var(--mono);
+    color: transparent;
+    transition: background 0.15s, border-color 0.15s, transform 0.08s;
+    flex-shrink: 0;
+  }
+  .beat-cell.filled {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--bg);
+    font-weight: 700;
+  }
+  .beat-cell.rest {
+    background: var(--amber-dim);
+    border-color: var(--amber-lo);
+    color: var(--amber-lo);
+  }
+  .beat-cell.pulse {
+    transform: scale(1.2);
+    border-color: var(--green) !important;
+  }
+  .beat-cell.active-cursor {
+    background: var(--green) !important;
+    border-color: var(--green) !important;
+  }
+  .bar-line {
+    width: 2px;
+    height: 28px;
+    background: var(--fret);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+  .beat-num-row {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.4rem;
+    padding-left: 72px;
+  }
+  .beat-num {
+    width: 28px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .beat-num.major { color: var(--fret); font-weight: 700; }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .btn {
+    background: var(--wood);
+    color: var(--ivory);
+    border: 1px solid var(--wood-hi);
+    border-radius: var(--radius);
+    padding: 0.45rem 1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .btn:hover { background: var(--wood-hi); border-color: var(--amber); }
+  .btn.primary {
+    background: var(--amber);
+    color: var(--bg);
+    border-color: var(--amber);
+    font-weight: 700;
+  }
+  .btn.primary:hover { background: var(--fret); border-color: var(--fret); }
+  .btn.active { background: var(--amber-dim); color: var(--amber); border-color: var(--amber); }
+  .tempo-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .tempo-control input[type=range] {
+    accent-color: var(--amber);
+    width: 100px;
+    cursor: pointer;
+  }
+  .tempo-display { color: var(--amber); min-width: 48px; }
+
+  /* ── STAVE NOTATION (ASCII) ── */
+  .notation {
+    background: var(--bg3);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--fret);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.4;
+    margin: 1rem 0;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── TAB ── */
+  .tab-block {
+    background: var(--bg3);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--string);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.8;
+    margin: 1rem 0;
+  }
+  .tab-block .tab-string { color: var(--muted); }
+  .tab-block .tab-fret  { color: var(--amber); }
+
+  /* ── QUIZ ── */
+  .quiz-block {
+    background: var(--bg2);
+    border: 1px solid var(--amber-lo);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .quiz-block h3 {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .quiz-q { font-size: 0.92rem; color: var(--ivory); margin-bottom: 0.75rem; }
+  .quiz-options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--bg3);
+    border: 1px solid var(--wood);
+    color: var(--muted);
+    border-radius: var(--radius);
+    padding: 0.4rem 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .quiz-opt:hover:not(.locked) { border-color: var(--amber); color: var(--amber); }
+  .quiz-opt.correct { background: rgba(76,175,130,0.15); border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong   { background: rgba(192,81,58,0.15);  border-color: var(--red);   color: var(--red);   }
+  .quiz-opt.locked  { cursor: not-allowed; }
+  .quiz-feedback {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-style: italic;
+    min-height: 1.2em;
+    color: var(--muted);
+  }
+
+  /* ── INTERACTIVE BEAT BUILDER ── */
+  .beat-builder {
+    background: var(--bg2);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .beat-builder h3 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+  .bb-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+  }
+  .bb-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    width: 60px;
+    text-align: right;
+    padding-right: 0.5rem;
+  }
+  .bb-cell {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid var(--wood);
+    background: var(--bg3);
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-family: var(--mono);
+    color: transparent;
+    user-select: none;
+  }
+  .bb-cell:hover { border-color: var(--amber-lo); background: var(--wood); }
+  .bb-cell.on {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--bg);
+    font-weight: 700;
+  }
+  .bb-cell.cursor { border-color: var(--green) !important; box-shadow: 0 0 0 1px var(--green); }
+
+  /* ── STAIRCASE ── */
+  .staircase-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--wood);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .staircase-wrap h3 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+  .stair-level {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .stair-name {
+    width: 140px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .stair-blocks {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .stair-block {
+    height: 20px;
+    border-radius: 2px;
+    background: var(--amber);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .stair-block:hover { opacity: 1; }
+
+  /* ── COMPLETE BUTTON ── */
+  .lesson-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--wood);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .complete-btn {
+    background: var(--green);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: opacity 0.15s;
+  }
+  .complete-btn:hover { opacity: 0.88; }
+  .complete-msg { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--wood-hi); border-radius: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    aside { display: none; }
+    main { padding: 1.25rem 1rem; }
+  }
+
+  .tip {
+    border-left: 3px solid var(--amber);
+    padding: 0.6rem 1rem;
+    background: var(--amber-dim);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 0.87rem;
+    color: var(--ivory);
+    margin: 1rem 0;
+  }
+  .tip strong { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Theory Basics: <span>Rhythm</span></h1>
+  <p class="subtitle">Interactive Lesson Series &nbsp;·&nbsp; Based on Sam Bell / LickLibrary</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <span style="font-size:0.75rem;color:var(--muted)">Progress</span>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+  <span class="progress-label" id="progressLabel">0 / 11</span>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside>
+    <h2>Lessons</h2>
+    <ul class="lesson-nav" id="lessonNav"></ul>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="mainContent"></main>
+</div>
+
+<script>
+/* ============================================================
+   DATA: LESSON DEFINITIONS
+============================================================ */
+const LESSONS = [
+  /* ── 1 ── */
+  {
+    id: 'intro',
+    tag: 'Lesson 1',
+    title: 'What Is Rhythm?',
+    subtitle: 'The pulse behind everything you play',
+    content: `
+      <div class="concept">
+        <h3>The Foundation</h3>
+        <p>Rhythm is the organisation of sound in time. Every piece of music has a <strong>pulse</strong> — a steady, underlying heartbeat called the <strong>beat</strong>. Everything you play happens either on or between those beats.</p>
+        <p>Before note names, before chords, before scales — rhythm is the first language of music. A guitarist with perfect pitch but no rhythmic feel will still sound wrong. A guitarist with strong rhythm sounds musical even on two notes.</p>
+      </div>
+      <div class="concept">
+        <h3>Key Terms</h3>
+        <p><strong>Tempo</strong> — the speed of the pulse, measured in BPM (beats per minute).</p>
+        <p><strong>Time Signature</strong> — tells you how many beats are in each bar, and what note type counts as one beat. 4/4 means 4 quarter-note beats per bar — the most common in rock, blues, and pop.</p>
+        <p><strong>Bar / Measure</strong> — a chunk of time containing a fixed number of beats (e.g. 4 beats in 4/4).</p>
+        <p><strong>Note Value</strong> — how long a note lasts, expressed as a fraction of a bar.</p>
+      </div>
+    `,
+    quizzes: [
+      {
+        q: 'What does BPM stand for?',
+        opts: ['Beats Per Minute','Bass Per Measure','Beat Pattern Mode','Bars Per Melody'],
+        correct: 0,
+        feedback: 'Correct! BPM tells you how fast or slow the pulse is.'
+      },
+      {
+        q: 'In 4/4 time, how many beats are in one bar?',
+        opts: ['2','3','4','8'],
+        correct: 2,
+        feedback: 'Right — 4 beats per bar. The top number is the beat count, the bottom tells you what kind of note gets one beat.'
+      }
+    ],
+    hasBeatVisualiser: false,
+    hasBuilder: false
+  },
+
+  /* ── 2 ── */
+  {
+    id: 'whole-half-quarter',
+    tag: 'Lesson 2',
+    title: 'Whole, Half & Quarter Notes',
+    subtitle: 'The three pillars of basic rhythm',
+    content: `
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.25rem">These are the building blocks. Get these deep in your fingers and everything else is just subdivision.</p>
+      <div class="note-grid" id="ngWhq"></div>
+      <div class="concept">
+        <h3>In a 4/4 Bar</h3>
+        <p>One <strong>whole note</strong> fills an entire bar (4 beats). Think one long, sustained strum.</p>
+        <p>Two <strong>half notes</strong> fill a bar — each lasts 2 beats. A down-strum, hold… down-strum, hold.</p>
+        <p>Four <strong>quarter notes</strong> fill a bar — one per beat. The "standard" strumming pulse you tap your foot to.</p>
+      </div>
+      <div class="tip"><strong>Guitar habit:</strong> When you tap your foot, each tap is one quarter note. Your foot IS the quarter note. Everything else is measured against that.</div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">Click the note cards above to hear their relative durations. Then watch the beat grid below — each row shows how many of that note type fit in one bar.</p>
+    `,
+    beatRows: [
+      { label: 'Whole (4)',  cells: ['W','','',''], type: 'whole' },
+      { label: 'Half (2)',   cells: ['H','','H',''], type: 'half' },
+      { label: 'Quarter (1)',cells: ['Q','Q','Q','Q'], type: 'quarter' },
+    ],
+    beatDivisions: 4,
+    noteCards: [
+      { symbol: 'o',  name: 'Whole Note',    beats: '4 beats', frac: '1/1' },
+      { symbol: '𝅗𝅥',  name: 'Half Note',     beats: '2 beats', frac: '1/2' },
+      { symbol: '♩',  name: 'Quarter Note',  beats: '1 beat',  frac: '1/4' },
+    ],
+    quizzes: [
+      {
+        q: 'How many quarter notes fit in one bar of 4/4?',
+        opts: ['2','4','8','1'],
+        correct: 1,
+        feedback: '4 quarter notes per bar — one on each beat.'
+      },
+      {
+        q: 'A half note lasts how many beats?',
+        opts: ['1','2','4','3'],
+        correct: 1,
+        feedback: 'A half note = 2 beats. Half of a 4-beat bar.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 3 ── */
+  {
+    id: 'eighth-notes',
+    tag: 'Lesson 3',
+    title: 'Eighth Notes & Eighth Note Triplets',
+    subtitle: 'Twice as fast — and the swing feel',
+    content: `
+      <div class="concept">
+        <h3>Eighth Notes</h3>
+        <p>An eighth note lasts <strong>half a beat</strong>. You fit <strong>8 per bar</strong> in 4/4. When you strum down-up-down-up-down-up-down-up evenly, you are playing eighth notes.</p>
+        <p>Count them aloud: <strong>"1 and 2 and 3 and 4 and"</strong>. The numbers are the beats (downstrokes), the "and"s fall between beats (upstrokes).</p>
+      </div>
+      <div class="concept">
+        <h3>Eighth Note Triplets</h3>
+        <p>A triplet squeezes <strong>3 notes into the space of 2 eighth notes</strong> (or one beat). This gives a <strong>rolling, shuffled feel</strong> — essential for blues and jazz. Count: <strong>"1-trip-let 2-trip-let 3-trip-let 4-trip-let"</strong>.</p>
+      </div>
+      <div class="tip"><strong>Strum pattern:</strong> Straight eighths feel tight and even (rock). Triplet-based rhythm gives the "swing" or "shuffle" groove (blues). This is one of the most important distinctions in all of guitar.</div>
+    `,
+    beatRows: [
+      { label: 'Quarters',    cells: ['Q','','Q','','Q','','Q',''],    type: 'quarter' },
+      { label: 'Eighths',     cells: ['e','e','e','e','e','e','e','e'], type: 'eighth'  },
+      { label: 'Triplets',    cells: ['T','t','t','T','t','t','T','t','t','T','t','t'], type: 'triplet' },
+    ],
+    beatDivisions: 12,
+    quizzes: [
+      {
+        q: 'How many eighth notes fit in one bar of 4/4?',
+        opts: ['4','6','8','16'],
+        correct: 2,
+        feedback: '8 eighth notes — two per beat.'
+      },
+      {
+        q: 'What feel do eighth note triplets create?',
+        opts: ['Mechanical/robotic','Swing/shuffle','Very fast/shred','Syncopated hip-hop'],
+        correct: 1,
+        feedback: 'Triplets create that rolling shuffle feel — the backbone of blues rhythm.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 4 ── */
+  {
+    id: 'sixteenth-notes',
+    tag: 'Lesson 4',
+    title: 'Sixteenth Notes & Sixteenth Note Triplets',
+    subtitle: 'Getting tight and fast',
+    content: `
+      <div class="concept">
+        <h3>Sixteenth Notes</h3>
+        <p>A sixteenth note lasts <strong>a quarter of a beat</strong>. 16 fit in one bar of 4/4. Count: <strong>"1-e-and-a, 2-e-and-a, 3-e-and-a, 4-e-and-a"</strong>.</p>
+        <p>At 80 BPM, sixteenth notes fire at 320 subdivisions per minute. This is the grid that most modern rock and funk strumming lives on — you don't play all 16, but you feel them as potential slots.</p>
+      </div>
+      <div class="concept">
+        <h3>Sixteenth Note Triplets</h3>
+        <p>Three notes squeezed into one sixteenth-note pair — six notes per beat. Used in fast shred runs, ghost notes in funk, and latin rhythms. At speed, these create a blur of even motion.</p>
+      </div>
+      <div class="tip"><strong>Practice tip:</strong> Start slow with a metronome. Set it to 60 BPM and speak "1-e-and-a" aloud before you play. The syllables ARE the notes. Your mouth will get it before your fingers do.</div>
+    `,
+    beatRows: [
+      { label: 'Eighths',     cells: ['e','e','e','e','e','e','e','e'], type: 'eighth' },
+      { label: 'Sixteenths',  cells: Array(16).fill('x'),               type: 'sixteenth' },
+    ],
+    beatDivisions: 16,
+    quizzes: [
+      {
+        q: 'How do you count sixteenth notes aloud?',
+        opts: ['"1 and 2 and"','"1 e and a"','"1 trip let"','"down up down"'],
+        correct: 1,
+        feedback: '"1-e-and-a" gives you four syllables per beat = four sixteenths per beat = 16 per bar.'
+      },
+      {
+        q: 'At 100 BPM, how many sixteenth notes fire per second?',
+        opts: ['100','200/3 ≈ 6.7','~6.7','100/60 × 16 ≈ 26.7'],
+        correct: 3,
+        feedback: '100 BPM = 100 beats/min = 100 × 16/60 ≈ 26.7 sixteenths per second. Fast!'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 5 ── */
+  {
+    id: 'rests-half-quarter',
+    tag: 'Lesson 5',
+    title: 'Half & Quarter Note Rests',
+    subtitle: 'Silence is part of the music',
+    content: `
+      <div class="concept">
+        <h3>Rests — The Sound of Silence</h3>
+        <p>A <strong>rest</strong> is a deliberate silence — not a mistake, not dead space, but a musical event. Every note value has a matching rest of equal duration.</p>
+        <p>The <strong>half rest</strong> (looks like a hat on a line) lasts 2 beats. The <strong>quarter rest</strong> (a squiggly symbol) lasts 1 beat.</p>
+      </div>
+      <div class="concept">
+        <h3>Why Rests Matter on Guitar</h3>
+        <p>Rests on guitar require <strong>muting</strong> — physically stopping the strings from ringing. This can be done by laying your fretting hand across the strings (palm mute or finger mute) or by releasing fret pressure. Without controlled mutes, your rests sound like reverb tails, not intentional silence.</p>
+        <p>The spaces between notes define the <strong>groove</strong>. The best rhythm guitarists are just as deliberate about what they <em>don't</em> play.</p>
+      </div>
+      <div class="notation">  Bar 1                  Bar 2
+  ┌──────────────────┐   ┌──────────────────┐
+  │  ♩   𝄽   ♩   𝄽  │   │  𝅗𝅥       𝄼       │
+  │beat: 1 - 2 - 3 - 4   beat: 1 - 2 - 3 - 4
+  └──────────────────┘   └──────────────────┘
+     Q  QR  Q  QR           H       HR</div>
+      <div class="tip"><strong>Quarter rest = ghost strum.</strong> Many rhythm guitarists use a muted ghost strum on the rest rather than stopping the strumming arm — it keeps the flow going visually and feels more natural. Try it.</div>
+    `,
+    beatRows: [
+      { label: 'Q + Rests',  cells: ['Q','R','Q','R','Q','R','Q','R'], type: 'rest-mix' },
+      { label: 'H + Rests',  cells: ['H','','R','','H','','R',''],     type: 'rest-mix2' },
+    ],
+    beatDivisions: 8,
+    quizzes: [
+      {
+        q: 'On guitar, how do you "play" a rest?',
+        opts: ['Stop playing and lift both hands','Mute the strings with fretting or picking hand','Hit a harmonic','Open string ring out'],
+        correct: 1,
+        feedback: 'Exactly — you mute the strings. A rest is an active technique, not passive silence.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 6 ── */
+  {
+    id: 'rests-eighth',
+    tag: 'Lesson 6',
+    title: 'Eighth Note Rests',
+    subtitle: 'Syncopation begins here',
+    content: `
+      <div class="concept">
+        <h3>The Eighth Rest</h3>
+        <p>An <strong>eighth rest</strong> lasts half a beat. When you mix eighth rests with eighth notes, you create <strong>syncopation</strong> — notes that land off the main beat, creating rhythmic tension and groove.</p>
+        <p>Syncopation is what separates mechanical playing from musical playing. It's what makes funk, reggae, and R&B feel so good.</p>
+      </div>
+      <div class="concept">
+        <h3>The "Skank" Pattern (Reggae)</h3>
+        <p>One of the simplest syncopated patterns: rest on beat 1, play on the "and" of beat 1, rest on beat 2, play on the "and" of beat 2, etc. You're playing between the beats rather than on them — this is the reggae skank.</p>
+      </div>
+      <div class="tip"><strong>Strum pattern tip:</strong> Keep your arm moving down-up throughout. Play or mute on each stroke — don't stop the arm. Eighth rests are muted upstrokes or downstrokes; the arm never stops.</div>
+    `,
+    beatRows: [
+      { label: 'All eighths',    cells: ['e','e','e','e','e','e','e','e'],  type: 'eighth' },
+      { label: 'Syncopated',     cells: ['R','e','R','e','R','e','R','e'],  type: 'synco'  },
+      { label: 'Skank (reggae)', cells: ['R','e','R','e','R','e','R','e'],  type: 'skank'  },
+    ],
+    beatDivisions: 8,
+    quizzes: [
+      {
+        q: 'What is syncopation?',
+        opts: ['Playing only on the beat','Playing on off-beats and between beats','Playing faster than the tempo','A type of guitar technique'],
+        correct: 1,
+        feedback: 'Syncopation shifts the rhythmic emphasis away from the main beats — it\'s the engine of groove.'
+      },
+      {
+        q: 'In a down-up strumming pattern, where does an eighth rest fall?',
+        opts: ['You stop your arm','On a muted down or up stroke','On an open string','Between bars'],
+        correct: 1,
+        feedback: 'Keep the arm moving — just mute that stroke. The constant arm motion keeps you in time.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 7 ── */
+  {
+    id: 'rests-sixteenth',
+    tag: 'Lesson 7',
+    title: 'Sixteenth Note Rests',
+    subtitle: 'Funk, ghost notes, and tight pockets',
+    content: `
+      <div class="concept">
+        <h3>Sixteenth Note Rests</h3>
+        <p>At the sixteenth-note level, rests create the pockets and spaces that define funk, modern R&B, and tight rock rhythm. Each beat is divided into four slots: <strong>1 e and a</strong>. Any of these four can be a rest.</p>
+        <p>The "ghost strum" technique is essential here — a muted down or up strum on the rest subdivisions keeps your hand moving and your internal grid locked in.</p>
+      </div>
+      <div class="concept">
+        <h3>Funk Patterns</h3>
+        <p>Classic funk rhythm guitar (Nile Rodgers style) is almost all sixteenth notes with strategic rests — typically playing the "1" and the "a of 2" and the "e of 3", etc. The rest slots define the groove as much as the played notes.</p>
+      </div>
+      <div class="notation">  Beat: 1  e  +  a   2  e  +  a   3  e  +  a   4  e  +  a
+        ●  .  ●  .   .  ●  .  ●   ●  .  .  ●   .  ●  .  ●
+         = note  . = rest
+  A simple funk pattern with sixteenth subdivisions</div>
+      <div class="tip"><strong>The pocket:</strong> Lock with the bass drum and hi-hat. In funk, the bass drum usually hits on 1 and the "and of 3" — land your notes in those same slots to lock the groove.</div>
+    `,
+    beatRows: [
+      { label: 'All 16ths',  cells: Array(16).fill('x'),                                    type: 'sixteenth' },
+      { label: 'Funk #1',    cells: ['x','R','x','R', 'R','x','R','x', 'x','R','R','x', 'R','x','R','x'], type: 'funk' },
+    ],
+    beatDivisions: 16,
+    quizzes: [
+      {
+        q: 'In "1-e-and-a" counting, which slot is the third subdivision of beat 1?',
+        opts: ['e','and','a','the 2'],
+        correct: 1,
+        feedback: '"and" is the 3rd sixteenth — the upstroke position, sitting exactly halfway through the beat.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 8 ── */
+  {
+    id: 'quarter-eighth-combos',
+    tag: 'Lesson 8',
+    title: 'Quarter & Eighth Note Combinations',
+    subtitle: 'The groove patterns that fill 95% of songs',
+    content: `
+      <div class="concept">
+        <h3>Mixing Note Values</h3>
+        <p>Real music rarely uses one note value throughout a bar. The power of rhythm comes from <strong>combining</strong> values — a quarter here, two eighths there — to create patterns that breathe and flow.</p>
+        <p>The classic "down-down-up, down-up" pattern is entirely quarter-and-eighth combinations: Q Q E E Q E E (feel it as a 3+3+2 grouping within the 8 eighth-note grid).</p>
+      </div>
+      <div class="concept">
+        <h3>The "3+3+2" Clave Feel</h3>
+        <p>Many rock and pop grooves have a hidden 3+3+2 feel within the eight-eighth-note grid. Beats 1-and, 2-and, 3 = accents landing at positions 1, 4, 7 out of 8. This asymmetry creates forward momentum.</p>
+      </div>
+      <div class="tip"><strong>Song context:</strong> Wonderwall (Oasis) uses a repeating down-down-up-up-down-up pattern — a direct mix of quarter and eighth feels. Count the eighths and the quarters will make themselves clear.</div>
+    `,
+    beatRows: [
+      { label: 'Q Q E E',    cells: ['Q','','Q','','e','e','e','e'], type: 'mix1' },
+      { label: '3+3+2',      cells: ['e','e','e','R','e','e','e','R','e','R','e','e','e','R','e','R'], type: 'mix2' },
+    ],
+    beatDivisions: 8,
+    quizzes: [
+      {
+        q: 'A bar of "Q Q E E Q" in 4/4 — does this add up correctly?',
+        opts: ['Yes: 1+1+0.5+0.5+1 = 4','No: too many beats','Yes if you swap one E for a rest','Only in 3/4'],
+        correct: 0,
+        feedback: '1 + 1 + 0.5 + 0.5 + 1 = 4 beats. Always verify your note values add up to the bar length.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: true,
+    builderDivisions: 8,
+    builderLabel: 'Build your own Q+E pattern (8 slots = 4 beats)'
+  },
+
+  /* ── 9 ── */
+  {
+    id: 'eighth-sixteenth-combos',
+    tag: 'Lesson 9',
+    title: 'Eighth & Sixteenth Note Combinations',
+    subtitle: 'Adding energy and urgency',
+    content: `
+      <div class="concept">
+        <h3>Driving Rhythms</h3>
+        <p>When you mix eighth and sixteenth notes, you add <strong>energy bursts</strong> to the groove. A bar of steady eighths suddenly has a flurry of sixteenths in beat 3, then returns — that contrast is the drama.</p>
+        <p>This combination is everywhere in rock: the "gallop" rhythm (E + E + E) used by Iron Maiden and Metallica is two sixteenths followed by an eighth, repeating.</p>
+      </div>
+      <div class="notation">  The Gallop (in one beat):  ●  ●  ●
+                               16th 16th 8th
+                               x  x  x .
+                               = da-da-DUM</div>
+      <div class="concept">
+        <h3>Reverse Gallop</h3>
+        <p>Eighth followed by two sixteenths: the "reverse gallop" or "DUM-da-da". Used in thrash metal and punk. Try: down, down-up, down, down-up for the "DUM da-da DUM da-da" feel.</p>
+      </div>
+      <div class="tip"><strong>Pick direction:</strong> In the gallop, use strict down-down-up per three-note group. Alternate picking at 16th-note tempo is a separate skill to develop — start slow and build.</div>
+    `,
+    beatRows: [
+      { label: 'Gallop ×4',     cells: ['x','x','e','x','x','e','x','x','e','x','x','e'], type: 'gallop' },
+      { label: 'Rev.Gallop ×4', cells: ['e','x','x','e','x','x','e','x','x','e','x','x'], type: 'revgallop' },
+    ],
+    beatDivisions: 12,
+    quizzes: [
+      {
+        q: 'The "gallop" rhythm is:',
+        opts: ['quarter + quarter + half','two sixteenths + one eighth','three eighth notes','one eighth + two sixteenths'],
+        correct: 1,
+        feedback: 'Two sixteenths + one eighth = one beat\'s worth of notes. The "da-da-DUM" of metal.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: true,
+    builderDivisions: 12,
+    builderLabel: 'Build a gallop/reverse-gallop bar (12 slots = 4 beats at triplet grid)'
+  },
+
+  /* ── 10 ── */
+  {
+    id: 'ties',
+    tag: 'Lesson 10',
+    title: 'Quarter & Eighth Note Ties',
+    subtitle: 'Extending notes across the barline',
+    content: `
+      <div class="concept">
+        <h3>What Is a Tie?</h3>
+        <p>A <strong>tie</strong> connects two notes of the same pitch, making them sound as one longer note equal to their combined value. The second tied note is not re-struck — just held.</p>
+        <p>A quarter note tied to an eighth = 1.5 beats (a <strong>dotted quarter note</strong>). This is one of the most common rhythmic values in all of music.</p>
+      </div>
+      <div class="concept">
+        <h3>The Dotted Note</h3>
+        <p>A dot after a note adds half its value: dotted quarter = Q + E = 1.5 beats. Dotted half = H + Q = 3 beats.</p>
+        <p>The dotted quarter + eighth combination fills one beat in a satisfying lop-sided way — it's the rhythmic feel behind "Love Me Do", "Come Together", and countless others.</p>
+      </div>
+      <div class="notation">  Q.  =  ♩.  =  quarter + eighth tied
+  ┌─────────────────────────────────┐
+  │  ♩.   ♪   ♩.   ♪   ♩.   ♪   ♩ │
+  │  1.5  0.5  1.5  0.5  1.5  0.5  1
+  │  = 6 eighths across 4 beats    │
+  └─────────────────────────────────┘</div>
+      <div class="tip"><strong>Feel it first:</strong> Clap "LONG short LONG short LONG short LONG" — that's the dotted quarter + eighth feel. It's the rhythmic signature of countless songs and the foundation of compound time feels.</div>
+    `,
+    beatRows: [
+      { label: 'Straight Q',    cells: ['Q','','Q','','Q','','Q',''],  type: 'quarter' },
+      { label: 'Dotted Q+E',    cells: ['L','l','L','l','L','l','Q',''], type: 'dotted' },
+    ],
+    beatDivisions: 8,
+    quizzes: [
+      {
+        q: 'A dotted quarter note lasts how many beats?',
+        opts: ['1 beat','1.5 beats','2 beats','0.75 beats'],
+        correct: 1,
+        feedback: '1.5 beats — the quarter (1 beat) plus half of a quarter (0.5 beats from the dot).'
+      },
+      {
+        q: 'When a tie connects two notes, the second note is:',
+        opts: ['Played louder','Played with a hammer-on','Not re-struck, just held','Played as a harmonic'],
+        correct: 2,
+        feedback: 'The tie is a duration extender. You only pick/strum the first note; the second is held silence from the first.'
+      }
+    ],
+    hasBeatVisualiser: true,
+    hasBuilder: false
+  },
+
+  /* ── 11 ── */
+  {
+    id: 'staircase',
+    tag: 'Lesson 11',
+    title: 'The Rhythmic Staircase',
+    subtitle: 'Putting it all together',
+    content: `
+      <div class="concept">
+        <h3>Building Up the Grid</h3>
+        <p>The "rhythmic staircase" is a practice and conceptual tool: visualise all note values stacked on top of each other, from the whole note down to sixteenth note triplets. Each level is twice (or three-times) as fast as the one above.</p>
+        <p>The key insight: every note value is a <strong>subdivision</strong> of the beat. Mastering rhythm means internalising all these layers simultaneously — feeling the quarter note while playing sixteenths.</p>
+      </div>
+    `,
+    staircase: [
+      { name: 'Whole note (×1)',           divs: 1,  width: 400 },
+      { name: 'Half notes (×2)',            divs: 2,  width: 200 },
+      { name: 'Quarter notes (×4)',         divs: 4,  width: 100 },
+      { name: 'Eighth notes (×8)',          divs: 8,  width: 50  },
+      { name: 'Eighth note triplets (×12)', divs: 12, width: 33  },
+      { name: 'Sixteenth notes (×16)',      divs: 16, width: 25  },
+      { name: '16th note triplets (×24)',   divs: 24, width: 17  },
+    ],
+    quizzes: [
+      {
+        q: 'Going from quarter notes to eighth notes, the speed of subdivision:',
+        opts: ['Stays the same','Halves','Doubles','Triples'],
+        correct: 2,
+        feedback: 'Each step down the staircase doubles the subdivision speed — that\'s what makes each level twice as fast.'
+      },
+      {
+        q: 'Which note value is the "master clock" most guitarists tap their foot to?',
+        opts: ['Whole note','Half note','Quarter note','Eighth note'],
+        correct: 2,
+        feedback: 'The quarter note. It\'s the default "beat" unit in 4/4 — what your foot naturally follows.'
+      }
+    ],
+    hasBeatVisualiser: false,
+    hasBuilder: true,
+    builderDivisions: 16,
+    builderLabel: 'Free rhythm playground — 16 slots (4 beats of sixteenths). Click to toggle notes on/off, then hit Play.',
+    isStaircase: true
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let currentLesson = 0;
+const completed = new Set();
+let audioCtx = null;
+let playbackTimer = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+/* ============================================================
+   AUDIO
+============================================================ */
+function playClick(time, freq, dur, gain) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const env = ctx.createGain();
+  osc.connect(env); env.connect(ctx.destination);
+  osc.frequency.value = freq;
+  env.gain.setValueAtTime(gain, time);
+  env.gain.exponentialRampToValueAtTime(0.001, time + dur);
+  osc.start(time); osc.stop(time + dur + 0.01);
+}
+
+function playNoteCard(idx) {
+  const ctx = getAudioCtx();
+  const freqs = [220, 330, 440];
+  const durs  = [1.8, 0.9, 0.45];
+  playClick(ctx.currentTime, freqs[idx], durs[idx], 0.4);
+}
+
+/* ============================================================
+   BEAT VISUALISER PLAYBACK
+============================================================ */
+function stopPlayback() {
+  if (playbackTimer) { clearInterval(playbackTimer); playbackTimer = null; }
+  document.querySelectorAll('.beat-cell, .bb-cell').forEach(c => c.classList.remove('cursor','active-cursor'));
+}
+
+function startPlayback(cells, bpm, paneId) {
+  stopPlayback();
+  const ctx = getAudioCtx();
+  const beatMs = (60000 / bpm);
+  const cellCount = cells.length;
+  const cellMs = beatMs * (4 / cellCount);
+  let i = 0;
+  const allCells = document.querySelectorAll(`#pane-${paneId} .beat-cell`);
+  playbackTimer = setInterval(() => {
+    allCells.forEach(c => c.classList.remove('active-cursor'));
+    if (allCells[i]) allCells[i].classList.add('active-cursor');
+    const c = cells[i];
+    const isNote = (c && c !== 'R' && c !== '');
+    if (isNote) playClick(ctx.currentTime, 880, 0.05, 0.3);
+    i = (i + 1) % cellCount;
+  }, cellMs);
+}
+
+/* ============================================================
+   BUILD LESSON PANE
+============================================================ */
+function buildNoteCards(cards, paneId) {
+  const wrap = document.getElementById(`ngWhq`);
+  if (!wrap) return;
+  cards.forEach((c, idx) => {
+    const div = document.createElement('div');
+    div.className = 'note-card';
+    div.innerHTML = `<div class="note-symbol">${c.symbol}</div><div class="note-name">${c.name}</div><div class="note-beats">${c.beats}</div><div class="note-fraction">${c.frac}</div>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.note-card').forEach(x=>x.classList.remove('playing'));
+      div.classList.add('playing');
+      playNoteCard(idx);
+      setTimeout(()=>div.classList.remove('playing'), 800);
+    });
+    wrap.appendChild(div);
+  });
+}
+
+function buildBeatVisualiser(lesson, paneEl) {
+  if (!lesson.hasBeatVisualiser) return;
+  const rows = lesson.beatRows || [];
+  const divs = lesson.beatDivisions || 8;
+  const beatsPerBar = 4;
+  const totalCells = divs;
+
+  const eng = document.createElement('div');
+  eng.className = 'rhythm-engine';
+  eng.innerHTML = `<h3>Beat Visualiser</h3>`;
+
+  // Beat numbers header
+  const numRow = document.createElement('div');
+  numRow.className = 'beat-num-row';
+  for (let i=0; i<totalCells; i++) {
+    const n = document.createElement('span');
+    n.className = 'beat-num';
+    const beatFrac = (i * 4) / totalCells;
+    const beat = Math.floor(beatFrac) + 1;
+    const sub   = beatFrac - Math.floor(beatFrac);
+    if (sub === 0) { n.textContent = beat; n.classList.add('major'); }
+    else if (Math.abs(sub - 0.5) < 0.01) n.textContent = '+';
+    else if (Math.abs(sub - 0.25) < 0.02) n.textContent = 'e';
+    else if (Math.abs(sub - 0.75) < 0.02) n.textContent = 'a';
+    else if (Math.abs(sub - 0.333) < 0.02) n.textContent = 't';
+    else if (Math.abs(sub - 0.667) < 0.02) n.textContent = 'l';
+    else n.textContent = '·';
+    numRow.appendChild(n);
+  }
+  eng.appendChild(numRow);
+
+  rows.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'beat-row';
+    const lbl = document.createElement('span');
+    lbl.className = 'beat-label';
+    lbl.textContent = row.label;
+    rowEl.appendChild(lbl);
+
+    row.cells.forEach((c, ci) => {
+      // bar line every beat
+      if (ci > 0 && (ci * 4) % divs === 0) {
+        const bl = document.createElement('div'); bl.className = 'bar-line';
+        rowEl.appendChild(bl);
+      }
+      const cell = document.createElement('div');
+      cell.className = 'beat-cell';
+      cell.dataset.ri = ri; cell.dataset.ci = ci;
+      if (c && c !== '' && c !== 'R') { cell.classList.add('filled'); cell.textContent = c; }
+      else if (c === 'R') { cell.classList.add('rest'); cell.textContent = '𝄽'; }
+      rowEl.appendChild(cell);
+    });
+    eng.appendChild(rowEl);
+  });
+
+  // Controls
+  let bpm = 80; let playing = false;
+  const ctrl = document.createElement('div');
+  ctrl.className = 'controls';
+  const playBtn = document.createElement('button');
+  playBtn.className = 'btn primary'; playBtn.textContent = '▶ Play';
+  const stopBtn = document.createElement('button');
+  stopBtn.className = 'btn'; stopBtn.textContent = '■ Stop';
+  const tempoWrap = document.createElement('div');
+  tempoWrap.className = 'tempo-control';
+  const tempoLbl = document.createElement('span'); tempoLbl.textContent = 'Tempo:';
+  const tempoSlider = document.createElement('input');
+  tempoSlider.type = 'range'; tempoSlider.min = 40; tempoSlider.max = 180; tempoSlider.value = bpm;
+  const tempoDisp = document.createElement('span');
+  tempoDisp.className = 'tempo-display'; tempoDisp.textContent = bpm + ' BPM';
+  tempoSlider.addEventListener('input', () => {
+    bpm = +tempoSlider.value; tempoDisp.textContent = bpm + ' BPM';
+    if (playing) { stopPlayback(); startPlaybackRows(rows, bpm, lesson.id, eng); }
+  });
+  playBtn.addEventListener('click', () => {
+    playing = true;
+    startPlaybackRows(rows, bpm, lesson.id, eng);
+  });
+  stopBtn.addEventListener('click', () => { playing = false; stopPlayback(); });
+  tempoWrap.append(tempoLbl, tempoSlider, tempoDisp);
+  ctrl.append(playBtn, stopBtn, tempoWrap);
+  eng.appendChild(ctrl);
+  paneEl.appendChild(eng);
+}
+
+function startPlaybackRows(rows, bpm, lessonId, engEl) {
+  stopPlayback();
+  const ctx = getAudioCtx();
+  // Flatten all rows into a single timeline of max cells
+  const maxCells = Math.max(...rows.map(r=>r.cells.length));
+  const beatMs = (60000 / bpm);
+  const cellMs = beatMs * (4 / maxCells);
+  let i = 0;
+  const allRows = engEl.querySelectorAll('.beat-row');
+  playbackTimer = setInterval(() => {
+    allRows.forEach(row => {
+      const cells = row.querySelectorAll('.beat-cell');
+      cells.forEach(c => c.classList.remove('active-cursor'));
+      if (cells[i]) cells[i].classList.add('active-cursor');
+    });
+    rows.forEach(row => {
+      const c = row.cells[i % row.cells.length];
+      if (c && c !== 'R' && c !== '' && c !== 'R') {
+        playClick(ctx.currentTime, 660 + rows.indexOf(row)*110, 0.06, 0.25);
+      }
+    });
+    i = (i + 1) % maxCells;
+  }, cellMs);
+}
+
+function buildBeatBuilder(lesson, paneEl) {
+  if (!lesson.hasBuilder) return;
+  const divs = lesson.builderDivisions || 8;
+  const grid = new Array(divs).fill(false);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'beat-builder';
+  wrap.innerHTML = `<h3>${lesson.builderLabel || 'Rhythm Builder'}</h3>`;
+
+  const row = document.createElement('div');
+  row.className = 'bb-row';
+  const lbl = document.createElement('span');
+  lbl.className = 'bb-label'; lbl.textContent = 'On/off:';
+  row.appendChild(lbl);
+
+  const cells = [];
+  for (let i=0; i<divs; i++) {
+    const c = document.createElement('div');
+    c.className = 'bb-cell';
+    c.textContent = i+1;
+    c.style.color = 'var(--muted)';
+    c.style.fontSize = '0.6rem';
+    c.addEventListener('click', () => {
+      grid[i] = !grid[i];
+      if (grid[i]) { c.classList.add('on'); c.textContent = '●'; c.style.color='var(--bg)'; }
+      else { c.classList.remove('on'); c.textContent = i+1; c.style.color='var(--muted)'; }
+    });
+    row.appendChild(c);
+    cells.push(c);
+  }
+  wrap.appendChild(row);
+
+  let bpm = 80; let playing = false; let cursor = 0; let timer = null;
+  const ctrl = document.createElement('div');
+  ctrl.className = 'controls';
+  const playBtn = document.createElement('button');
+  playBtn.className = 'btn primary'; playBtn.textContent = '▶ Play';
+  const stopBtn = document.createElement('button');
+  stopBtn.className = 'btn'; stopBtn.textContent = '■ Stop';
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'btn'; clearBtn.textContent = '✕ Clear';
+  const tempoWrap = document.createElement('div');
+  tempoWrap.className = 'tempo-control';
+  const tempoSlider = document.createElement('input');
+  tempoSlider.type='range'; tempoSlider.min=40; tempoSlider.max=180; tempoSlider.value=80;
+  const tempoDisp = document.createElement('span');
+  tempoDisp.className='tempo-display'; tempoDisp.textContent='80 BPM';
+  tempoSlider.addEventListener('input', ()=>{ bpm=+tempoSlider.value; tempoDisp.textContent=bpm+' BPM'; });
+  const ctx2 = () => getAudioCtx();
+  playBtn.addEventListener('click', () => {
+    playing = true;
+    if (timer) clearInterval(timer);
+    cursor = 0;
+    const beatMs = (60000 / bpm);
+    const cellMs = beatMs * (4 / divs);
+    timer = setInterval(() => {
+      cells.forEach(c=>c.classList.remove('cursor'));
+      cells[cursor].classList.add('cursor');
+      if (grid[cursor]) playClick(ctx2().currentTime, 880, 0.06, 0.4);
+      cursor = (cursor+1) % divs;
+    }, cellMs);
+  });
+  stopBtn.addEventListener('click', () => {
+    playing = false; if(timer){clearInterval(timer);timer=null;}
+    cells.forEach(c=>c.classList.remove('cursor'));
+  });
+  clearBtn.addEventListener('click', () => {
+    grid.fill(false);
+    cells.forEach((c,i) => { c.classList.remove('on','cursor'); c.textContent=i+1; c.style.color='var(--muted)'; });
+  });
+  tempoWrap.append(tempoSlider, tempoDisp);
+  ctrl.append(playBtn, stopBtn, clearBtn, tempoWrap);
+  wrap.appendChild(ctrl);
+  paneEl.appendChild(wrap);
+}
+
+function buildStaircase(lesson, paneEl) {
+  if (!lesson.isStaircase || !lesson.staircase) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'staircase-wrap';
+  wrap.innerHTML = '<h3>The Rhythmic Staircase</h3>';
+  lesson.staircase.forEach(level => {
+    const row = document.createElement('div');
+    row.className = 'stair-level';
+    const name = document.createElement('span');
+    name.className = 'stair-name'; name.textContent = level.name;
+    const blocks = document.createElement('div');
+    blocks.className = 'stair-blocks';
+    for (let i=0; i<level.divs; i++) {
+      const b = document.createElement('div');
+      b.className = 'stair-block';
+      b.style.width = level.width + 'px';
+      b.title = level.name;
+      blocks.appendChild(b);
+    }
+    row.appendChild(name); row.appendChild(blocks);
+    wrap.appendChild(row);
+  });
+  const note = document.createElement('p');
+  note.style.cssText = 'font-size:0.8rem;color:var(--muted);margin-top:1rem;font-style:italic';
+  note.textContent = 'Each block represents one note of that value. Hover to highlight. Notice how each row doubles in count from the one above.';
+  wrap.appendChild(note);
+  paneEl.appendChild(wrap);
+}
+
+function buildQuizzes(lesson, paneEl) {
+  if (!lesson.quizzes || !lesson.quizzes.length) return;
+  lesson.quizzes.forEach((quiz, qi) => {
+    const block = document.createElement('div');
+    block.className = 'quiz-block';
+    block.innerHTML = `<h3>Check Your Understanding</h3><div class="quiz-q">${quiz.q}</div>`;
+    const opts = document.createElement('div');
+    opts.className = 'quiz-options';
+    const feedback = document.createElement('div');
+    feedback.className = 'quiz-feedback';
+    let answered = false;
+    quiz.opts.forEach((opt, oi) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt'; btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        opts.querySelectorAll('.quiz-opt').forEach(b=>b.classList.add('locked'));
+        if (oi === quiz.correct) {
+          btn.classList.add('correct');
+          feedback.textContent = '✓ ' + quiz.feedback;
+          feedback.style.color = 'var(--green)';
+        } else {
+          btn.classList.add('wrong');
+          opts.querySelectorAll('.quiz-opt')[quiz.correct].classList.add('correct');
+          feedback.textContent = '✗ ' + quiz.feedback;
+          feedback.style.color = 'var(--red)';
+        }
+      });
+      opts.appendChild(btn);
+    });
+    block.appendChild(opts);
+    block.appendChild(feedback);
+    paneEl.appendChild(block);
+  });
+}
+
+function buildLesson(lesson, idx) {
+  const pane = document.createElement('div');
+  pane.className = 'lesson-pane';
+  pane.id = `pane-${lesson.id}`;
+
+  const tag = document.createElement('div');
+  tag.className = 'lesson-tag'; tag.textContent = lesson.tag;
+  pane.appendChild(tag);
+
+  const title = document.createElement('h2');
+  title.className = 'lesson-title'; title.textContent = lesson.title;
+  pane.appendChild(title);
+
+  const sub = document.createElement('div');
+  sub.className = 'lesson-subtitle'; sub.textContent = lesson.subtitle;
+  pane.appendChild(sub);
+
+  pane.innerHTML += lesson.content;
+
+  // Note cards
+  if (lesson.noteCards) buildNoteCards(lesson.noteCards, lesson.id);
+
+  // Beat visualiser
+  buildBeatVisualiser(lesson, pane);
+
+  // Staircase
+  if (lesson.isStaircase) buildStaircase(lesson, pane);
+
+  // Beat builder
+  buildBeatBuilder(lesson, pane);
+
+  // Quizzes
+  buildQuizzes(lesson, pane);
+
+  // Footer
+  const footer = document.createElement('div');
+  footer.className = 'lesson-footer';
+  if (idx < LESSONS.length - 1) {
+    const completeBtn = document.createElement('button');
+    completeBtn.className = 'complete-btn';
+    completeBtn.textContent = 'Mark Complete & Next →';
+    completeBtn.addEventListener('click', () => {
+      completed.add(lesson.id);
+      updateProgress();
+      goToLesson(idx + 1);
+    });
+    footer.appendChild(completeBtn);
+  } else {
+    const completeBtn = document.createElement('button');
+    completeBtn.className = 'complete-btn';
+    completeBtn.textContent = '🎸 Complete Course!';
+    completeBtn.addEventListener('click', () => {
+      completed.add(lesson.id);
+      updateProgress();
+      updateNav();
+      const msg = document.getElementById('finalMsg');
+      if(msg) msg.style.display='block';
+    });
+    footer.appendChild(completeBtn);
+    const msg = document.createElement('div');
+    msg.id = 'finalMsg';
+    msg.style.display = 'none';
+    msg.style.cssText = 'color:var(--green);font-family:var(--mono);font-size:0.85rem;margin-top:0.5rem';
+    msg.textContent = '🎉 You\'ve completed Theory Basics: Rhythm! Take these concepts to your practice and your groove will thank you.';
+    footer.appendChild(msg);
+  }
+  pane.appendChild(footer);
+
+  return pane;
+}
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+function updateProgress() {
+  const total = LESSONS.length;
+  const done  = completed.size;
+  const pct   = (done / total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done + ' / ' + total;
+  updateNav();
+}
+
+function updateNav() {
+  const navItems = document.querySelectorAll('.lesson-nav li button');
+  navItems.forEach((btn, idx) => {
+    const lesson = LESSONS[idx];
+    const statusEl = btn.querySelector('.nav-status');
+    if (completed.has(lesson.id)) {
+      btn.classList.add('done');
+      if (statusEl) statusEl.textContent = '✓';
+    } else {
+      if (statusEl) statusEl.textContent = '';
+    }
+  });
+}
+
+function goToLesson(idx) {
+  stopPlayback();
+  currentLesson = idx;
+  document.querySelectorAll('.lesson-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`pane-${LESSONS[idx].id}`).classList.add('active');
+  document.querySelectorAll('.lesson-nav li button').forEach((b,i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+function init() {
+  const nav  = document.getElementById('lessonNav');
+  const main = document.getElementById('mainContent');
+
+  LESSONS.forEach((lesson, idx) => {
+    // Nav item
+    const li  = document.createElement('li');
+    const btn = document.createElement('button');
+    const num = document.createElement('span');
+    num.className = 'nav-num'; num.textContent = (idx+1).toString().padStart(2,'0');
+    const label = document.createElement('span'); label.textContent = lesson.title;
+    const status = document.createElement('span'); status.className = 'nav-status';
+    btn.append(num, label, status);
+    btn.addEventListener('click', () => goToLesson(idx));
+    li.appendChild(btn);
+    nav.appendChild(li);
+
+    // Pane
+    const pane = buildLesson(lesson, idx);
+    main.appendChild(pane);
+  });
+
+  goToLesson(0);
+  updateProgress();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
