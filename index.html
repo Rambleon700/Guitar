@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Menu Bar</title>
+    <style>
+        /* 1. Reset standard margins and paddings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 2. Style the menu bar container */
+        .navbar {
+            background-color: #333;
+            font-family: Arial, sans-serif;
+            padding: 0 20px;
+        }
+
+        /* 3. Use Flexbox to align items horizontally */
+        .navbar ul {
+            list-style-type: none;
+            display: flex;
+            justify-content: flex-start; /* Aligns items to the left */
+        }
+
+        /* 4. Style individual menu item links */
+        .navbar li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none; /* Removes text underlines */
+            transition: background-color 0.3s; /* Smooth hover transition */
+        }
+
+        /* 5. Highlight menu items on mouse hover */
+        .navbar li a:hover {
+            background-color: #555;
+            color: #4CAF50;
+        }
+
+        /* 6. Active class for the current page indicator */
+        .navbar li a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Semantic HTML Navigation Container -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#Chord Coach Pro">Chord Coach Pro</a></li>
+            <li><a href="#Chord Finder">Chord Finder</a></li>
+            <li><a href="#Make JSON">Make JSON</a></li>
+        </ul>
+    </nav>
+
+</body>
+</html>
