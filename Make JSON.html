@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Coach Live Pro - Ultimate Converter Suite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --charcoal: #181410;
+  --panel: #221b16;
+  --panel-hi: #2b221b;
+  --amber: #d99a4e;
+  --amber-lt: #f0b96e;
+  --cream: #efe6d8;
+  --muted: #a3948a;
+  --line: #3a2e24;
+  --error: #c5604a;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--charcoal);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 40px 16px;
+}
+.wrap { max-width: 850px; margin: 0 auto; }
+
+.hero { text-align: center; margin-bottom: 24px; }
+.hero h1 { font-family: 'Fraunces', serif; font-size: 32px; color: var(--cream); margin: 0 0 8px; }
+.hero p { color: var(--muted); font-size: 14px; margin: 0; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 { font-family: 'Fraunces', serif; font-size: 18px; color: var(--amber-lt); margin: 0 0 16px; }
+
+label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 6px;
+}
+input[type=file] {
+  background: var(--charcoal);
+  border: 1px dashed var(--line);
+  padding: 20px;
+  width: 100%;
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+input[type=file]:hover { border-color: var(--amber); }
+
+.row { display: flex; gap: 12px; margin-bottom: 16px; }
+.row > div { flex: 1; }
+
+input[type=text], input[type=number] {
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  border-radius: 6px;
+  padding: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  width: 100%;
+}
+
+button.primary {
+  background: var(--amber);
+  color: #1a130a;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+button.primary:hover { background: var(--amber-lt); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+textarea {
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  width: 100%;
+  height: 220px;
+  padding: 12px;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--amber);
+  margin-bottom: 12px;
+}
+.badge-alert {
+  background: rgba(197, 96, 74, 0.15);
+  border: 1px solid var(--error);
+  padding: 12px;
+  border-radius: 6px;
+  color: var(--cream);
+  font-size: 13px;
+  margin-top: 10px;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+</script>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Universal Chord Matrix Builder</h1>
+    <p>Convert digital text PDFs, image-based sheets, or raw text layouts directly into Chord Coach Live Pro JSON arrays.</p>
+  </div>
+
+  <div class="card">
+    <h2>1. Input Source Data</h2>
+    <label>Option A: Extract from File PDF</label>
+    <input type="file" id="pdfFileInput" accept=".pdf">
+    <div class="status" id="statusMessage">Ready for layout or file drop...</div>
+
+    <div style="margin-top:15px;">
+      <label>Option B: Visual Text Scratchpad (Paste chord text here if PDF parsing yields 0 chords)</label>
+      <textarea id="manualTextInput" placeholder="Paste chords/lyrics or a simple string of chords here... e.g., G D Em C G D C G" style="height: 120px;"></textarea>
+    </div>
+
+    <div class="row" style="margin-top: 20px;">
+      <div>
+        <label>Song Title</label>
+        <input type="text" id="songTitle" value="Scotland The Brave">
+      </div>
+      <div style="max-width: 150px;">
+        <label>Beats per Chord</label>
+        <input type="number" id="defaultBeats" value="4" min="1">
+      </div>
+      <div style="max-width: 120px;">
+        <label>BPM</label>
+        <input type="number" id="songBpm" value="92">
+      </div>
+    </div>
+    
+    <div style="margin-top:15px; text-align:right;">
+       <button class="primary" id="processTextBtn">⚡ Parse Scratchpad & Form JSON</button>
+    </div>
+  </div>
+
+  <div id="fallbackNotice" class="badge-alert" style="display:none; margin-bottom: 20px;">
+    <strong>Notice:</strong> This PDF appears to be a graphic or scanned image file with zero extractable text layers. Please copy-paste the chord names directly into the <strong>Visual Text Scratchpad</strong> above to instantly generate your error-free JSON chart matrix.
+  </div>
+
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2>2. Generated JSON Output Matrix</h2>
+      <button class="primary" id="downloadBtn" disabled>💾 Download .json File</button>
+    </div>
+    <textarea id="jsonOutput" readonly placeholder='JSON structural payload will display here...' style="height: 250px;"></textarea>
+  </div>
+</div>
+
+<script>
+(function() {
+  var pdfFileInput = document.getElementById('pdfFileInput');
+  var manualTextInput = document.getElementById('manualTextInput');
+  var processTextBtn = document.getElementById('processTextBtn');
+  var statusMessage = document.getElementById('statusMessage');
+  var songTitleInput = document.getElementById('songTitle');
+  var songBpmInput = document.getElementById('songBpm');
+  var defaultBeatsInput = document.getElementById('defaultBeats');
+  var jsonOutput = document.getElementById('jsonOutput');
+  var downloadBtn = document.getElementById('downloadBtn');
+  var fallbackNotice = document.getElementById('fallbackNotice');
+
+  var currentJsonResult = null;
+
+  // Ultra-broad musical token parser validation rule
+  var generalChordRegex = /\b[A-G][#b]?(?:m|min|maj|7|M7|min7|m7|sus2|sus4|7sus4|dim|dim7|aug|5|6|m6|9|add9|m9|11)?(?:\/[A-G][#b]?)?\b/g;
+  var exactChordTest = /^[A-G][#b]?(m|min|maj|7|M7|min7|m7|sus2|sus4|7sus4|dim|dim7|aug|5|6)?(\/[A-G][#b]?)?$/i;
+  var wordExclusions = ["A", "I", "AM", "AN", "AT", "BY", "DO", "IN", "ME", "MY", "NO", "ON", "OR", "SO", "TO", "UP", "WE", "THE", "OF", "AND"];
+
+  pdfFileInput.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    statusMessage.textContent = "Scanning file binary content...";
+    fallbackNotice.style.display = "none";
+    var fileReader = new FileReader();
+
+    fileReader.onload = function() {
+      var typedarray = new Uint8Array(this.result);
+      pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+        var countPromises = [];
+        for (var i = 1; i <= pdf.numPages; i++) {
+          countPromises.push(getPageText(i, pdf));
+        }
+        
+        Promise.all(countPromises).then(function(pageTexts) {
+          var combinedText = pageTexts.join('\n');
+          manualTextInput.value = combinedText;
+          var foundCount = buildMatrixOutput(combinedText, file.name);
+          
+          if (foundCount === 0) {
+            fallbackNotice.style.display = "block";
+            statusMessage.textContent = "Scan complete. 0 digital text nodes extracted (Image/Scan PDF detected).";
+          }
+        });
+      }).catch(function(err) {
+        statusMessage.textContent = "Error loading PDF structure: " + err.message;
+      });
+    };
+    fileReader.readAsArrayBuffer(file);
+  });
+
+  function getPageText(pageNum, pdfInstance) {
+    return pdfInstance.getPage(pageNum).then(function(page) {
+      return page.getTextContent().then(function(textContent) {
+        var lastY = null; var text = "";
+        for (var i = 0; i < textContent.items.length; i++) {
+          var item = textContent.items[i];
+          var currentY = item.transform[5];
+          if (lastY !== null && Math.abs(currentY - lastY) > 6) { text += "\n"; }
+          else if (i > 0 && !text.endsWith("\n") && !text.endsWith(" ")) { text += " "; }
+          text += item.str; lastY = currentY;
+        }
+        return text;
+      });
+    });
+  }
+
+  processTextBtn.addEventListener('click', function() {
+    buildMatrixOutput(manualTextInput.value, "Manual Input");
+  });
+
+  function buildMatrixOutput(textSource, filenameContext) {
+    var lines = textSource.split(/[\r\n]+/);
+    var chartMatrix = [];
+    var beats = parseInt(defaultBeatsInput.value, 10) || 4;
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue;
+
+      if (line.includes("tabs @ Ultimate") || line.includes("Page ") || line.includes("https://")) continue;
+
+      // Scan every spatial text grouping on the row
+      var tokens = line.split(/[\s,\[\]\(\)\{\}\:\.\-]+/);
+      tokens.forEach(function(token) {
+        var clean = token.trim();
+        if (clean && exactChordTest.test(clean)) {
+          if (wordExclusions.includes(clean.toUpperCase()) && tokens.length > 3) {
+            return; // Skip casual English conversational language structural false-positives
+          }
+          var formatted = clean.charAt(0).toUpperCase() + clean.slice(1);
+          chartMatrix.push([formatted, beats]);
+        }
+      });
+    }
+
+    var title = songTitleInput.value;
+    if (!title || title === "Scotland The Brave") {
+      if (filenameContext !== "Manual Input") {
+        title = filenameContext.replace(/\.[^/.]+$/, "").replace(/(_|\-)/g, " ");
+      } else {
+        title = "Scotland The Brave";
+      }
+    }
+    songTitleInput.value = title;
+
+    currentJsonResult = {
+      title: title,
+      artist: "Universal Chord Matrix Engine",
+      bpm: parseInt(songBpmInput.value, 10) || 92,
+      chart: chartMatrix
+    };
+
+    jsonOutput.value = JSON.stringify(currentJsonResult, null, 2);
+    statusMessage.textContent = "Successfully compiled a " + chartMatrix.length + "-chord data matrix array!";
+    downloadBtn.disabled = chartMatrix.length === 0;
+
+    return chartMatrix.length;
+  }
+
+  downloadBtn.addEventListener('click', function() {
+    if (!currentJsonResult) return;
+    currentJsonResult.title = songTitleInput.value || "Custom Chart";
+    currentJsonResult.bpm = parseInt(songBpmInput.value, 10) || 92;
+    
+    var blob = new Blob([JSON.stringify(currentJsonResult, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = currentJsonResult.title.toLowerCase().replace(/\s+/g, '_') + "_chart.json";
+    document.body.appendChild(a);
+    a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+})();
+</script>
+</body>
+</html>
