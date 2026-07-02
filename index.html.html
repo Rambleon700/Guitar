@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Coach Live</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --charcoal:#181410;
+  --panel:#221b16;
+  --panel-hi:#2b221b;
+  --wood:#4a3323;
+  --wood-lt:#6b4a30;
+  --amber:#d99a4e;
+  --amber-lt:#f0b96e;
+  --cream:#efe6d8;
+  --muted:#a3948a;
+  --good:#6fae62;
+  --bad:#c5604a;
+  --line:#3a2e24;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--charcoal);color:var(--cream);font-family:'Inter',sans-serif;}
+body{padding:24px 16px 60px;}
+h1,h2,h3{font-family:'Fraunces',serif;margin:0;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.wrap{max-width:900px;margin:0 auto;}
+
+/* header */
+.hero{text-align:center;margin-bottom:28px;}
+.hero .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;}
+.hero h1{font-size:38px;font-weight:700;color:var(--cream);}
+.hero p{color:var(--muted);font-size:15px;max-width:560px;margin:10px auto 0;line-height:1.5;}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:18px;}
+.card h2{font-size:20px;color:var(--amber-lt);margin-bottom:12px;}
+.card h3{font-size:15px;color:var(--cream);margin-bottom:8px;}
+
+/* screens */
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* setup */
+.preset-grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.preset-btn{background:var(--panel-hi);border:1px solid var(--line);color:var(--cream);border-radius:8px;padding:12px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;text-align:left;flex:1;min-width:150px;transition:.15s;}
+.preset-btn:hover{border-color:var(--amber);}
+.preset-btn.selected{border-color:var(--amber);background:#33261a;}
+.preset-btn strong{display:block;font-family:'Fraunces',serif;font-size:16px;color:var(--amber-lt);}
+.preset-btn span{color:var(--muted);font-size:12px;}
+
+label{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+input[type=text],input[type=number]{background:var(--charcoal);border:1px solid var(--line);color:var(--cream);border-radius:6px;padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:14px;width:100%;}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.row > div{flex:1;min-width:120px;}
+
+.chord-table{width:100%;border-collapse:collapse;margin:10px 0;}
+.chord-table th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;padding:4px 8px;border-bottom:1px solid var(--line);}
+.chord-table td{padding:6px 8px;border-bottom:1px solid var(--line);}
+.chord-table input{padding:6px 8px;font-size:13px;}
+.chord-table .beats-input{width:64px;}
+.chord-table .chord-input{width:110px;}
+.del-btn{background:none;border:1px solid var(--line);color:var(--bad);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:13px;}
+.del-btn:hover{border-color:var(--bad);}
+
+button.primary{background:var(--amber);color:#1a130a;border:none;border-radius:8px;padding:12px 22px;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:.15s;}
+button.primary:hover{background:var(--amber-lt);}
+button.secondary{background:transparent;border:1px solid var(--wood-lt);color:var(--cream);border-radius:8px;padding:11px 18px;font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;}
+button.secondary:hover{border-color:var(--amber);color:var(--amber-lt);}
+button:disabled{opacity:.4;cursor:not-allowed;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+
+.mic-status{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--muted);}
+.mic-dot{width:9px;height:9px;border-radius:50%;background:var(--wood-lt);}
+.mic-dot.live{background:var(--good);box-shadow:0 0 6px var(--good);}
+.mic-dot.denied{background:var(--bad);}
+.level-meter{flex:1;height:8px;background:var(--charcoal);border-radius:4px;overflow:hidden;max-width:220px;border:1px solid var(--line);}
+.level-fill{height:100%;width:0%;background:var(--amber);transition:width .05s linear;}
+
+/* quick paste + import/export */
+textarea.paste-area{background:var(--charcoal);border:1px solid var(--line);color:var(--cream);border-radius:6px;padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;width:100%;min-height:64px;resize:vertical;}
+.io-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--charcoal);border:1px dashed var(--line);border-radius:8px;padding:10px 12px;margin-top:12px;}
+.io-row .hint{color:var(--muted);font-size:12px;flex:1;min-width:160px;}
+.file-btn{position:relative;overflow:hidden;display:inline-block;}
+.file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+button.danger{background:transparent;border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:11px 18px;font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;}
+button.danger:hover{background:#2a1712;}
+
+/* engine status strip */
+.engine-strip{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--charcoal);border:1px solid var(--line);border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);}
+.engine-strip b{color:var(--amber-lt);font-family:'JetBrains Mono',monospace;}
+
+/* player screen */
+.transport-info{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.transport-info h2{font-size:22px;}
+.bpm-badge{font-family:'JetBrains Mono',monospace;color:var(--amber-lt);font-size:14px;background:var(--panel-hi);border:1px solid var(--line);border-radius:20px;padding:5px 14px;}
+
+#timeline-outer{position:relative;height:150px;background:var(--charcoal);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+#playhead{position:absolute;left:50%;top:0;width:3px;height:100%;background:var(--amber);z-index:10;box-shadow:0 0 12px var(--amber);}
+#playhead:after{content:'';position:absolute;top:-1px;left:-6px;width:15px;height:15px;border-radius:50%;background:var(--amber);}
+#track-runner{position:absolute;height:100%;left:50%;top:0;}
+.chord-card{position:absolute;top:20px;width:96px;height:96px;background:var(--panel);border:2px solid var(--line);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color .15s, background .15s;}
+.chord-card .cname{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--cream);}
+.chord-card .cbeats{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+.chord-card.active{border-color:var(--amber);background:#2c2114;}
+.chord-card.grade-great{border-color:var(--good);}
+.chord-card.grade-ok{border-color:var(--amber);}
+.chord-card.grade-miss{border-color:var(--bad);}
+
+.now-panel{display:flex;gap:18px;flex-wrap:wrap;}
+.now-chord{background:var(--panel-hi);border:1px solid var(--line);border-radius:10px;padding:16px;flex:0 0 180px;text-align:center;}
+.now-chord .big{font-family:'Fraunces',serif;font-weight:700;font-size:34px;color:var(--amber-lt);}
+#chordDiagramSvg{margin-top:8px;}
+.feedback-panel{flex:1;min-width:220px;background:var(--panel-hi);border:1px solid var(--line);border-radius:10px;padding:16px;}
+.feedback-panel .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+.match-meter{height:14px;background:var(--charcoal);border-radius:7px;overflow:hidden;border:1px solid var(--line);margin-bottom:10px;}
+.match-fill{height:100%;width:0%;background:var(--wood-lt);transition:width .1s linear, background .1s linear;}
+.grade-text{font-family:'JetBrains Mono',monospace;font-size:14px;margin-bottom:12px;}
+.chroma-bars{display:flex;gap:3px;align-items:flex-end;height:56px;background:var(--charcoal);border:1px solid var(--line);border-radius:8px;padding:8px 6px 4px;}
+.chroma-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.chroma-bar-fill{width:100%;background:var(--wood-lt);border-radius:2px 2px 0 0;min-height:2px;transition:height .06s linear, background .06s linear;}
+.chroma-bar-fill.hit{background:var(--good);}
+.chroma-bar-fill.target{background:var(--amber);}
+.chroma-bar-label{font-size:9px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+.session-rating{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);}
+.session-rating b{color:var(--amber-lt);font-size:16px;}
+
+/* results */
+.score-hero{text-align:center;padding:20px 0;}
+.score-hero .num{font-family:'Fraunces',serif;font-size:60px;font-weight:700;color:var(--amber-lt);}
+.score-hero .msg{color:var(--muted);margin-top:4px;}
+.results-list{list-style:none;padding:0;margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;}
+.results-list li{background:var(--panel-hi);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;display:flex;align-items:center;gap:8px;}
+.results-list .dot{width:8px;height:8px;border-radius:50%;}
+.dot.great{background:var(--good);}
+.dot.ok{background:var(--amber);}
+.dot.miss{background:var(--bad);}
+
+.foot-note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:10px;}
+a.textlink{color:var(--amber-lt);}
+
+@media (max-width:600px){
+  .hero h1{font-size:28px;}
+  .now-chord{flex:1 1 100%;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Chord Coach Live</div>
+    <h1>Play along. Get graded in real time.</h1>
+    <p>Build a chord chart for any song, set the tempo, and Chord Coach scrolls it toward a playhead like a practice-along track — listening through your mic to tell you if you actually hit each chord.</p>
+  </div>
+
+  <!-- SCREEN 1: SETUP -->
+  <div class="screen active" id="screen-setup">
+    <div class="card">
+      <h2>1. Pick a chart</h2>
+      <div class="preset-grid" id="presetGrid"></div>
+      <div class="row">
+        <div>
+          <label>Song title</label>
+          <input type="text" id="songTitle" value="Wonderwall">
+        </div>
+        <div style="max-width:120px;">
+          <label>BPM</label>
+          <input type="number" id="songBpm" value="87" min="30" max="240">
+        </div>
+        <div style="max-width:140px;">
+          <label>Beats / chord</label>
+          <input type="number" id="defaultBeats" value="4" min="1" max="16">
+        </div>
+      </div>
+      <table class="chord-table">
+        <thead><tr><th style="width:34px;">#</th><th>Chord</th><th>Beats</th><th></th></tr></thead>
+        <tbody id="chordRows"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="secondary" id="addRowBtn" type="button">+ Add chord</button>
+        <button class="secondary" id="clearRowsBtn" type="button">Clear chart</button>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label>Quick paste (one "Chord,Beats" per line)</label>
+        <textarea class="paste-area mono" id="pasteArea" placeholder="Em7,4&#10;G,4&#10;Dsus4,4&#10;A7sus4,4"></textarea>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="secondary" id="applyPasteBtn" type="button">Load into chart</button>
+        </div>
+      </div>
+
+      <div class="io-row">
+        <span class="hint">Save this chart as a file, or load one you saved earlier.</span>
+        <button class="secondary" id="exportChartBtn" type="button">📤 Export chart</button>
+        <div class="file-btn">
+          <button class="secondary" type="button">📥 Import chart</button>
+          <input type="file" id="importChartInput" accept=".json">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Or transcribe from an audio file</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 10px;">Drop in an MP3/WAV of the song you're practicing. This runs entirely in your browser — no upload, no external service. It decodes the file, builds a chromagram, and pattern-matches chords frame by frame, then fills in the chart above so you can review and fix it.</p>
+      <div class="row" style="align-items:flex-end;">
+        <div><input type="file" id="audioFileInput" accept="audio/*"></div>
+        <div style="flex:0 0 auto;"><button class="secondary" id="analyzeAudioBtn" type="button">Analyze audio file</button></div>
+      </div>
+      <div id="analyzeProgressWrap" style="display:none;">
+        <div class="level-meter" style="max-width:100%;"><div class="level-fill" id="analyzeProgressFill"></div></div>
+        <div class="mono" id="analyzeStatusText" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2. Check your mic</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 6px;">Chord Coach listens for the pitch classes in each chord as you strum. You can also run it with the mic off — you'll still get the scrolling chart and click track.</p>
+      <button class="secondary" id="testMicBtn" type="button">Test microphone</button>
+      <div class="mic-status">
+        <div class="mic-dot" id="micDot"></div>
+        <span id="micStatusText">Not tested</span>
+        <div class="level-meter"><div class="level-fill" id="levelFill"></div></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="startBtn" type="button">Start practice run →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: PLAYER -->
+  <div class="screen" id="screen-player">
+    <div class="card">
+      <div class="transport-info">
+        <h2 id="playTitle">Song</h2>
+        <div class="bpm-badge mono"><span id="playBpm">87</span> BPM</div>
+      </div>
+
+      <div class="engine-strip mono">
+        <div>Engine: <b id="engineStatus">Idle</b></div>
+        <div>Chord: <b id="engineChordCount">0/0</b></div>
+        <div>Elapsed: <b id="engineElapsed">0:00</b></div>
+      </div>
+
+      <div id="timeline-outer">
+        <div id="track-runner"></div>
+        <div id="playhead"></div>
+      </div>
+
+      <div class="now-panel">
+        <div class="now-chord">
+          <div class="lbl">Now playing</div>
+          <div class="big" id="currentChordName">--</div>
+          <svg id="chordDiagramSvg" width="90" height="110" viewBox="0 0 90 110"></svg>
+        </div>
+        <div class="feedback-panel">
+          <div class="lbl">Chord match</div>
+          <div class="match-meter"><div class="match-fill" id="matchFill"></div></div>
+          <div class="grade-text" id="gradeText">Waiting for count-in…</div>
+          <div class="lbl">Live chroma (green = matches the target chord)</div>
+          <div class="chroma-bars" id="chromaBars"></div>
+          <div class="session-rating">Running accuracy: <b id="sessionRating">--</b></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="primary" id="playPauseBtn" type="button">Pause</button>
+        <button class="secondary" id="restartBtn" type="button">Restart</button>
+        <button class="danger" id="stopBtn" type="button">Stop</button>
+        <button class="secondary" id="backBtn" type="button">← Edit chart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="card">
+      <div class="score-hero">
+        <div class="lbl" style="text-align:center;">Overall accuracy</div>
+        <div class="num" id="finalScore">--%</div>
+        <div class="msg" id="finalMsg"></div>
+      </div>
+      <ul class="results-list" id="resultsList"></ul>
+      <div class="btn-row">
+        <button class="primary" id="retryBtn" type="button">Run it again</button>
+        <button class="secondary" id="editBtn" type="button">← Edit chart</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot-note">Chord Coach grades what your mic actually hears — the pitch classes present in each chord you strum — against the chart you built. It isn't listening to a recording and figuring out the song's chords for you (reliable automatic chord recognition from raw audio isn't something a self-contained browser tool can do well); you tell it the chart once, the way any practice-along tool does, and from then on it's real-time listening and grading.</p>
+</div>
+
+<script>
+(function(){
+
+/* ---------- music theory helpers ---------- */
+var NOTE_TO_PC = {"C":0,"B#":0,"C#":1,"Db":1,"D":2,"D#":3,"Eb":3,"E":4,"Fb":4,"E#":5,"F":5,"F#":6,"Gb":6,"G":7,"G#":8,"Ab":8,"A":9,"A#":10,"Bb":10,"B":11,"Cb":11};
+var PC_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+var SUFFIX_INTERVALS = {
+  "":[0,4,7], "maj":[0,4,7], "m":[0,3,7], "min":[0,3,7],
+  "7":[0,4,7,10], "maj7":[0,4,7,11], "M7":[0,4,7,11],
+  "m7":[0,3,7,10], "min7":[0,3,7,10],
+  "sus2":[0,2,7], "sus4":[0,5,7], "7sus4":[0,5,7,10],
+  "dim":[0,3,6], "dim7":[0,3,6,9], "aug":[0,4,8],
+  "5":[0,7], "6":[0,4,7,9], "m6":[0,3,7,9],
+  "9":[0,4,7,10,2], "add9":[0,4,7,2], "m9":[0,3,7,10,2],
+  "11":[0,4,7,10,2,5]
+};
+
+function parseChord(name){
+  var m = /^([A-Ga-g])([#b]?)(.*)$/.exec(name.trim());
+  if(!m) return null;
+  var root = m[1].toUpperCase() + m[2];
+  var suffix = m[3];
+  var pc = NOTE_TO_PC[root];
+  if(pc === undefined) return null;
+  var intervals = SUFFIX_INTERVALS.hasOwnProperty(suffix) ? SUFFIX_INTERVALS[suffix] : SUFFIX_INTERVALS[""];
+  var pcSet = {};
+  for(var i=0;i<intervals.length;i++){ pcSet[(pc+intervals[i])%12] = true; }
+  return {root:root, pc:pc, suffix:suffix, pcSet:pcSet};
+}
+
+/* ---------- chord diagram DB (open-position shapes) ---------- */
+/* frets: array of 6 values, low E to high e. -1 = mute, 0 = open, n = fret. fingers optional dots-only rendering */
+var CHORD_DIAGRAMS = {
+  "Em":  {frets:[0,2,2,0,0,0], base:1},
+  "Em7": {frets:[0,2,0,0,0,0], base:1},
+  "E":   {frets:[0,2,2,1,0,0], base:1},
+  "E7":  {frets:[0,2,0,1,0,0], base:1},
+  "G":   {frets:[3,2,0,0,0,3], base:1},
+  "G7":  {frets:[3,2,0,0,0,1], base:1},
+  "D":   {frets:[-1,-1,0,2,3,2], base:1},
+  "D7":  {frets:[-1,-1,0,2,1,2], base:1},
+  "Dsus4":{frets:[-1,-1,0,2,3,3], base:1},
+  "A":   {frets:[-1,0,2,2,2,0], base:1},
+  "A7":  {frets:[-1,0,2,0,2,0], base:1},
+  "Amaj7":{frets:[-1,0,2,1,2,0], base:1},
+  "Am":  {frets:[-1,0,2,2,1,0], base:1},
+  "Am7": {frets:[-1,0,2,0,1,0], base:1},
+  "A7sus4":{frets:[-1,0,2,0,3,0], base:1},
+  "Asus4":{frets:[-1,0,2,2,3,0], base:1},
+  "C":   {frets:[-1,3,2,0,1,0], base:1},
+  "Cadd9":{frets:[-1,3,2,0,3,0], base:1},
+  "F":   {frets:[1,3,3,2,1,1], base:1},
+  "Fmaj7":{frets:[-1,3,3,2,1,0], base:1},
+  "Bm":  {frets:[-1,2,4,4,3,2], base:1},
+  "B7":  {frets:[-1,2,1,2,0,2], base:1}
+};
+
+function drawChordDiagram(svg, chordName){
+  while(svg.firstChild){ svg.removeChild(svg.firstChild); }
+  var data = CHORD_DIAGRAMS[chordName];
+  var ns = "http://www.w3.org/2000/svg";
+  if(!data){
+    var t = document.createElementNS(ns,"text");
+    t.setAttribute("x","45"); t.setAttribute("y","55");
+    t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#a3948a"); t.setAttribute("font-size","11");
+    t.textContent = "no diagram";
+    svg.appendChild(t);
+    return;
+  }
+  var left=15, top=10, w=60, h=80, strings=6, frets=4;
+  var dx = w/(strings-1), dy = h/frets;
+  for(var s=0;s<strings;s++){
+    var line = document.createElementNS(ns,"line");
+    line.setAttribute("x1", left+s*dx); line.setAttribute("y1", top);
+    line.setAttribute("x2", left+s*dx); line.setAttribute("y2", top+h);
+    line.setAttribute("stroke", "#6b4a30"); line.setAttribute("stroke-width","1.5");
+    svg.appendChild(line);
+  }
+  for(var f=0;f<=frets;f++){
+    var hline = document.createElementNS(ns,"line");
+    hline.setAttribute("x1", left); hline.setAttribute("y1", top+f*dy);
+    hline.setAttribute("x2", left+w); hline.setAttribute("y2", top+f*dy);
+    hline.setAttribute("stroke", "#6b4a30"); hline.setAttribute("stroke-width", f===0?"3":"1.5");
+    svg.appendChild(hline);
+  }
+  for(var i=0;i<6;i++){
+    var fr = data.frets[i];
+    var x = left + i*dx;
+    if(fr === -1 || fr === 0){
+      var t2 = document.createElementNS(ns,"text");
+      t2.setAttribute("x", x); t2.setAttribute("y", top-3);
+      t2.setAttribute("text-anchor","middle"); t2.setAttribute("font-size","10");
+      t2.setAttribute("fill", fr===-1 ? "#c5604a" : "#efe6d8");
+      t2.textContent = fr===-1 ? "x" : "o";
+      svg.appendChild(t2);
+    } else {
+      var cy = top + (fr-0.5)*dy;
+      var c = document.createElementNS(ns,"circle");
+      c.setAttribute("cx", x); c.setAttribute("cy", cy); c.setAttribute("r","6");
+      c.setAttribute("fill", "#d99a4e");
+      svg.appendChild(c);
+    }
+  }
+}
+
+/* ---------- presets ---------- */
+var PRESETS = [
+  {key:"wonderwall", title:"Wonderwall", artist:"Oasis", bpm:87,
+   chart:[["Em7",4],["G",4],["Dsus4",4],["A7sus4",4],["Em7",4],["G",4],["Dsus4",4],["A7sus4",4]]},
+  {key:"rambleon", title:"Ramble On", artist:"Led Zeppelin", bpm:98,
+   chart:[["E",4],["D",4],["A",4],["E",4]]},
+  {key:"threelittlebirds", title:"Three Little Birds", artist:"Bob Marley", bpm:75,
+   chart:[["A",4],["D",4],["A",4],["E",4]]},
+  {key:"custom", title:"Blank chart", artist:"Build your own from scratch", bpm:100, chart:[["C",4]]}
+];
+
+/* ---------- state ---------- */
+var state = {
+  chart: [], bpm: 87, title: "Wonderwall",
+  micAvailable: false, audioCtx: null, analyser: null, sampleRate: 44100,
+  timeline: [], totalBeats: 0, songDuration: 0,
+  playing: false, stopped: true, startAudioTime: 0, rafId: null, pollId: null,
+  segmentScores: [], currentSegmentScores: [], activeIndex: -1,
+  pxPerSecond: 130
+};
+
+/* ---------- setup screen: chart builder ---------- */
+var chordRowsEl = document.getElementById('chordRows');
+
+function renderRows(){
+  chordRowsEl.innerHTML = "";
+  state.chart.forEach(function(row, idx){
+    var tr = document.createElement('tr');
+    var tdNum = document.createElement('td'); tdNum.textContent = (idx+1);
+    var tdChord = document.createElement('td');
+    var chordInput = document.createElement('input');
+    chordInput.type = "text"; chordInput.className = "chord-input mono";
+    chordInput.value = row[0];
+    chordInput.addEventListener('input', function(){ row[0] = chordInput.value; });
+    tdChord.appendChild(chordInput);
+    var tdBeats = document.createElement('td');
+    var beatsInput = document.createElement('input');
+    beatsInput.type = "number"; beatsInput.className = "beats-input mono"; beatsInput.min="1";
+    beatsInput.value = row[1];
+    beatsInput.addEventListener('input', function(){ row[1] = parseInt(beatsInput.value,10) || 1; });
+    tdBeats.appendChild(beatsInput);
+    var tdDel = document.createElement('td');
+    var delBtn = document.createElement('button');
+    delBtn.className = "del-btn"; delBtn.type="button"; delBtn.textContent = "✕";
+    delBtn.addEventListener('click', function(){
+      var i = state.chart.indexOf(row);
+      if(i>-1){ state.chart.splice(i,1); renderRows(); }
+    });
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdNum); tr.appendChild(tdChord); tr.appendChild(tdBeats); tr.appendChild(tdDel);
+    chordRowsEl.appendChild(tr);
+  });
+}
+
+document.getElementById('addRowBtn').addEventListener('click', function(){
+  var beats = parseInt(document.getElementById('defaultBeats').value,10) || 4;
+  state.chart.push(["C", beats]);
+  renderRows();
+});
+document.getElementById('clearRowsBtn').addEventListener('click', function(){
+  state.chart = []; renderRows();
+});
+
+document.getElementById('applyPasteBtn').addEventListener('click', function(){
+  var text = document.getElementById('pasteArea').value;
+  var lines = text.split('\n');
+  var rows = [];
+  lines.forEach(function(line){
+    if(!line.trim()) return;
+    var parts = line.split(',');
+    var name = (parts[0]||"").trim();
+    if(!name) return;
+    var beats = parseFloat(parts[1]);
+    if(!beats || beats<1) beats = 4;
+    rows.push([name, beats]);
+  });
+  if(!rows.length){ alert("Paste at least one line like: Em7,4"); return; }
+  state.chart = rows;
+  renderRows();
+  Array.prototype.forEach.call(document.getElementById('presetGrid').children, function(c){ c.classList.remove('selected'); });
+});
+
+document.getElementById('exportChartBtn').addEventListener('click', function(){
+  var payload = {
+    title: document.getElementById('songTitle').value || "Untitled Chart",
+    bpm: parseInt(document.getElementById('songBpm').value,10) || 100,
+    chart: state.chart
+  };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = payload.title.toLowerCase().replace(/\s+/g,'_') + "_chart.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importChartInput').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var data = JSON.parse(reader.result);
+      if(!data.chart || !data.chart.length){ throw new Error("File has no chart data."); }
+      document.getElementById('songTitle').value = data.title || "Imported chart";
+      document.getElementById('songBpm').value = data.bpm || 100;
+      state.chart = data.chart.map(function(c){ return [c[0], c[1]]; });
+      renderRows();
+      Array.prototype.forEach.call(document.getElementById('presetGrid').children, function(c){ c.classList.remove('selected'); });
+    }catch(err){
+      alert("Couldn't read that chart file: " + err.message);
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
+
+var presetGrid = document.getElementById('presetGrid');
+PRESETS.forEach(function(p){
+  var btn = document.createElement('button');
+  btn.type = "button"; btn.className = "preset-btn";
+  btn.innerHTML = "<strong>"+p.title+"</strong><span>"+p.artist+"</span>";
+  btn.addEventListener('click', function(){
+    Array.prototype.forEach.call(presetGrid.children, function(c){ c.classList.remove('selected'); });
+    btn.classList.add('selected');
+    document.getElementById('songTitle').value = p.title;
+    document.getElementById('songBpm').value = p.bpm;
+    state.chart = p.chart.map(function(c){ return [c[0], c[1]]; });
+    renderRows();
+  });
+  presetGrid.appendChild(btn);
+});
+// select first preset by default
+presetGrid.children[0].click();
+
+/* ---------- mic test ---------- */
+var micDot = document.getElementById('micDot');
+var micStatusText = document.getElementById('micStatusText');
+var levelFill = document.getElementById('levelFill');
+var micStream = null, testAnalyser = null, testCtx = null, testRafId = null;
+
+document.getElementById('testMicBtn').addEventListener('click', function(){
+  if(state.micAvailable){ return; }
+  micStatusText.textContent = "Requesting mic access…";
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    micStream = stream;
+    testCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var src = testCtx.createMediaStreamSource(stream);
+    testAnalyser = testCtx.createAnalyser();
+    testAnalyser.fftSize = 2048;
+    src.connect(testAnalyser);
+    state.micAvailable = true;
+    micDot.classList.add('live');
+    micStatusText.textContent = "Mic connected — play a chord to see the meter move";
+    var buf = new Float32Array(testAnalyser.fftSize);
+    function loop(){
+      testAnalyser.getFloatTimeDomainData(buf);
+      var sum=0;
+      for(var i=0;i<buf.length;i++){ sum += buf[i]*buf[i]; }
+      var rms = Math.sqrt(sum/buf.length);
+      var pct = Math.min(100, rms*400);
+      levelFill.style.width = pct+"%";
+      testRafId = requestAnimationFrame(loop);
+    }
+    loop();
+  }).catch(function(err){
+    micDot.classList.add('denied');
+    micStatusText.textContent = "Mic blocked — you can still practice with click track + visuals only";
+  });
+});
+
+/* ---------- screen switching ---------- */
+function showScreen(id){
+  ['screen-setup','screen-player','screen-results'].forEach(function(s){
+    document.getElementById(s).classList.toggle('active', s===id);
+  });
+}
+
+/* ---------- build timeline from chart ---------- */
+function buildTimeline(chart, bpm){
+  var beatDur = 60/bpm;
+  var t = 0;
+  var timeline = [];
+  chart.forEach(function(row){
+    var name = row[0], beats = row[1];
+    var dur = beats*beatDur;
+    timeline.push({chord:name, start:t, duration:dur, parsed:parseChord(name)});
+    t += dur;
+  });
+  return {timeline:timeline, total:t};
+}
+
+/* ---------- chroma + scoring ---------- */
+function computeChroma(analyser, sampleRate){
+  var n = analyser.frequencyBinCount;
+  var data = new Float32Array(n);
+  analyser.getFloatFrequencyData(data);
+  var chroma = new Array(12).fill(0);
+  var binHz = sampleRate/(analyser.fftSize);
+  for(var i=1;i<n;i++){
+    var freq = i*binHz;
+    if(freq < 70 || freq > 1100) continue;
+    var mag = Math.pow(10, data[i]/20);
+    var midi = 69 + 12*Math.log(freq/440)/Math.LN2;
+    var pc = Math.round(midi) % 12; if(pc<0) pc+=12;
+    chroma[pc] += mag;
+  }
+  var max = Math.max.apply(null, chroma) || 1;
+  for(var j=0;j<12;j++){ chroma[j] = chroma[j]/max; }
+  return chroma;
+}
+
+function matchScore(chroma, pcSet){
+  var inSum=0, inCount=0, outSum=0, outCount=0;
+  for(var pc=0;pc<12;pc++){
+    if(pcSet[pc]){ inSum += chroma[pc]; inCount++; }
+    else { outSum += chroma[pc]; outCount++; }
+  }
+  var inAvg = inCount? inSum/inCount : 0;
+  var outAvg = outCount? outSum/outCount : 0;
+  var score = inAvg - 0.5*outAvg;
+  if(score < 0) score = 0;
+  if(score > 1) score = 1;
+  return score;
+}
+
+/* ---------- offline audio-file chord analysis ---------- */
+function decimateSignal(samples, factor){
+  if(factor<=1) return samples;
+  var outLen = Math.floor(samples.length/factor);
+  var out = new Float32Array(outLen);
+  for(var i=0;i<outLen;i++){
+    var sum=0;
+    for(var j=0;j<factor;j++){ sum += samples[i*factor+j]; }
+    out[i] = sum/factor;
+  }
+  return out;
+}
+
+function fftInPlace(re, im){
+  var n = re.length;
+  for(var i=1, j=0; i<n; i++){
+    var bit = n>>1;
+    for(; j&bit; bit>>=1){ j ^= bit; }
+    j ^= bit;
+    if(i<j){
+      var tr=re[i]; re[i]=re[j]; re[j]=tr;
+      var ti=im[i]; im[i]=im[j]; im[j]=ti;
+    }
+  }
+  for(var len=2; len<=n; len<<=1){
+    var ang = -2*Math.PI/len;
+    var wr = Math.cos(ang), wi = Math.sin(ang);
+    for(var i2=0;i2<n;i2+=len){
+      var curWr=1, curWi=0;
+      for(var k=0;k<len/2;k++){
+        var uRe = re[i2+k], uIm = im[i2+k];
+        var vRe = re[i2+k+len/2]*curWr - im[i2+k+len/2]*curWi;
+        var vIm = re[i2+k+len/2]*curWi + im[i2+k+len/2]*curWr;
+        re[i2+k] = uRe+vRe; im[i2+k] = uIm+vIm;
+        re[i2+k+len/2] = uRe-vRe; im[i2+k+len/2] = uIm-vIm;
+        var nextWr = curWr*wr - curWi*wi;
+        var nextWi = curWr*wi + curWi*wr;
+        curWr = nextWr; curWi = nextWi;
+      }
+    }
+  }
+}
+
+function chromaFromMag(mag, sampleRate, fftSize){
+  var chroma = [0,0,0,0,0,0,0,0,0,0,0,0];
+  var binHz = sampleRate/fftSize;
+  for(var i=1;i<mag.length;i++){
+    var freq = i*binHz;
+    if(freq<70 || freq>1300) continue;
+    var midi = 69+12*Math.log(freq/440)/Math.LN2;
+    var pc = Math.round(midi)%12; if(pc<0) pc+=12;
+    chroma[pc]+=mag[i];
+  }
+  var max = Math.max.apply(null, chroma)||1;
+  for(var j=0;j<12;j++){ chroma[j]/=max; }
+  return chroma;
+}
+
+function buildChordTemplates(){
+  var types = [
+    {suffix:"", label:""}, {suffix:"m", label:"m"},
+    {suffix:"7", label:"7"}, {suffix:"maj7", label:"maj7"}, {suffix:"m7", label:"m7"}
+  ];
+  var templates = [];
+  for(var root=0; root<12; root++){
+    for(var t=0;t<types.length;t++){
+      var intervals = SUFFIX_INTERVALS[types[t].suffix];
+      var pcSet = {};
+      for(var k=0;k<intervals.length;k++){ pcSet[(root+intervals[k])%12] = true; }
+      templates.push({name: PC_NAMES[root]+types[t].label, pcSet: pcSet});
+    }
+  }
+  return templates;
+}
+
+function bestChordMatch(chroma, templates){
+  var best = null, bestScore = -Infinity;
+  for(var i=0;i<templates.length;i++){
+    var score = matchScore(chroma, templates[i].pcSet);
+    if(score>bestScore){ bestScore=score; best=templates[i].name; }
+  }
+  return best;
+}
+
+function smoothLabels(labels, radius){
+  var out = [];
+  for(var i=0;i<labels.length;i++){
+    var counts = {};
+    var lo = Math.max(0,i-radius), hi = Math.min(labels.length-1,i+radius);
+    for(var j=lo;j<=hi;j++){
+      var lbl = labels[j];
+      var key = lbl===null ? "__N__" : lbl;
+      counts[key] = (counts[key]||0)+1;
+    }
+    var bestKey=null, bestCount=-1;
+    for(var key2 in counts){ if(counts[key2]>bestCount){ bestCount=counts[key2]; bestKey=key2; } }
+    out.push(bestKey==="__N__" ? null : bestKey);
+  }
+  return out;
+}
+
+function labelsToSegments(labels, hopDur){
+  var segments = [];
+  var cur = null, curStart = 0;
+  for(var i=0;i<labels.length;i++){
+    var lbl = labels[i];
+    if(lbl !== cur){
+      if(cur !== null){
+        segments.push({chord:cur, start:curStart, duration:(i*hopDur)-curStart});
+      }
+      cur = lbl;
+      curStart = i*hopDur;
+    }
+  }
+  if(cur !== null){
+    segments.push({chord:cur, start:curStart, duration:(labels.length*hopDur)-curStart});
+  }
+  return segments;
+}
+
+function mergeShortSegments(segments, minDur){
+  var out = [];
+  for(var i=0;i<segments.length;i++){
+    var seg = segments[i];
+    if(seg.duration < minDur && out.length){
+      out[out.length-1].duration += seg.duration;
+    } else {
+      out.push({chord:seg.chord, start:seg.start, duration:seg.duration});
+    }
+  }
+  var merged = [];
+  for(var j=0;j<out.length;j++){
+    if(merged.length && merged[merged.length-1].chord === out[j].chord){
+      merged[merged.length-1].duration += out[j].duration;
+    } else {
+      merged.push(out[j]);
+    }
+  }
+  return merged;
+}
+
+function estimateBpm(flux, hopDur){
+  var minBpm=60, maxBpm=180;
+  var bestBpm=100, bestScore=-Infinity;
+  var n = flux.length;
+  if(n<10) return 100;
+  var mean=0;
+  for(var i=0;i<n;i++){ mean+=flux[i]; }
+  mean/=n;
+  var norm = [];
+  for(var i2=0;i2<n;i2++){ norm.push(flux[i2]-mean); }
+  for(var bpm=minBpm; bpm<=maxBpm; bpm+=1){
+    var lag = Math.round((60/bpm)/hopDur);
+    if(lag<1 || lag>=n) continue;
+    var sum=0, count=0;
+    for(var i3=0;i3+lag<n;i3++){ sum += norm[i3]*norm[i3+lag]; count++; }
+    var score = count ? sum/count : -Infinity;
+    if(score>bestScore){ bestScore=score; bestBpm=bpm; }
+  }
+  return bestBpm;
+}
+
+function analyzeBuffer(audioBuffer, onProgress, onDone){
+  var sr = audioBuffer.sampleRate;
+  var mono;
+  if(audioBuffer.numberOfChannels>1){
+    mono = new Float32Array(audioBuffer.length);
+    for(var c=0;c<audioBuffer.numberOfChannels;c++){
+      var d = audioBuffer.getChannelData(c);
+      for(var i=0;i<d.length;i++){ mono[i]+= d[i]/audioBuffer.numberOfChannels; }
+    }
+  } else {
+    mono = audioBuffer.getChannelData(0);
+  }
+
+  var decFactor = Math.max(1, Math.round(sr/11025));
+  var decRate = sr/decFactor;
+  var decimated = decimateSignal(mono, decFactor);
+
+  var fftSize = 2048;
+  var hop = 1024;
+  var numFrames = Math.max(0, Math.floor((decimated.length - fftSize)/hop));
+
+  var frameChords = [];
+  var fluxValues = [];
+  var prevMag = null;
+  var templates = buildChordTemplates();
+
+  var idx = 0;
+  var CHUNK = 60;
+
+  function processChunk(){
+    var end = Math.min(numFrames, idx+CHUNK);
+    for(; idx<end; idx++){
+      var start = idx*hop;
+      var re = new Float64Array(fftSize);
+      var im = new Float64Array(fftSize);
+      var energy = 0;
+      for(var n2=0;n2<fftSize;n2++){
+        var s = decimated[start+n2] || 0;
+        var w = 0.5 - 0.5*Math.cos(2*Math.PI*n2/(fftSize-1));
+        re[n2] = s*w;
+        energy += s*s;
+      }
+      energy = Math.sqrt(energy/fftSize);
+      fftInPlace(re, im);
+      var half = fftSize/2;
+      var mag = new Float64Array(half);
+      for(var k=0;k<half;k++){ mag[k] = Math.sqrt(re[k]*re[k]+im[k]*im[k]); }
+
+      var flux = 0;
+      if(prevMag){
+        for(var k2=0;k2<half;k2++){ var d2 = mag[k2]-prevMag[k2]; if(d2>0) flux += d2; }
+      }
+      fluxValues.push(flux);
+      prevMag = mag;
+
+      if(energy < 0.004){
+        frameChords.push(null);
+      } else {
+        var chroma = chromaFromMag(mag, decRate, fftSize);
+        frameChords.push(bestChordMatch(chroma, templates));
+      }
+    }
+    if(onProgress) onProgress(idx/numFrames);
+    if(idx < numFrames){
+      setTimeout(processChunk, 0);
+    } else {
+      finish();
+    }
+  }
+
+  function finish(){
+    var hopDur = hop/decRate;
+    var smoothed = smoothLabels(frameChords, 4);
+    var segments = labelsToSegments(smoothed, hopDur);
+    segments = mergeShortSegments(segments, 0.35);
+    var bpm = estimateBpm(fluxValues, hopDur);
+    onDone({segments:segments, bpm:bpm});
+  }
+
+  if(numFrames<=0){
+    onDone({segments:[], bpm:100});
+    return;
+  }
+  processChunk();
+}
+
+function handleAnalyzeClick(){
+  var fileInput = document.getElementById('audioFileInput');
+  if(!fileInput.files.length){ alert("Choose an audio file first."); return; }
+  var file = fileInput.files[0];
+  var btn = document.getElementById('analyzeAudioBtn');
+  btn.disabled = true;
+  var progressWrap = document.getElementById('analyzeProgressWrap');
+  var progressFill = document.getElementById('analyzeProgressFill');
+  var statusText = document.getElementById('analyzeStatusText');
+  progressWrap.style.display = 'block';
+  progressFill.style.width = "5%";
+  statusText.textContent = "Decoding audio\u2026";
+
+  var reader = new FileReader();
+  reader.onload = function(){
+    var decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+    decodeCtx.decodeAudioData(reader.result).then(function(audioBuffer){
+      decodeCtx.close();
+      statusText.textContent = "Building chromagram\u2026";
+      progressFill.style.width = "15%";
+      analyzeBuffer(audioBuffer, function(pct){
+        progressFill.style.width = (15 + pct*0.8) + "%";
+        statusText.textContent = "Matching chords\u2026 " + Math.round(pct*100) + "%";
+      }, function(result){
+        progressFill.style.width = "100%";
+        statusText.textContent = "Detected " + result.segments.length + " chord changes at ~" + result.bpm + " BPM \u2014 review the chart below";
+        var nameNoExt = file.name.replace(/\.[^/.]+$/, "");
+        document.getElementById('songTitle').value = nameNoExt;
+        document.getElementById('songBpm').value = result.bpm;
+        var beatDur = 60/result.bpm;
+        state.chart = result.segments.map(function(s){
+          var beats = Math.max(1, Math.round(s.duration/beatDur));
+          return [s.chord, beats];
+        });
+        if(!state.chart.length){ state.chart = [["C",4]]; }
+        renderRows();
+        Array.prototype.forEach.call(document.getElementById('presetGrid').children, function(c){ c.classList.remove('selected'); });
+        btn.disabled = false;
+      });
+    }).catch(function(err){
+      console.error(err);
+      statusText.textContent = "Couldn't decode that file \u2014 try a different format (MP3/WAV/M4A).";
+      btn.disabled = false;
+    });
+  };
+  reader.onerror = function(){
+    statusText.textContent = "Couldn't read that file.";
+    btn.disabled = false;
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ---------- player ---------- */
+var trackRunner = document.getElementById('track-runner');
+var currentChordNameEl = document.getElementById('currentChordName');
+var chordDiagramSvg = document.getElementById('chordDiagramSvg');
+var matchFill = document.getElementById('matchFill');
+var gradeText = document.getElementById('gradeText');
+var playTitleEl = document.getElementById('playTitle');
+var playBpmEl = document.getElementById('playBpm');
+var chromaBarsEl = document.getElementById('chromaBars');
+var sessionRatingEl = document.getElementById('sessionRating');
+var engineStatusEl = document.getElementById('engineStatus');
+var engineChordCountEl = document.getElementById('engineChordCount');
+var engineElapsedEl = document.getElementById('engineElapsed');
+
+function buildChromaBarsUI(){
+  chromaBarsEl.innerHTML = "";
+  for(var i=0;i<12;i++){
+    var col = document.createElement('div');
+    col.className = "chroma-bar-col";
+    var fill = document.createElement('div');
+    fill.className = "chroma-bar-fill";
+    fill.id = "cbar-"+i;
+    fill.style.height = "2px";
+    var lbl = document.createElement('div');
+    lbl.className = "chroma-bar-label";
+    lbl.textContent = PC_NAMES[i].replace("#","♯");
+    col.appendChild(fill); col.appendChild(lbl);
+    chromaBarsEl.appendChild(col);
+  }
+}
+buildChromaBarsUI();
+
+function formatElapsed(sec){
+  sec = Math.max(0, Math.floor(sec));
+  var m = Math.floor(sec/60), s = sec%60;
+  return m + ":" + (s<10 ? "0"+s : s);
+}
+
+function updateSessionRating(){
+  var scores = state.segmentScores.filter(function(s){ return s; });
+  var runningAvg = 0, count = scores.length;
+  var sum = 0;
+  scores.forEach(function(s){ sum += s.avg; });
+  if(state.currentSegmentScores.length){
+    var curAvg = state.currentSegmentScores.reduce(function(a,b){return a+b;},0)/state.currentSegmentScores.length;
+    sum += curAvg; count += 1;
+  }
+  runningAvg = count ? sum/count : 0;
+  sessionRatingEl.textContent = count ? Math.round(runningAvg*100)+"%" : "--";
+}
+
+function setupTimelineVisuals(){
+  trackRunner.innerHTML = "";
+  state.timeline.forEach(function(seg, idx){
+    var card = document.createElement('div');
+    card.className = "chord-card";
+    card.id = "seg-"+idx;
+    card.style.left = (seg.start*state.pxPerSecond) + "px";
+    card.style.width = Math.max(70, seg.duration*state.pxPerSecond - 8) + "px";
+    var cname = document.createElement('div'); cname.className="cname"; cname.textContent = seg.chord;
+    var cbeats = document.createElement('div'); cbeats.className="cbeats"; cbeats.textContent = seg.duration.toFixed(1)+"s";
+    card.appendChild(cname); card.appendChild(cbeats);
+    trackRunner.appendChild(card);
+  });
+}
+
+var clickOsc=null, clickGain=null, nextClickBeat=0, clickTimerId=null;
+function scheduleClicks(){
+  var beatDur = 60/state.bpm;
+  function tick(){
+    if(!state.playing) return;
+    var now = state.audioCtx.currentTime;
+    var lookAhead = 0.12;
+    while(state.startAudioTime + nextClickBeat*beatDur < now + lookAhead){
+      var t = state.startAudioTime + nextClickBeat*beatDur;
+      if(t >= now - 0.05){
+        var osc = state.audioCtx.createOscillator();
+        var gain = state.audioCtx.createGain();
+        osc.frequency.value = (nextClickBeat % 4 === 0) ? 1400 : 900;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(0.25, t+0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t+0.05);
+        osc.connect(gain); gain.connect(state.audioCtx.destination);
+        osc.start(t); osc.stop(t+0.06);
+      }
+      nextClickBeat++;
+    }
+    clickTimerId = setTimeout(tick, 25);
+  }
+  tick();
+}
+
+function frameLoop(){
+  if(!state.playing) return;
+  var elapsed = state.audioCtx.currentTime - state.startAudioTime;
+  trackRunner.style.transform = "translateX(-" + (elapsed*state.pxPerSecond) + "px)";
+  engineElapsedEl.textContent = formatElapsed(Math.max(0,elapsed));
+
+  var idx = -1;
+  for(var i=0;i<state.timeline.length;i++){
+    if(elapsed >= state.timeline[i].start && elapsed < state.timeline[i].start + state.timeline[i].duration){ idx = i; break; }
+  }
+
+  if(idx !== state.activeIndex){
+    if(state.activeIndex >= 0 && state.currentSegmentScores.length){
+      finalizeSegment(state.activeIndex);
+    }
+    state.activeIndex = idx;
+    state.currentSegmentScores = [];
+    document.querySelectorAll('.chord-card').forEach(function(c){ c.classList.remove('active'); });
+    if(idx>=0){
+      var seg = state.timeline[idx];
+      currentChordNameEl.textContent = seg.chord;
+      drawChordDiagram(chordDiagramSvg, seg.chord);
+      var el = document.getElementById('seg-'+idx);
+      if(el) el.classList.add('active');
+      engineChordCountEl.textContent = (idx+1) + "/" + state.timeline.length;
+      engineStatusEl.textContent = "Playing";
+    }
+  }
+
+  if(elapsed >= state.songDuration + 1.2){
+    finishSong();
+    return;
+  }
+
+  state.rafId = requestAnimationFrame(frameLoop);
+}
+
+function finalizeSegment(idx){
+  var scores = state.currentSegmentScores;
+  var avg = scores.length ? scores.reduce(function(a,b){return a+b;},0)/scores.length : 0;
+  var grade = avg > 0.55 ? "great" : (avg > 0.3 ? "ok" : "miss");
+  state.segmentScores[idx] = {chord: state.timeline[idx].chord, avg:avg, grade:grade};
+  var el = document.getElementById('seg-'+idx);
+  if(el){ el.classList.remove('active'); el.classList.add('grade-'+grade); }
+  updateSessionRating();
+}
+
+var pollTimerId = null;
+function startMicPolling(){
+  pollTimerId = setInterval(function(){
+    if(!state.playing || !state.micAvailable) return;
+    var chroma = computeChroma(state.analyser, state.audioCtx.sampleRate);
+    var pcSet = (state.activeIndex>=0 && state.timeline[state.activeIndex].parsed) ? state.timeline[state.activeIndex].parsed.pcSet : {};
+    for(var i=0;i<12;i++){
+      var bar = document.getElementById('cbar-'+i);
+      if(!bar) continue;
+      var h = Math.max(2, Math.round(chroma[i]*56));
+      bar.style.height = h+"px";
+      bar.className = "chroma-bar-fill" + (pcSet[i] ? " target" : "") ;
+      if(pcSet[i] && chroma[i] > 0.4) bar.className += " hit";
+    }
+    if(state.activeIndex>=0){
+      var score = matchScore(chroma, pcSet);
+      state.currentSegmentScores.push(score);
+      matchFill.style.width = Math.round(score*100)+"%";
+      matchFill.style.background = score>0.55 ? "#6fae62" : (score>0.3 ? "#d99a4e" : "#c5604a");
+      gradeText.textContent = score>0.55 ? "Locked in" : (score>0.3 ? "Close — adjust fretting" : "Not hearing this chord yet");
+      updateSessionRating();
+    }
+  }, 150);
+}
+
+function startCountInThenPlay(){
+  state.stopped = false;
+  state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(state.micAvailable && micStream){
+    var src = state.audioCtx.createMediaStreamSource(micStream);
+    state.analyser = state.audioCtx.createAnalyser();
+    state.analyser.fftSize = 4096;
+    state.analyser.smoothingTimeConstant = 0.75;
+    src.connect(state.analyser);
+  }
+  var beatDur = 60/state.bpm;
+  var countInBeats = 4;
+  var now = state.audioCtx.currentTime;
+  for(var b=0;b<countInBeats;b++){
+    var t = now + b*beatDur;
+    var osc = state.audioCtx.createOscillator();
+    var gain = state.audioCtx.createGain();
+    osc.frequency.value = 1600;
+    gain.gain.setValueAtTime(0.0001,t);
+    gain.gain.linearRampToValueAtTime(0.28,t+0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+    osc.connect(gain); gain.connect(state.audioCtx.destination);
+    osc.start(t); osc.stop(t+0.06);
+  }
+  gradeText.textContent = "Count-in…";
+  engineStatusEl.textContent = "Counting in…";
+  engineChordCountEl.textContent = "0/" + state.timeline.length;
+  state.startAudioTime = now + countInBeats*beatDur;
+  state.playing = true;
+  state.activeIndex = -1;
+  state.segmentScores = [];
+  nextClickBeat = countInBeats;
+  scheduleClicks();
+  startMicPolling();
+  setTimeout(function(){
+    state.rafId = requestAnimationFrame(frameLoop);
+  }, Math.max(0, (state.startAudioTime-now)*1000 - 30));
+}
+
+function pausePlayback(){
+  state.playing = false;
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  if(clickTimerId) clearTimeout(clickTimerId);
+  if(pollTimerId) clearInterval(pollTimerId);
+  if(state.audioCtx) state.audioCtx.suspend();
+  engineStatusEl.textContent = "Paused";
+}
+
+function finishSong(){
+  state.playing = false;
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  if(clickTimerId) clearTimeout(clickTimerId);
+  if(pollTimerId) clearInterval(pollTimerId);
+  if(state.activeIndex>=0 && !state.segmentScores[state.activeIndex]){
+    finalizeSegment(state.activeIndex);
+  }
+  engineStatusEl.textContent = "Finished";
+  showResults();
+}
+
+function showResults(){
+  var scores = state.segmentScores.filter(function(s){ return s; });
+  var overall = scores.length ? scores.reduce(function(a,s){return a+s.avg;},0)/scores.length : 0;
+  document.getElementById('finalScore').textContent = Math.round(overall*100)+"%";
+  var msg = overall>0.7 ? "Rock solid. That chart's ready for tempo." :
+            overall>0.45 ? "Good bones — a few chords need cleaner changes." :
+            "Rough pass. Slow the BPM down and try again.";
+  if(!state.micAvailable) msg = "Ran visual + click-track only (no mic feedback this pass).";
+  document.getElementById('finalMsg').textContent = msg;
+  var list = document.getElementById('resultsList');
+  list.innerHTML = "";
+  scores.forEach(function(s, i){
+    var li = document.createElement('li');
+    var dot = document.createElement('div'); dot.className = "dot "+s.grade;
+    li.appendChild(dot);
+    li.appendChild(document.createTextNode((i+1)+". "+s.chord+" — "+Math.round(s.avg*100)+"%"));
+    list.appendChild(li);
+  });
+  showScreen('screen-results');
+}
+
+/* ---------- transport buttons ---------- */
+document.getElementById('startBtn').addEventListener('click', function(){
+  var chart = state.chart.filter(function(r){ return r[0] && r[0].trim(); });
+  if(!chart.length){ alert("Add at least one chord to the chart first."); return; }
+  state.title = document.getElementById('songTitle').value || "Untitled";
+  state.bpm = parseInt(document.getElementById('songBpm').value,10) || 100;
+  var built = buildTimeline(chart, state.bpm);
+  state.timeline = built.timeline;
+  state.songDuration = built.total;
+  state.pxPerSecond = 130;
+  playTitleEl.textContent = state.title;
+  playBpmEl.textContent = state.bpm;
+  setupTimelineVisuals();
+  currentChordNameEl.textContent = "--";
+  drawChordDiagram(chordDiagramSvg, "");
+  matchFill.style.width = "0%";
+  gradeText.textContent = "Waiting for count-in…";
+  engineElapsedEl.textContent = "0:00";
+  engineChordCountEl.textContent = "0/" + state.timeline.length;
+  sessionRatingEl.textContent = "--";
+  document.getElementById('playPauseBtn').textContent = "Pause";
+  showScreen('screen-player');
+  startCountInThenPlay();
+});
+
+document.getElementById('playPauseBtn').addEventListener('click', function(){
+  if(state.playing){
+    pausePlayback();
+    this.textContent = "Resume";
+  } else if(state.stopped || !state.audioCtx) {
+    document.querySelectorAll('.chord-card').forEach(function(c){ c.classList.remove('active','grade-great','grade-ok','grade-miss'); });
+    this.textContent = "Pause";
+    startCountInThenPlay();
+  } else {
+    state.audioCtx.resume();
+    state.playing = true;
+    scheduleClicks();
+    startMicPolling();
+    state.rafId = requestAnimationFrame(frameLoop);
+    this.textContent = "Pause";
+    engineStatusEl.textContent = "Playing";
+  }
+});
+
+document.getElementById('stopBtn').addEventListener('click', function(){
+  pausePlayback();
+  state.stopped = true;
+  state.activeIndex = -1;
+  state.segmentScores = [];
+  state.currentSegmentScores = [];
+  trackRunner.style.transform = "translateX(0px)";
+  engineElapsedEl.textContent = "0:00";
+  engineChordCountEl.textContent = "0/" + state.timeline.length;
+  engineStatusEl.textContent = "Stopped";
+  currentChordNameEl.textContent = "--";
+  drawChordDiagram(chordDiagramSvg, "");
+  matchFill.style.width = "0%";
+  gradeText.textContent = "Stopped — hit Play to start again";
+  sessionRatingEl.textContent = "--";
+  document.querySelectorAll('.chord-card').forEach(function(c){ c.classList.remove('active','grade-great','grade-ok','grade-miss'); });
+  document.getElementById('playPauseBtn').textContent = "Play";
+});
+
+document.getElementById('restartBtn').addEventListener('click', function(){
+  pausePlayback();
+  document.getElementById('playPauseBtn').textContent = "Pause";
+  document.querySelectorAll('.chord-card').forEach(function(c){ c.classList.remove('active','grade-great','grade-ok','grade-miss'); });
+  startCountInThenPlay();
+});
+
+document.getElementById('backBtn').addEventListener('click', function(){
+  pausePlayback();
+  showScreen('screen-setup');
+});
+document.getElementById('retryBtn').addEventListener('click', function(){
+  document.querySelectorAll('.chord-card').forEach(function(c){ c.classList.remove('active','grade-great','grade-ok','grade-miss'); });
+  showScreen('screen-player');
+  document.getElementById('playPauseBtn').textContent = "Pause";
+  startCountInThenPlay();
+});
+document.getElementById('editBtn').addEventListener('click', function(){
+  showScreen('screen-setup');
+});
+
+document.getElementById('analyzeAudioBtn').addEventListener('click', handleAnalyzeClick);
+
+renderRows();
+})();
+</script>
+</body>
+</html>
