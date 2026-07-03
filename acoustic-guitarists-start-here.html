@@ -49,7 +49,7 @@
   .back-btn-container {
     position: fixed;
     top: 24px;
-    left: 24px;
+    right: 24px;
     z-index: 1000;
   }
   .back-btn {
@@ -73,10 +73,10 @@
   .back-btn:hover {
     background: rgba(57, 42, 30, 0.95);
     border-color: var(--amber);
-    transform: translateX(-4px);
+    transform: translateX(4px);
   }
-  .back-btn::before {
-    content: '←';
+  .back-btn::after {
+    content: '→';
     font-size: 14px;
   }
 
