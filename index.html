@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive guitar practice tools, music theory lessons, chord training, rhythm exercises, and phrase trainers to help musicians improve their playing.">
+    <title>Music Practice & Theory Hub</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg-color: #121214;
+            --card-bg: rgba(20, 20, 25, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #f5f5f7;
+            --text-muted: #a0a0aa;
+            --accent-color: #3b82f6;
+            --accent-hover: #60a5fa;
+            --radius: 12px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                linear-gradient(rgba(18, 18, 20, 0.75), rgba(18, 18, 20, 0.85)),
+                url('https://images.unsplash.com/photo-1615112108157-ba3017a26ba3?q=80&w=1920&auto=format&fit=crop');
+            background-repeat: no-repeat;
+            background-position: center 25%;
+            background-attachment: fixed;
+            background-size: cover;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+        }
+
+        header h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            margin-bottom: .5rem;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main.grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition), background var(--transition);
+        }
+
+        @media (hover: hover) {
+            .card:hover {
+                transform: translateY(-4px);
+                border-color: var(--accent-color);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+                background: rgba(25, 25, 35, 0.75);
+            }
+        }
+
+        .card-content h2 {
+            font-size: 1.3rem;
+            margin-bottom: .6rem;
+        }
+
+        .card-content p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: .96rem;
+            flex-grow: 1;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+            padding: .75rem 1rem;
+            background: var(--accent-color);
+            color: #ffffff;
+            border-radius: 6px;
+            transition: background-color var(--transition), transform var(--transition);
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(.98);
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid var(--accent-hover);
+            outline-offset: 3px;
+        }
+
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: .9rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <h1>Music Practice & Theory Hub</h1>
+        <p>Select a lesson or practice tool to start improving your playing.</p>
+    </header>
+
+    <main class="grid" role="main">
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Chord Finder</h2>
+                <p>Visualise chord shapes across the fretboard and explore alternate voicings.</p>
+            </div>
+            <a class="btn" href="chord-finder.html">Open Chord Finder</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Chord Coach</h2>
+                <p>Improve chord changes with guided timing, strumming patterns and tempo control.</p>
+            </div>
+            <a class="btn" href="chord-coach.html">Open Chord Coach</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Scales to Solo Phrase Trainer</h2>
+                <p>Turn scale shapes into expressive musical phrases using interactive practice routines.</p>
+            </div>
+            <a class="btn" href="scales-to-solo-phrase-trainer.html">Open Phrase Trainer</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Diagonal Pentatonics</h2>
+                <p>Learn diagonal pentatonic patterns and connect them to fluid soloing across the neck.</p>
+            </div>
+            <a class="btn" href="diagonal-pentatonics.html">Open Diagonal Pentatonics</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Phrase Trainer Guide</h2>
+                <p>Step-by-step guidance on using the Phrase Trainer effectively in your practice routine.</p>
+            </div>
+            <a class="btn" href="phrase-trainer-guide.html">Read Guide</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Guitar Triads</h2>
+                <p>Explore triad shapes and learn how they connect chord progressions to melodic soloing.</p>
+            </div>
+            <a class="btn" href="guitar-triads.html">Start Lesson</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Rhythm Theory Lessons</h2>
+                <p>Master subdivisions, syncopation, time signatures and rhythm fundamentals.</p>
+            </div>
+            <a class="btn" href="rhythm-theory-lessons.html">Start Lessons</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Chord Player</h2>
+                <p>Play back chord progressions with adjustable tempo and voicing options.</p>
+            </div>
+            <a class="btn" href="chord-player.html">Open Chord Player</a>
+        </article>
+
+        <article class="card">
+            <div class="card-content">
+                <h2>Make JSON Files</h2>
+                <p>Create structured JSON data for chords, scales and other music resources.</p>
+            </div>
+            <a class="btn" href="make-json.html">Open JSON Builder</a>
+        </article>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026–Present Music Practice Hub. Built for musicians.</p>
+    </footer>
+
+</div>
+</body>
+</html>
