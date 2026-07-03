@@ -37,7 +37,201 @@
             background-size: cover;
             color: var(--text-color);
             line-height: 1.6;
-            padding: 2rem 1rem;
+            padding-top: 0;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Navigation Styles */
+        nav {
+            background: rgba(18, 18, 20, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            margin: -1rem -1rem 2rem -1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .nav-brand {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            padding: 1rem 0;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem 1.2rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color var(--transition), background-color var(--transition);
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent-color);
+        }
+
+        /* Dropdown Submenu Styles */
+        .submenu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(30, 30, 36, 0.98);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            min-width: 220px;
+            list-style: none;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .nav-item:hover > .submenu,
+        .nav-item.active > .submenu {
+            display: block;
+        }
+
+        .submenu li {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .submenu li:last-child {
+            border-bottom: none;
+        }
+
+        .submenu a {
+            display: block;
+            padding: 0.75rem 1.2rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color var(--transition), background-color var(--transition), padding-left var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .submenu a:hover {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--accent-color);
+            padding-left: 1.5rem;
+        }
+
+        /* Dropdown Indicator */
+        .dropdown-toggle::after {
+            content: "▼";
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-size: 0.7rem;
+            transition: transform var(--transition);
+        }
+
+        .nav-item:hover .dropdown-toggle::after,
+        .nav-item.active .dropdown-toggle::after {
+            transform: rotate(180deg);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 1rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+
+            .mobile-toggle {
+                display: block;
+                order: 2;
+            }
+
+            .nav-brand {
+                order: 1;
+                flex: 1;
+            }
+
+            .nav-menu {
+                order: 3;
+                width: 100%;
+                flex-direction: column;
+                gap: 0;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .nav-menu.active {
+                max-height: 500px;
+            }
+
+            .nav-item {
+                width: 100%;
+            }
+
+            .nav-link {
+                padding: 0.75rem 1rem;
+            }
+
+            .submenu {
+                position: static;
+                display: none;
+                background: rgba(20, 20, 25, 0.95);
+                border: none;
+                border-left: 3px solid var(--accent-color);
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .nav-item.active .submenu,
+            .submenu.active {
+                display: block;
+            }
+
+            .submenu a {
+                padding: 0.6rem 1rem 0.6rem 1.5rem;
+            }
+
+            .submenu a:hover {
+                padding-left: 1.8rem;
+            }
         }
 
         .container {
@@ -146,6 +340,48 @@
 </head>
 <body>
 
+<nav>
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">🎸 Music Hub</a>
+        <button class="mobile-toggle" id="mobileToggle">☰</button>
+        <ul class="nav-menu" id="navMenu">
+            <li class="nav-item">
+                <a href="#" class="nav-link dropdown-toggle">Practice Tools</a>
+                <ul class="submenu">
+                    <li><a href="chord-finder.html">Chord Finder</a></li>
+                    <li><a href="chord-coach.html">Chord Coach</a></li>
+                    <li><a href="chord-player.html">Chord Player</a></li>
+                    <li><a href="scales-to-solo-phrase-trainer.html">Phrase Trainer</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link dropdown-toggle">Lessons</a>
+                <ul class="submenu">
+                    <li><a href="guitar-triads.html">Guitar Triads</a></li>
+                    <li><a href="triad-formulas.html">Triad Formulas</a></li>
+                    <li><a href="rhythm-theory-lessons.html">Rhythm Theory</a></li>
+                    <li><a href="diagonal-pentatonic.html">Diagonal Pentatonics</a></li>
+                    <li><a href="caged-fretboard.html">CAGED Fretboard</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link dropdown-toggle">Guides</a>
+                <ul class="submenu">
+                    <li><a href="phrase-trainer-guide.html">Phrase Trainer Guide</a></li>
+                    <li><a href="scales-to-solo-phrase-trainer-how-to-guide.html">Scales to Solo Guide</a></li>
+                    <li><a href="acoustic-guitarists-start-here.html">Acoustic Guitarists</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link dropdown-toggle">Tools</a>
+                <ul class="submenu">
+                    <li><a href="make-json.html">JSON Builder</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+
 <div class="container">
 
     <header>
@@ -234,6 +470,42 @@
     </footer>
 
 </div>
+
+<script>
+    // Mobile menu toggle
+    const mobileToggle = document.getElementById('mobileToggle');
+    const navMenu = document.getElementById('navMenu');
+
+    mobileToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+    });
+
+    // Close mobile menu when a link is clicked
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                // Don't close for dropdown toggles (they have submenus)
+                if (link.classList.contains('dropdown-toggle')) {
+                    e.preventDefault();
+                    link.parentElement.classList.toggle('active');
+                    const submenu = link.nextElementSibling;
+                    if (submenu) {
+                        submenu.classList.toggle('active');
+                    }
+                }
+            }
+        });
+    });
+
+    // Prevent default for dropdown toggles
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            if (window.innerWidth > 768) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
