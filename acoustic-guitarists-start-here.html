@@ -45,6 +45,182 @@
       repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
   }
 
+  /* Navigation Styles */
+  nav {
+    background: rgba(18, 18, 20, 0.95);
+    border-bottom: 1px solid #2a2a32;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .nav-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+  }
+
+  .nav-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    padding: 1rem 0;
+    text-decoration: none;
+  }
+
+  .nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 0;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 1rem 1.2rem;
+    color: #f5f5f7;
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    font-weight: 500;
+  }
+
+  .nav-link:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+  }
+
+  .submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(30, 30, 36, 0.98);
+    border: 1px solid #2a2a32;
+    border-top: none;
+    min-width: 220px;
+    list-style: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 0 0 12px 12px;
+  }
+
+  .nav-item:hover > .submenu,
+  .nav-item.active > .submenu {
+    display: block;
+  }
+
+  .submenu li {
+    border-bottom: 1px solid #2a2a32;
+  }
+
+  .submenu li:last-child {
+    border-bottom: none;
+  }
+
+  .submenu a {
+    display: block;
+    padding: 0.75rem 1.2rem;
+    color: #a0a0aa;
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease, padding-left 0.2s ease;
+    font-size: 0.95rem;
+  }
+
+  .submenu a:hover {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+    padding-left: 1.5rem;
+  }
+
+  .dropdown-toggle::after {
+    content: "▼";
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-item:hover .dropdown-toggle::after,
+  .nav-item.active .dropdown-toggle::after {
+    transform: rotate(180deg);
+  }
+
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #f5f5f7;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .nav-container {
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .mobile-toggle {
+      display: block;
+      order: 2;
+    }
+    .nav-brand {
+      order: 1;
+      flex: 1;
+    }
+    .nav-menu {
+      order: 3;
+      width: 100%;
+      flex-direction: column;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .nav-menu.active {
+      max-height: 500px;
+    }
+    .nav-item {
+      width: 100%;
+    }
+    .nav-link {
+      padding: 0.75rem 1rem;
+    }
+    .submenu {
+      position: static;
+      display: none;
+      background: rgba(20, 20, 25, 0.95);
+      border: none;
+      border-left: 3px solid #3b82f6;
+      box-shadow: none;
+      border-radius: 0;
+    }
+    .nav-item.active .submenu,
+    .submenu.active {
+      display: block;
+    }
+    .submenu a {
+      padding: 0.6rem 1rem 0.6rem 1.5rem;
+    }
+    .submenu a:hover {
+      padding-left: 1.8rem;
+    }
+  }
+
   /* Back button */
   .back-btn-container {
     position: fixed;
@@ -88,7 +264,7 @@
     background:linear-gradient(180deg, var(--charcoal-2), var(--wood-grain) 700%);
     border-right:1px solid var(--line);
     padding:22px 0 40px;
-    position:sticky; top:0; height:100vh; overflow-y:auto;
+    position:sticky; top:74px; height:calc(100vh - 74px); overflow-y:auto;
   }
   .brand{padding:0 20px 18px; border-bottom:1px solid var(--line); margin-bottom:10px;}
   .brand .eyebrow{
@@ -191,55 +367,56 @@
   .chord-card .strum-all:hover{background:var(--amber);}
   .fret-string{cursor:pointer;}
   .fret-string:hover circle{filter:brightness(1.3);}
-
-  /* ---------- STRUM PLAYER ---------- */
-  .strum-player{
-    background:var(--wood-grain); border:1px solid var(--line); border-radius:12px;
-    padding:20px 22px; margin:20px 0;
-  }
-  .strum-player .sp-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
-  .sp-title{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--amber);}
-  .sp-controls{display:flex; align-items:center; gap:14px;}
-  .play-btn{
-    width:38px; height:38px; border-radius:50%; border:1px solid var(--amber-dim); background:var(--amber);
-    color:#1b1209; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;
-  }
-  .play-btn:hover{background:var(--amber-bright);}
-  .bpm-row{display:flex; align-items:center; gap:8px;}
-  .bpm-row input[type=range]{width:110px; accent-color:var(--amber);}
-  .bpm-val{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--paper-dim); width:62px;}
-  .beat-track{display:flex; gap:7px; flex-wrap:wrap;}
-  .beat-cell{
-    flex:1; min-width:34px; text-align:center; padding:12px 0 9px; border-radius:8px;
-    background:var(--charcoal-2); border:1px solid var(--line); font-family:'JetBrains Mono',monospace;
-    font-size:14px; color:var(--paper-dim); transition:all .08s ease;
-  }
-  .beat-cell.rest{color:#5a5048;}
-  .beat-cell.lit{background:var(--amber); color:#1b1209; border-color:var(--amber); transform:translateY(-2px); box-shadow:0 4px 10px rgba(224,166,76,.35);}
-
-  /* ---------- QUIZ ---------- */
-  .quiz{
-    margin-top:38px; background:linear-gradient(180deg, var(--wood), var(--wood-grain));
-    border:1px solid var(--wood-light); border-radius:14px; padding:24px 26px; box-shadow:var(--shadow);
-  }
-  .quiz .qlabel{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); margin-bottom:8px;}
-  .quiz .qtext{font-size:16.5px; color:var(--paper); margin-bottom:16px; font-weight:500;}
-  .qopts{display:flex; flex-direction:column; gap:9px;}
-  .qopt{
-    text-align:left; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
-    background:rgba(0,0,0,.18); color:#e3d9c8; font-size:14.5px; cursor:pointer; font-family:'Inter',sans-serif;
-  }
-  .qopt:hover{border-color:var(--amber-dim);}
-  .qopt.correct{background:rgba(127,168,107,0.18); border-color:var(--good); color:#cfe5c2;}
-  .qopt.incorrect{background:rgba(194,102,79,0.18); border-color:var(--bad); color:#f0cdc3;}
-  .qexplain{margin-top:14px; font-size:14px; line-height:1.6; color:var(--paper-dim); display:none;}
-  .qopt.answered .qexplain{display:block;}
 </style>
 </head>
 <body>
+
+<nav>
+  <div class="nav-container">
+    <a href="index.html" class="nav-brand">🎸 Music Hub</a>
+    <button class="mobile-toggle" id="mobileToggle">☰</button>
+    <ul class="nav-menu" id="navMenu">
+      <li class="nav-item">
+        <a href="#" class="nav-link dropdown-toggle">Practice Tools</a>
+        <ul class="submenu">
+          <li><a href="chord-finder.html">Chord Finder</a></li>
+          <li><a href="chord-coach.html">Chord Coach</a></li>
+          <li><a href="chord-player.html">Chord Player</a></li>
+          <li><a href="scales-to-solo-phrase-trainer.html">Phrase Trainer</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link dropdown-toggle">Lessons</a>
+        <ul class="submenu">
+          <li><a href="guitar-triads.html">Guitar Triads</a></li>
+          <li><a href="triad-formulas.html">Triad Formulas</a></li>
+          <li><a href="rhythm-theory-lessons.html">Rhythm Theory</a></li>
+          <li><a href="diagonal-pentatonic.html">Diagonal Pentatonics</a></li>
+          <li><a href="caged-fretboard.html">CAGED Fretboard</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link dropdown-toggle">Guides</a>
+        <ul class="submenu">
+          <li><a href="phrase-trainer-guide.html">Phrase Trainer Guide</a></li>
+          <li><a href="scales-to-solo-phrase-trainer-how-to-guide.html">Scales to Solo Guide</a></li>
+          <li><a href="acoustic-guitarists-start-here.html">Acoustic Guitarists</a></li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link dropdown-toggle">Tools</a>
+        <ul class="submenu">
+          <li><a href="make-json.html">JSON Builder</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</nav>
+
 <div class="back-btn-container">
   <a href="index.html" class="back-btn">Back</a>
 </div>
+
 <div class="app">
 
   <aside class="sidebar">
@@ -310,7 +487,7 @@
     <div class="tip">
       <p class="tip-label">Tip</p>
       <p>
-        Calluses take time. If your fingertips hurt in week one, that's normal. By week three, 
+        Calluses take time. If your fingertips hurt in week one, that's normal. By week three,
         the soreness fades and your fingers toughen up. Keep a light practice schedule (15–30 min daily) and you'll progress fast.
       </p>
     </div>
@@ -335,20 +512,16 @@
         <div class="chint">E minor</div>
         <div class="chord-svg-wrap">
           <svg width="140" height="160" viewBox="0 0 140 160">
-            <!-- Nut -->
             <rect x="15" y="10" width="110" height="4" fill="#e0a64c"/>
-            <!-- Frets -->
             <line x1="15" y1="30" x2="125" y2="30" stroke="#3a332c" stroke-width="1"/>
             <line x1="15" y1="50" x2="125" y2="50" stroke="#3a332c" stroke-width="1"/>
             <line x1="15" y1="70" x2="125" y2="70" stroke="#3a332c" stroke-width="1"/>
-            <!-- Strings -->
             <line x1="25" y1="14" x2="25" y2="140" stroke="#b0956a" stroke-width="2"/>
             <line x1="40" y1="14" x2="40" y2="140" stroke="#b0956a" stroke-width="1.5"/>
             <line x1="55" y1="14" x2="55" y2="140" stroke="#b0956a" stroke-width="1.5"/>
             <line x1="70" y1="14" x2="70" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="85" y1="14" x2="85" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="100" y1="14" x2="100" y2="140" stroke="#b0956a" stroke-width="1"/>
-            <!-- Dots for Em (0,2,2,1,0,0) -->
             <circle cx="40" cy="30" r="4" fill="#e0a64c"/>
             <circle cx="55" cy="30" r="4" fill="#e0a64c"/>
             <circle cx="70" cy="50" r="4" fill="#e0a64c"/>
@@ -371,7 +544,6 @@
             <line x1="70" y1="14" x2="70" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="85" y1="14" x2="85" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="100" y1="14" x2="100" y2="140" stroke="#b0956a" stroke-width="1"/>
-            <!-- Dots for Am (0,0,2,2,1,0) -->
             <circle cx="55" cy="30" r="4" fill="#e0a64c"/>
             <circle cx="70" cy="30" r="4" fill="#e0a64c"/>
             <circle cx="85" cy="50" r="4" fill="#e0a64c"/>
@@ -394,7 +566,6 @@
             <line x1="70" y1="14" x2="70" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="85" y1="14" x2="85" y2="140" stroke="#b0956a" stroke-width="1"/>
             <line x1="100" y1="14" x2="100" y2="140" stroke="#b0956a" stroke-width="1"/>
-            <!-- Dots for G (3,2,0,0,0,3) -->
             <circle cx="25" cy="70" r="4" fill="#e0a64c"/>
             <circle cx="40" cy="50" r="4" fill="#e0a64c"/>
             <circle cx="100" cy="70" r="4" fill="#e0a64c"/>
@@ -411,5 +582,52 @@
   </main>
 
 </div>
+
+<script>
+  const mobileToggle = document.getElementById('mobileToggle');
+  const navMenu = document.getElementById('navMenu');
+
+  mobileToggle.addEventListener('click', () => {
+    navMenu.classList.toggle('active');
+  });
+
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768) {
+        if (link.classList.contains('dropdown-toggle')) {
+          e.preventDefault();
+          link.parentElement.classList.toggle('active');
+          const submenu = link.nextElementSibling;
+          if (submenu) {
+            submenu.classList.toggle('active');
+          }
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      if (window.innerWidth > 768) {
+        e.preventDefault();
+      }
+    });
+  });
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      if (window.innerWidth > 768) {
+        item.classList.remove('active');
+      }
+    });
+
+    item.addEventListener('mouseleave', () => {
+      if (window.innerWidth > 768) {
+        item.classList.remove('active');
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
