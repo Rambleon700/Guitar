@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acoustic Guitarists Start Here</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#191715;
+    --charcoal-2:#221e1a;
+    --wood:#3c2a1e;
+    --wood-light:#5a3f2c;
+    --wood-grain:#2c2019;
+    --amber:#e0a64c;
+    --amber-bright:#f3c272;
+    --amber-dim:#8a6730;
+    --paper:#ede4d3;
+    --paper-dim:#a89a87;
+    --line:#3a332c;
+    --good:#7fa86b;
+    --bad:#c2664f;
+    --shadow: 0 12px 28px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--charcoal);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:var(--amber);}
+  ::selection{background:var(--amber-dim);color:var(--paper);}
+
+  /* texture */
+  body{
+    background-image:
+      radial-gradient(ellipse at top left, rgba(224,166,76,0.05), transparent 55%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  .app{display:flex; min-height:100vh;}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    width:300px; flex-shrink:0;
+    background:linear-gradient(180deg, var(--charcoal-2), var(--wood-grain) 700%);
+    border-right:1px solid var(--line);
+    padding:22px 0 40px;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{padding:0 20px 18px; border-bottom:1px solid var(--line); margin-bottom:10px;}
+  .brand .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.16em;
+    color:var(--amber); text-transform:uppercase; opacity:.85;
+  }
+  .brand h1{font-size:21px; line-height:1.18; margin:6px 0 10px; font-weight:600; color:var(--paper);}
+  .progress-wrap{display:flex; align-items:center; gap:9px;}
+  .progress-track{flex:1; height:5px; background:#000; border-radius:3px; overflow:hidden; border:1px solid var(--line);}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--amber-dim), var(--amber)); width:0%; transition:width .4s ease;}
+  .progress-label{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--paper-dim); white-space:nowrap;}
+
+  .module{margin-top:4px;}
+  .module-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px 8px; cursor:pointer; user-select:none;
+  }
+  .module-head .mname{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--paper-dim);
+  }
+  .module-head .mcount{font-size:10.5px; color:var(--amber-dim); font-family:'JetBrains Mono',monospace;}
+  .module-head:hover .mname{color:var(--amber);}
+  .lesson-list{list-style:none; margin:0; padding:0;}
+  .lesson-item{
+    display:flex; align-items:center; gap:11px;
+    padding:9px 20px 9px 16px; cursor:pointer; position:relative;
+    border-left:2px solid transparent;
+  }
+  .lesson-item:hover{background:rgba(224,166,76,0.06);}
+  .lesson-item.active{background:rgba(224,166,76,0.10); border-left:2px solid var(--amber);}
+  .lesson-dot{
+    width:20px; height:20px; border-radius:50%; flex-shrink:0;
+    border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--paper-dim);
+    background:var(--charcoal);
+  }
+  .lesson-item.active .lesson-dot{border-color:var(--amber); color:var(--amber);}
+  .lesson-item.done .lesson-dot{background:var(--amber); border-color:var(--amber); color:var(--charcoal);}
+  .lesson-text{flex:1; min-width:0;}
+  .lesson-title{font-size:13.5px; color:var(--paper); line-height:1.3;}
+  .lesson-item.active .lesson-title{color:var(--amber-bright); font-weight:600;}
+  .lesson-dur{font-size:10.5px; color:var(--paper-dim); font-family:'JetBrains Mono',monospace; flex-shrink:0;}
+
+  .sidebar-foot{padding:18px 20px 0; margin-top:10px; border-top:1px solid var(--line);}
+  .sidebar-foot p{font-size:11.5px; color:var(--paper-dim); line-height:1.5; margin:12px 0 0;}
+
+  /* ---------- MAIN ---------- */
+  .main{flex:1; min-width:0; padding:48px 56px 100px; max-width:880px;}
+  .lesson-head{margin-bottom:30px;}
+  .crumb{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--amber); margin-bottom:10px; display:flex; gap:10px; align-items:center;
+  }
+  .crumb .sep{color:var(--line);}
+  .crumb .mod{color:var(--paper-dim);}
+  .lesson-head h2{font-size:34px; line-height:1.15; margin:0 0 12px; font-weight:600; color:var(--paper);}
+  .meta-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .pill{
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:5px 11px; border-radius:99px;
+    border:1px solid var(--line); color:var(--paper-dim); display:inline-flex; align-items:center; gap:6px;
+  }
+  .pill.amber{border-color:var(--amber-dim); color:var(--amber-bright);}
+
+  .tagline{
+    font-family:'Fraunces',serif; font-style:italic; font-size:18px; color:var(--amber-bright);
+    margin:18px 0 0; font-weight:400; line-height:1.4; max-width:62ch;
+  }
+
+  .section{margin-top:34px;}
+  .section h3{font-size:15px; text-transform:uppercase; letter-spacing:.06em; color:var(--amber); margin:0 0 12px; font-weight:600;}
+  .section p{font-size:15.5px; line-height:1.75; color:#d8cdbb; margin:0 0 12px;}
+  .section ul{margin:0 0 12px; padding-left:20px;}
+  .section li{font-size:15.5px; line-height:1.7; color:#d8cdbb; margin-bottom:7px;}
+  .section li::marker{color:var(--amber);}
+
+  .tip{
+    border-left:3px solid var(--amber);
+    background:linear-gradient(90deg, rgba(224,166,76,0.08), transparent);
+    padding:14px 18px; border-radius:0 8px 8px 0; margin:18px 0;
+  }
+  .tip .tip-label{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); margin-bottom:5px;}
+  .tip p{margin:0; font-size:14.5px; color:#e3d9c8;}
+
+  /* ---------- CHORD DIAGRAMS ---------- */
+  .chord-row{display:flex; flex-wrap:wrap; gap:22px; margin:20px 0 8px;}
+  .chord-card{
+    background:linear-gradient(180deg, var(--wood-grain), var(--charcoal-2));
+    border:1px solid var(--line); border-radius:12px; padding:16px 16px 14px;
+    width:172px; box-shadow:var(--shadow);
+  }
+  .chord-card .cname{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--amber-bright); margin-bottom:2px;}
+  .chord-card .chint{font-size:11px; color:var(--paper-dim); margin-bottom:10px; min-height:14px;}
+  .chord-svg-wrap{display:flex; justify-content:center;}
+  .chord-card .strum-all{
+    width:100%; margin-top:10px; padding:7px 0; background:var(--amber-dim); color:#1b1209; border:none;
+    border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:.04em;
+    cursor:pointer; text-transform:uppercase;
+  }
+  .chord-card .strum-all:hover{background:var(--amber);}
+  .fret-string{cursor:pointer;}
+  .fret-string:hover circle{filter:brightness(1.3);}
+
+  /* ---------- STRUM PLAYER ---------- */
+  .strum-player{
+    background:var(--wood-grain); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px; margin:20px 0;
+  }
+  .strum-player .sp-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .sp-title{font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--amber);}
+  .sp-controls{display:flex; align-items:center; gap:14px;}
+  .play-btn{
+    width:38px; height:38px; border-radius:50%; border:1px solid var(--amber-dim); background:var(--amber);
+    color:#1b1209; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;
+  }
+  .play-btn:hover{background:var(--amber-bright);}
+  .bpm-row{display:flex; align-items:center; gap:8px;}
+  .bpm-row input[type=range]{width:110px; accent-color:var(--amber);}
+  .bpm-val{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--paper-dim); width:62px;}
+  .beat-track{display:flex; gap:7px; flex-wrap:wrap;}
+  .beat-cell{
+    flex:1; min-width:34px; text-align:center; padding:12px 0 9px; border-radius:8px;
+    background:var(--charcoal-2); border:1px solid var(--line); font-family:'JetBrains Mono',monospace;
+    font-size:14px; color:var(--paper-dim); transition:all .08s ease;
+  }
+  .beat-cell.rest{color:#5a5048;}
+  .beat-cell.lit{background:var(--amber); color:#1b1209; border-color:var(--amber); transform:translateY(-2px); box-shadow:0 4px 10px rgba(224,166,76,.35);}
+
+  /* ---------- QUIZ ---------- */
+  .quiz{
+    margin-top:38px; background:linear-gradient(180deg, var(--wood), var(--wood-grain));
+    border:1px solid var(--wood-light); border-radius:14px; padding:24px 26px; box-shadow:var(--shadow);
+  }
+  .quiz .qlabel{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber); margin-bottom:8px;}
+  .quiz .qtext{font-size:16.5px; color:var(--paper); margin-bottom:16px; font-weight:500;}
+  .qopts{display:flex; flex-direction:column; gap:9px;}
+  .qopt{
+    text-align:left; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
+    background:rgba(0,0,0,.18); color:#e3d9c8; font-size:14.5px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .qopt:hover{border-color:var(--amber-dim);}
+  .qopt.correct{background:rgba(127,168,107,0.18); border-color:var(--good); color:#cfe5c2;}
+  .qopt.incorrect{background:rgba(194,102,79,0.18); border-color:var(--bad); color:#f0cdc3;}
+  .qexplain{margin-top:14px; font-size:14px; line-height:1.6; color:var(--paper-dim); display:none;}
+  .qexplain.show{display:block;}
+
+  /* ---------- FOOTER NAV ---------- */
+  .lesson-footer{
+    margin-top:44px; padding-top:24px; border-top:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600; padding:11px 20px; border-radius:8px;
+    cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--paper-dim);
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn:hover{border-color:var(--amber-dim); color:var(--paper);}
+  .btn.primary{background:var(--amber); border-color:var(--amber); color:#1b1209;}
+  .btn.primary:hover{background:var(--amber-bright);}
+  .btn.done{background:rgba(127,168,107,0.16); border-color:var(--good); color:#cfe5c2;}
+
+  /* mobile */
+  .menu-toggle{display:none;}
+  @media (max-width: 880px){
+    .app{flex-direction:column;}
+    .sidebar{
+      width:100%; height:auto; position:relative; top:0; max-height:none; padding-bottom:8px;
+    }
+    .sidebar.collapsed .module-list{display:none;}
+    .menu-toggle{
+      display:block; width:100%; text-align:left; background:none; border:none; color:var(--paper-dim);
+      font-family:'JetBrains Mono',monospace; font-size:11px; padding:10px 20px; cursor:pointer; letter-spacing:.08em;
+    }
+    .main{padding:32px 20px 80px;}
+    .lesson-head h2{font-size:27px;}
+    .chord-card{width:148px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="eyebrow">Acoustic &middot; Beginner Course</div>
+      <h1>Acoustic Guitarists Start Here</h1>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">0 / 20</div>
+      </div>
+    </div>
+    <button class="menu-toggle" id="menuToggle">&#9776; LESSONS</button>
+    <div id="moduleList"></div>
+    <div class="sidebar-foot">
+      <p>Five chords, four sections, one song. By the end you'll be playing &ldquo;The Campfire Special&rdquo; start to finish.</p>
+    </div>
+  </nav>
+
+  <main class="main" id="main"></main>
+
+</div>
+
+<script>
+/* ============================== AUDIO ENGINE ============================== */
+var audioCtx = null;
+function getCtx(){
+  if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+  return audioCtx;
+}
+var OPEN_FREQ = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63]; // low E, A, D, G, B, high e
+
+function noteFreq(stringIdx, fret){
+  return OPEN_FREQ[stringIdx] * Math.pow(2, fret / 12);
+}
+
+function pluck(freq, when){
+  var ctx = getCtx();
+  var t0 = ctx.currentTime + (when || 0);
+  var osc1 = ctx.createOscillator();
+  var osc2 = ctx.createOscillator();
+  var gain = ctx.createGain();
+  var filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = freq * 5;
+  osc1.type = 'triangle';
+  osc2.type = 'sine';
+  osc1.frequency.value = freq;
+  osc2.frequency.value = freq * 2;
+  var g2 = ctx.createGain();
+  g2.gain.value = 0.18;
+  osc2.connect(g2);
+  g2.connect(filter);
+  osc1.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(0.32, t0 + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.35);
+  osc1.start(t0); osc2.start(t0);
+  osc1.stop(t0 + 1.4); osc2.stop(t0 + 1.4);
+}
+
+function click(when, accent){
+  var ctx = getCtx();
+  var t0 = ctx.currentTime + (when || 0);
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = accent ? 1500 : 1000;
+  osc.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(accent ? 0.12 : 0.07, t0);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+  osc.start(t0); osc.stop(t0 + 0.06);
+}
+
+function playChordObj(chord, strumMs){
+  var stagger = (strumMs === undefined ? 28 : strumMs) / 1000;
+  var i = 0;
+  for(var s = 0; s < 6; s++){
+    var f = chord.frets[s];
+    if(f === -1) continue;
+    pluck(noteFreq(s, f), i * stagger);
+    i++;
+  }
+}
+
+/* ============================== CHORD DATA ============================== */
+// fret arrays: [lowE, A, D, G, B, highE]  -1 = muted, 0 = open
+var CHORDS = {
+  EASY_G:  { display:'G (easy)', frets:[-1,2,0,0,0,3], fingers:[0,1,0,0,0,2] },
+  FULL_G:  { display:'G (full)', frets:[3,2,0,0,0,3],  fingers:[2,1,0,0,0,3] },
+  EM:      { display:'Em',       frets:[0,2,2,0,0,0],  fingers:[0,1,2,0,0,0] },
+  EASY_C:  { display:'C (easy)', frets:[-1,3,2,0,0,0], fingers:[0,3,2,0,0,0] },
+  FULL_C:  { display:'C (full)', frets:[-1,3,2,0,1,0], fingers:[0,3,2,0,1,0] },
+  FULL_D:  { display:'D',        frets:[-1,-1,0,2,3,2],fingers:[0,0,0,1,3,2] },
+  CADD9:   { display:'Cadd9',    frets:[-1,3,2,0,3,0], fingers:[0,2,1,0,4,0] },
+  DSUS4:   { display:'Dsus4',    frets:[-1,-1,0,2,3,3],fingers:[0,0,0,1,2,3] },
+  EM7:     { display:'Em7',      frets:[0,2,0,0,0,0],  fingers:[0,1,0,0,0,0] },
+  AM7:     { display:'Am7',      frets:[-1,0,2,0,1,0], fingers:[0,0,2,0,1,0] }
+};
+var STRING_NAMES = ['Low E','A','D','G','B','High e'];
+
+/* ============================== SVG CHORD DIAGRAM ============================== */
+function buildChordSVG(chord, size){
+  size = size || 132;
+  var w = size, h = size * 1.18;
+  var marginTop = h * 0.22, marginSide = w * 0.12;
+  var gridW = w - marginSide * 2, gridH = h - marginTop - h*0.06;
+  var strings = 6, frets = 4;
+  var stepX = gridW / (strings - 1);
+  var stepY = gridH / frets;
+  var svg = '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+
+  // nut
+  svg += '<rect x="'+marginSide+'" y="'+marginTop+'" width="'+gridW+'" height="3" fill="#e0a64c"></rect>';
+  // frets
+  for(var fr=1; fr<=frets; fr++){
+    var y = marginTop + fr*stepY;
+    svg += '<line x1="'+marginSide+'" y1="'+y+'" x2="'+(marginSide+gridW)+'" y2="'+y+'" stroke="#4a4137" stroke-width="1"></line>';
+  }
+  // strings
+  for(var s=0; s<strings; s++){
+    var x = marginSide + s*stepX;
+    svg += '<line x1="'+x+'" y1="'+marginTop+'" x2="'+x+'" y2="'+(marginTop+gridH)+'" stroke="#857a6b" stroke-width="1.2"></line>';
+  }
+
+  // open/mute markers above nut + finger dots
+  for(var s2=0; s2<strings; s2++){
+    var x2 = marginSide + s2*stepX;
+    var f = chord.frets[s2];
+    if(f === -1){
+      svg += '<text x="'+x2+'" y="'+(marginTop-7)+'" text-anchor="middle" font-size="'+(size*0.085)+'" fill="#c2664f" font-family="JetBrains Mono, monospace">&#10005;</text>';
+    } else if(f === 0){
+      svg += '<circle cx="'+x2+'" cy="'+(marginTop-11)+'" r="'+(size*0.045)+'" fill="none" stroke="#e0a64c" stroke-width="1.6"></circle>';
+    } else {
+      var fy = marginTop + (f - 0.5)*stepY;
+      svg += '<g class="fret-string" data-string="'+s2+'" data-fret="'+f+'">';
+      svg += '<circle cx="'+x2+'" cy="'+fy+'" r="'+(size*0.075)+'" fill="#e0a64c"></circle>';
+      if(chord.fingers && chord.fingers[s2]){
+        svg += '<text x="'+x2+'" y="'+(fy+size*0.03)+'" text-anchor="middle" font-size="'+(size*0.075)+'" fill="#1b1209" font-weight="700" font-family="Inter, sans-serif">'+chord.fingers[s2]+'</text>';
+      }
+      svg += '</g>';
+    }
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+function buildSingleNoteSVG(stringIdx, fret, size){
+  size = size || 132;
+  var w = size, h = size * 1.18;
+  var marginTop = h * 0.22, marginSide = w * 0.12;
+  var gridW = w - marginSide * 2, gridH = h - marginTop - h*0.06;
+  var strings = 6, frets = 4;
+  var stepX = gridW / (strings - 1);
+  var stepY = gridH / frets;
+  var svg = '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<rect x="'+marginSide+'" y="'+marginTop+'" width="'+gridW+'" height="3" fill="#e0a64c"></rect>';
+  for(var fr=1; fr<=frets; fr++){
+    var y = marginTop + fr*stepY;
+    svg += '<line x1="'+marginSide+'" y1="'+y+'" x2="'+(marginSide+gridW)+'" y2="'+y+'" stroke="#4a4137" stroke-width="1"></line>';
+  }
+  for(var s=0; s<strings; s++){
+    var x = marginSide + s*stepX;
+    svg += '<line x1="'+x+'" y1="'+marginTop+'" x2="'+x+'" y2="'+(marginTop+gridH)+'" stroke="#857a6b" stroke-width="1.2"></line>';
+  }
+  var x2 = marginSide + stringIdx*stepX;
+  var fy = marginTop + (fret - 0.5)*stepY;
+  svg += '<g class="fret-string" data-string="'+stringIdx+'" data-fret="'+fret+'">';
+  svg += '<circle cx="'+x2+'" cy="'+fy+'" r="'+(size*0.08)+'" fill="#e0a64c"></circle>';
+  svg += '</g>';
+  svg += '</svg>';
+  return svg;
+}
+
+function renderChordCard(key, hint){
+  var chord = CHORDS[key];
+  var svg = buildChordSVG(chord);
+  var html = '<div class="chord-card">';
+  html += '<div class="cname">'+chord.display+'</div>';
+  html += '<div class="chint">'+(hint || 'tap a dot to hear it')+'</div>';
+  html += '<div class="chord-svg-wrap" data-chordkey="'+key+'">'+svg+'</div>';
+  html += '<button class="strum-all" data-strumkey="'+key+'">Strum it &#9835;</button>';
+  html += '</div>';
+  return html;
+}
+
+function wireChordCards(container){
+  var wraps = container.querySelectorAll('.chord-svg-wrap');
+  wraps.forEach(function(wrap){
+    var targets = wrap.querySelectorAll('.fret-string');
+    targets.forEach(function(t){
+      t.addEventListener('click', function(){
+        var s = parseInt(t.getAttribute('data-string'), 10);
+        var f = parseInt(t.getAttribute('data-fret'), 10);
+        pluck(noteFreq(s, f));
+      });
+    });
+  });
+  var btns = container.querySelectorAll('.strum-all');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-strumkey');
+      playChordObj(CHORDS[key]);
+    });
+  });
+  var singles = container.querySelectorAll('.single-note-wrap .fret-string');
+  singles.forEach(function(t){
+    t.addEventListener('click', function(){
+      var s = parseInt(t.getAttribute('data-string'), 10);
+      var f = parseInt(t.getAttribute('data-fret'), 10);
+      pluck(noteFreq(s, f));
+    });
+  });
+}
+
+/* ============================== STRUM PLAYER ============================== */
+function renderStrumPlayer(id, pattern, bpm){
+  var cells = '';
+  for(var i=0;i<pattern.length;i++){
+    var d = pattern[i];
+    var cls = (d === '-') ? 'beat-cell rest' : 'beat-cell';
+    var label = d === 'D' ? '&#8595;' : (d === 'U' ? '&#8593;' : '&middot;');
+    cells += '<div class="beat-cell '+(d==='-'?'rest':'')+'" data-idx="'+i+'">'+label+'</div>';
+  }
+  var html = '<div class="strum-player" id="'+id+'">';
+  html += '<div class="sp-top">';
+  html += '<div class="sp-title">Practice Loop</div>';
+  html += '<div class="sp-controls">';
+  html += '<button class="play-btn" data-action="toggle">&#9658;</button>';
+  html += '<div class="bpm-row"><span class="bpm-val" data-role="bpmval">'+bpm+' bpm</span><input type="range" min="60" max="140" value="'+bpm+'" data-role="bpmslider"></div>';
+  html += '</div></div>';
+  html += '<div class="beat-track">'+cells+'</div>';
+  html += '</div>';
+  return html;
+}
+
+function wireStrumPlayer(container, id, pattern){
+  var root = container.querySelector('#'+id);
+  if(!root) return;
+  var playBtn = root.querySelector('[data-action="toggle"]');
+  var slider = root.querySelector('[data-role="bpmslider"]');
+  var bpmval = root.querySelector('[data-role="bpmval"]');
+  var cells = root.querySelectorAll('.beat-cell');
+  var playing = false;
+  var step = 0;
+  var timer = null;
+  var bpm = parseInt(slider.value, 10);
+
+  function intervalMs(){
+    // pattern is in 8th notes, so half a quarter-note beat
+    return (60000 / bpm) / 2;
+  }
+
+  function tick(){
+    cells.forEach(function(c){ c.classList.remove('lit'); });
+    var cell = cells[step];
+    cell.classList.add('lit');
+    var d = pattern[step];
+    if(d === 'D' || d === 'U'){
+      click(0, d === 'D');
+    }
+    step = (step + 1) % pattern.length;
+  }
+
+  function start(){
+    playing = true;
+    playBtn.innerHTML = '&#10074;&#10074;';
+    step = 0;
+    tick();
+    timer = setInterval(tick, intervalMs());
+  }
+  function stop(){
+    playing = false;
+    playBtn.innerHTML = '&#9658;';
+    clearInterval(timer);
+    cells.forEach(function(c){ c.classList.remove('lit'); });
+  }
+
+  playBtn.addEventListener('click', function(){
+    getCtx();
+    if(playing){ stop(); } else { start(); }
+  });
+  slider.addEventListener('input', function(){
+    bpm = parseInt(slider.value, 10);
+    bpmval.textContent = bpm + ' bpm';
+    if(playing){ clearInterval(timer); timer = setInterval(tick, intervalMs()); }
+  });
+}
+
+/* ============================== LESSON CONTENT ============================== */
+var MODULES = ['The Basics', 'Chords & Strumming', 'Texture & Technique', 'Play & Perform'];
+
+var LESSONS = [
+// ---------------- MODULE 1: THE BASICS ----------------
+{
+  id:'m1l1', module:1, number:1, title:'Start With One Note', duration:'11:25',
+  tagline:'Every chord you will ever learn is built from notes like this one. Let\u2019s find the first.',
+  single:{string:0, fret:3},
+  body:[
+    {h:'Get comfortable first', p:[
+      'Before any chords, spend a minute just holding the guitar. Rest the body on your right leg if you\u2019re right-handed (or left, if you play lefty), let the neck angle gently upward, and keep your shoulders relaxed \u2014 tension in your shoulder is the enemy of clean playing.',
+      'Hold your pick loosely between thumb and index finger. If you can flick it out of your hand with a light tap, you\u2019re holding it correctly. A death-grip makes every strum sound stiff.'
+    ]},
+    {h:'Find the note', p:[
+      'Place a fretting finger just behind the 3rd fret of your thickest string \u2014 the low E string. \u201cJust behind\u201d means close to the fret wire, not in the middle of the gap. That single position is the note G, and it\u2019s the anchor note for the very first chord you\u2019ll build.'
+    ]},
+    {h:'Practice', p:[
+      'Pick that note slowly, ten times in a row. Listen for a clean, ringing tone with no buzz or dead thud. If it buzzes, press a little closer to the fret. If it\u2019s muted, check that no other finger is resting on the string.'
+    ]}
+  ],
+  tip:'Press with the pad of your fingertip, not the flat of your finger, and keep your thumb braced behind the neck. That one habit will make every chord in this course easier.',
+  quiz:{
+    q:'Which string is the thickest, lowest-pitched string on the guitar?',
+    options:['High e string','Low E string','A string','D string'],
+    correct:1,
+    explain:'The low E string is the thickest string, closest to your face when the guitar is in playing position. It\u2019s where today\u2019s note lives.'
+  }
+},
+{
+  id:'m1l2', module:1, number:2, title:'Make G And Em More Exciting', duration:'10:54',
+  tagline:'Two fingers, six ringing strings \u2014 your first chords sound bigger than they look.',
+  chords:['EASY_G','EM'],
+  body:[
+    {h:'An easy G', p:[
+      'Take the note from last lesson and add a friend. For an easy G, fret the A string at the 2nd fret and the high e string at the 3rd fret \u2014 skip the low E string entirely for now. Strum from the A string down through all five remaining strings.',
+      'Even with the low E left out, this shape rings out as a recognisable G chord because three open strings are doing a lot of the work for you.'
+    ]},
+    {h:'E minor: the easiest chord in guitar', p:[
+      'Fret the A string at the 2nd fret and the D string at the 2nd fret, leaving every other string open. That\u2019s a full E minor chord, and you\u2019ll lean on it constantly \u2014 it shares fingers and finger-shapes with chords you\u2019ll meet later.'
+    ]},
+    {h:'Make it exciting', p:[
+      'Strum slowly across all six strings on both chords, even the ones you\u2019re not fretting. Let the open strings ring fully. A chord with two fretted notes and four open strings still sounds full \u2014 that\u2019s the trick beginners often miss.'
+    ]}
+  ],
+  tip:'Switch between easy G and Em a few times, slowly. Notice your first finger barely has to move \u2014 economy of motion like this is what makes chord changes feel effortless later on.',
+  quiz:{
+    q:'In the easy G shape from this lesson, which string is left out completely?',
+    options:['High e string','B string','Low E string','D string'],
+    correct:2,
+    explain:'The low E string is skipped in easy G \u2014 you\u2019ll add it back in Module 2 to play the full chord.'
+  }
+},
+{
+  id:'m1l3', module:1, number:3, title:'Take C To The Next Level', duration:'10:33',
+  tagline:'Same two fingers as before \u2014 but this time, technique is the upgrade.',
+  chords:['EASY_C'],
+  body:[
+    {h:'The shape', p:[
+      'Fret the A string at the 3rd fret with your ring finger, and the D string at the 2nd fret with your middle finger. Leave the G, B, and high e strings open, and don\u2019t strum the low E string at all.'
+    ]},
+    {h:'Leveling up your technique', p:[
+      'Most beginners can fret this shape \u2014 the harder part is fretting it cleanly. Arch your fingers so the tips land on the strings, not the pads, so you\u2019re not accidentally muting the open strings next to them.',
+      'Lightly rest the side of your fretting-hand thumb against the low E string. This stops it from ringing out by accident, since it isn\u2019t part of the chord.'
+    ]}
+  ],
+  tip:'Strum slowly and stop after each string. If any string sounds dull or buzzy, you\u2019ve found exactly which finger needs adjusting \u2014 fix it on the spot rather than ploughing on.',
+  quiz:{
+    q:'Why do we rest the thumb lightly against the low E string in this C shape?',
+    options:[
+      'To play an extra bass note',
+      'To stop the low E string ringing out, since it isn\u2019t part of the chord',
+      'It has no real purpose, it\u2019s just comfortable',
+      'To help tune the string'
+    ],
+    correct:1,
+    explain:'The low E string isn\u2019t part of this C shape, so muting it with the thumb keeps the chord sounding clean when you strum across all six strings.'
+  }
+},
+{
+  id:'m1l4', module:1, number:4, title:'4 Lush Chords', duration:'10:30',
+  tagline:'Four open, full-sounding chords that punch well above their difficulty.',
+  chords:['CADD9','DSUS4','EM7','AM7'],
+  body:[
+    {h:'Why these four', p:[
+      'These chords are all easy to fret and built almost entirely from open strings, which is exactly why they sound so lush \u2014 lots of ringing strings, very little muscle required. Songwriters reach for shapes like these constantly because they sound rich without needing a full barre chord.'
+    ]},
+    {h:'Cadd9', p:['A dressed-up C chord. Same A and D string fingers as easy C, plus a finger on the B string\u2019s 3rd fret for extra colour.']},
+    {h:'Dsus4', p:['A D chord with one note pushed up a fret, creating tension that wants to resolve back to a regular D.']},
+    {h:'Em7', p:['The easiest chord shape in this whole course \u2014 just one finger on the A string, 2nd fret. Everything else rings open.']},
+    {h:'Am7', p:['Two fingers, a soft and slightly melancholy colour that sits beautifully next to the others.']}
+  ],
+  tip:'Play through all four slowly in a row: Cadd9, Dsus4, Em7, Am7. Listen to how each one rings \u2014 you\u2019ll hear this exact set again when you build the bridge of your final song.',
+  quiz:{
+    q:'Which of these four chords needs only one fretted finger?',
+    options:['Cadd9','Dsus4','Em7','Am7'],
+    correct:2,
+    explain:'Em7 only needs the A string fretted at the 2nd fret \u2014 every other string is played open.'
+  }
+},
+{
+  id:'m1l5', module:1, number:5, title:'Add In A Chord Variation', duration:'10:54',
+  tagline:'Turn one ordinary chord into two, with a single finger.',
+  chords:['EASY_C','CADD9'],
+  body:[
+    {h:'The variation', p:[
+      'You already know easy C and Cadd9 from earlier lessons. Now put them to work together: strum easy C, then without changing anything else, add your pinky finger onto the B string\u2019s 3rd fret to turn it into Cadd9, then lift it straight back off.',
+      'This kind of small addition and removal is called a chord variation, and it\u2019s one of the simplest ways to add movement and interest to a chord that would otherwise just sit there.'
+    ]},
+    {h:'Practice the switch', p:[
+      'Try a steady rhythm: strum C, add the pinky and strum Cadd9, lift it and strum C again. Keep your A and D string fingers completely still throughout \u2014 only the pinky moves.'
+    ]}
+  ],
+  tip:'This add-a-finger trick works on lots of open chords, not just C. Once it feels natural here, it\u2019s worth experimenting with on G and D too.',
+  quiz:{
+    q:'Which finger is added to turn easy C into Cadd9?',
+    options:['Thumb','Index finger','Ring finger','Pinky finger'],
+    correct:3,
+    explain:'The pinky drops onto the B string\u2019s 3rd fret while the A and D string fingers stay exactly where they are.'
+  }
+},
+
+// ---------------- MODULE 2: CHORDS & STRUMMING ----------------
+{
+  id:'m2l1', module:2, number:1, title:'Playing The Full G', duration:'10:59',
+  tagline:'One more finger turns easy G into the chord you\u2019ll use in almost every song you ever play.',
+  chords:['EASY_G','FULL_G'],
+  body:[
+    {h:'Adding the third finger', p:[
+      'You\u2019ve been skipping the low E string in easy G. Now bring it in: fret it at the 3rd fret with your middle finger, while your index finger holds the A string at the 2nd fret and your ring finger holds the high e string at the 3rd fret.',
+      'This is the full, classic open G chord \u2014 a true workhorse you\u2019ll find in folk, pop, rock, and country songs alike.'
+    ]},
+    {h:'Getting the fingers to cooperate', p:[
+      'Place the fingers in this order: index on the A string first, then ring finger on the high e string, then middle finger on the low E string last, tucking it in underneath. Doing it in that sequence avoids your fingers fighting for space.'
+    ]}
+  ],
+  tip:'Strum from the low E string all the way through to the high e. If the low E buzzes, your middle finger probably needs to arch more so it isn\u2019t leaning on the A string next to it.',
+  quiz:{
+    q:'Which finger is added to turn easy G into the full G chord?',
+    options:['A finger fretting the high e string','A finger fretting the low E string at the 3rd fret','A finger fretting the B string','No new finger is needed'],
+    correct:1,
+    explain:'The full G chord adds a finger on the low E string\u2019s 3rd fret, filling out the bass of the chord.'
+  }
+},
+{
+  id:'m2l2', module:2, number:2, title:'Playing The Full Em', duration:'10:37',
+  tagline:'Em was already complete \u2014 now make it move smoothly with G.',
+  chords:['EM','FULL_G'],
+  body:[
+    {h:'Em revisited', p:[
+      'E minor doesn\u2019t need an "upgrade" the way G did \u2014 with just two fingers on the A and D strings, it\u2019s already its full, complete form. What matters now is using it well.'
+    ]},
+    {h:'Changing between G and Em', p:[
+      'Compare the two shapes. In full G, your index finger sits on the A string\u2019s 2nd fret. In Em, your index finger sits on the same A string, same 2nd fret \u2014 it doesn\u2019t move at all when you switch chords. Only your other two fingers need to lift and reposition.',
+      'Practice rocking back and forth between G and Em slowly, keeping that index finger anchored. This single habit is what makes chord changes start to feel quick instead of clumsy.'
+    ]}
+  ],
+  tip:'Say the chord name out loud just before you change to it \u2014 "G... Em... G..." \u2014 it sounds silly, but it trains your brain to commit to the next shape before your hand has to.',
+  quiz:{
+    q:'When switching between full G and Em, which finger can stay completely still?',
+    options:['The finger on the A string, 2nd fret','The finger on the low E string','The finger on the high e string','None of them \u2014 all fingers move'],
+    correct:0,
+    explain:'Both G and Em use the A string\u2019s 2nd fret, so anchoring that finger makes the chord change far smoother.'
+  }
+},
+{
+  id:'m2l3', module:2, number:3, title:'Playing The Full C', duration:'10:24',
+  tagline:'One finger fills out the sound you started building back in Module 1.',
+  chords:['EASY_C','FULL_C'],
+  body:[
+    {h:'Completing the shape', p:[
+      'Add your index finger onto the B string\u2019s 1st fret, while your ring finger and middle finger stay exactly where they were on the A and D strings. That\u2019s the full, classic open C chord.'
+    ]},
+    {h:'Why this finger is tricky at first', p:[
+      'The B string sits right next to the high e string, which needs to stay open and ringing. Curl your index finger so only the very tip touches the B string \u2014 if the pad of your finger flops over, it will mute the high e string by accident.'
+    ]}
+  ],
+  tip:'Strum just the top four strings (D, G, B, e) on their own first, without the low E or A string. If those four ring clean, your finger placement is good \u2014 then add the full strum back in.',
+  quiz:{
+    q:'In the full C chord, what does the new index finger do?',
+    options:['Frets the high e string','Frets the B string at the 1st fret','Mutes the low E string','Frets the G string'],
+    correct:1,
+    explain:'The index finger frets the B string at the 1st fret, completing the chord while the ring and middle fingers hold their positions from easy C.'
+  }
+},
+{
+  id:'m2l4', module:2, number:4, title:'Playing The Full D', duration:'10:39',
+  tagline:'A brand new triangle-shaped chord to round out your core four.',
+  chords:['FULL_D'],
+  body:[
+    {h:'The shape', p:[
+      'Mute both the low E and A strings \u2014 you won\u2019t play them at all. Then fret the G string at the 2nd fret, the B string at the 3rd fret, and the high e string at the 2nd fret. Together those three fingers form a small triangle on the fretboard.',
+      'A common fingering is index on the G string, ring finger on the B string, and middle finger on the high e string.'
+    ]},
+    {h:'Strumming it cleanly', p:[
+      'Because the low E and A strings are muted rather than fretted, you need to strum starting from the D string, not the low E. Practice starting your strum a little further down than you\u2019re used to.'
+    ]}
+  ],
+  tip:'If the D chord sounds thin or jangly, check that you\u2019re not accidentally catching the A string in your strum \u2014 that\u2019s the single most common D chord mistake.',
+  quiz:{
+    q:'Which string should you start strumming from when playing a full D chord?',
+    options:['Low E string','A string','D string','High e string'],
+    correct:2,
+    explain:'Both the low E and A strings are left out of D entirely, so the strum begins at the D string.'
+  }
+},
+{
+  id:'m2l5', module:2, number:5, title:'Split Up Your Chords', duration:'10:34',
+  tagline:'Strumming isn\u2019t the only way to play a chord \u2014 try picking it apart, one string at a time.',
+  chords:['CADD9','FULL_G'],
+  body:[
+    {h:'What it means to split a chord', p:[
+      'Instead of strumming every string at once, pick the notes of a chord one at a time, low to high. This is called arpeggiating, and it turns a chord into a little melody of its own.'
+    ]},
+    {h:'Try it', p:[
+      'Shape the Cadd9 chord from earlier, but instead of strumming, pick each string individually starting from the lowest note that\u2019s part of the chord and working up to the highest. Each chord diagram on this page is clickable \u2014 tap through the dots on the Cadd9 diagram above, low string to high, to hear exactly what this sounds like.',
+      'Try the same thing on full G. Notice how the same chord shape can sound completely different depending on whether you strum it or split it.'
+    ]}
+  ],
+  tip:'A slow, even split chord works beautifully under a quiet verse, while a fast strum suits a chorus. Knowing both gives you a dynamic range, not just a single way to play every section of a song.',
+  quiz:{
+    q:'What is it called when you pick the notes of a chord one at a time instead of strumming them together?',
+    options:['Hammering on','Arpeggiating','Palm muting','Bending'],
+    correct:1,
+    explain:'Picking a chord\u2019s notes individually, rather than strumming, is called arpeggiating the chord.'
+  }
+},
+
+// ---------------- MODULE 3: TEXTURE & TECHNIQUE ----------------
+{
+  id:'m3l1', module:3, number:1, title:'Creating A Mood Shift', duration:'11:08',
+  tagline:'The same four chords can sound bright or moody, just by changing the order you play them in.',
+  chords:['FULL_G','EM','FULL_C','FULL_D'],
+  body:[
+    {h:'Major vs minor', p:[
+      'G, C, and D are major chords \u2014 they tend to sound bright, open, settled. Em is a minor chord, and it carries a more wistful, reflective colour. You already know all four.'
+    ]},
+    {h:'Order changes everything', p:[
+      'Play G \u2013 C \u2013 D \u2013 G in a loop. It feels upbeat and resolved. Now play G \u2013 Em \u2013 C \u2013 D in the same loop. Simply placing the minor chord second changes the whole emotional temperature of the progression, even though three of the four chords are identical.'
+    ]}
+  ],
+  tip:'There\u2019s no "correct" order \u2014 try rearranging these four chords a few different ways and notice which arrangement matches the mood you\u2019re going for. This instinct is exactly what you\u2019ll use when you build your own song later in this module.',
+  quiz:{
+    q:'Of the four chords in this lesson, which one is minor?',
+    options:['G','Em','C','D'],
+    correct:1,
+    explain:'Em is the only minor chord of the four \u2014 placing it within a progression of major chords is what creates a mood shift.'
+  }
+},
+{
+  id:'m3l2', module:3, number:2, title:'Adding More Texture In The Bridge', duration:'11:01',
+  tagline:'Building a quieter, fingerpicked section to contrast against your verse strum.',
+  chords:['CADD9','DSUS4','EM7','AM7'],
+  body:[
+    {h:'Reintroducing your lush chords', p:[
+      'Remember the four lush chords from Module 1 \u2014 Cadd9, Dsus4, Em7, and Am7? They\u2019re about to become the bridge section of the song you\u2019ll finish in this module.'
+    ]},
+    {h:'A softer texture', p:[
+      'Rather than strumming these four full and loud, try splitting each one (using the arpeggiating technique from the last lesson), picking through the strings slowly and softly. This pulls the energy of a song right down, which is exactly the job a bridge does \u2014 it creates contrast before the song lifts again.'
+    ]}
+  ],
+  tip:'Let each chord ring a beat or two longer than feels natural. A bridge rewards patience \u2014 resist the urge to rush through it.',
+  quiz:{
+    q:'What is the musical purpose of a bridge section in a song?',
+    options:[
+      'To repeat the chorus louder',
+      'To create contrast and pull the energy down before the song lifts again',
+      'To introduce the song\u2019s title',
+      'To tune the guitar mid-song'
+    ],
+    correct:1,
+    explain:'A bridge is there to offer contrast \u2014 a different texture or mood \u2014 setting up the return to the rest of the song.'
+  }
+},
+{
+  id:'m3l3', module:3, number:3, title:'Completing The Bridge', duration:'10:24',
+  tagline:'Finish the progression and find your way back home.',
+  chords:['CADD9','DSUS4','EM7','AM7','FULL_G'],
+  body:[
+    {h:'The full bridge progression', p:[
+      'Play through Cadd9 \u2013 Dsus4 \u2013 Em7 \u2013 Am7, two slow beats per chord, splitting each one as you learned in the last lesson.'
+    ]},
+    {h:'The turnaround', p:[
+      'After Am7, resolve back to your full G chord. This move \u2014 ending a bridge on a chord that leads naturally back to where the song started \u2014 is called a turnaround, and it\u2019s what makes the transition back into the verse feel inevitable rather than abrupt.'
+    ]}
+  ],
+  tip:'Practice just the last two chords \u2014 Am7 into G \u2014 on a loop by themselves. That single transition is doing the most important work in the whole bridge.',
+  quiz:{
+    q:'What do we call a chord move at the end of a section that leads naturally back to the start of the song?',
+    options:['A turnaround','A capo','A barre','A pickup'],
+    correct:0,
+    explain:'A turnaround is a chord (or short chord move) that resolves a section and points back toward the next part of the song.'
+  }
+},
+{
+  id:'m3l4', module:3, number:4, title:'A New Groovy Strum Pattern', duration:'10:42',
+  tagline:'A classic eighth-note pattern that gives every chord a sense of bounce.',
+  strum:{pattern:['D','D','U','U','D','U','-','-'], bpm:80},
+  body:[
+    {h:'The pattern', p:[
+      'This pattern is down, down, up, up, down, up \u2014 with a little space at the end of the bar. Each letter is a strum direction: D for a downstrum, U for an upstrum. It\u2019s one of the most widely used strum patterns in popular music for good reason \u2014 it has built-in groove.'
+    ]},
+    {h:'How to practice it', p:[
+      'Use the practice loop below. Start slow \u2014 around 70 to 80 beats per minute \u2014 and just say the pattern out loud in time with the lit-up beats: "down, down, up, up, down, up." Once it feels automatic in your voice, pick up the guitar and strum a full G chord along with it.'
+    ]}
+  ],
+  tip:'Keep your strumming arm moving in a constant down-up motion even on the gaps, just missing the strings in the air on beats you don\u2019t play. A moving arm keeps your timing locked in far better than a stop-start motion.',
+  quiz:{
+    q:'In this strum pattern, what do the letters "D" and "U" represent?',
+    options:['Different chords','Downstrum and upstrum','Duration and unit','Different fingers'],
+    correct:1,
+    explain:'D means a downward strum, U means an upward strum \u2014 together they build the rhythmic feel of the pattern.'
+  }
+},
+{
+  id:'m3l5', module:3, number:5, title:'Getting Comfortable With Strumming', duration:'11:01',
+  tagline:'Consolidation day: lock in steady timing before you move on to performance.',
+  strum:{pattern:['D','D','U','U','D','U','-','-'], bpm:70},
+  body:[
+    {h:'Why this lesson exists', p:[
+      'Every new technique feels shaky at first. Before stacking anything else on top, it\u2019s worth spending real time just getting the groovy strum pattern from the last lesson to feel relaxed and automatic.'
+    ]},
+    {h:'Three things to check', p:[
+      'Your strumming arm should feel loose at the elbow and wrist, not locked. Your fretting hand should be pressing only as hard as it needs to \u2014 most beginners squeeze far harder than necessary, which tires the hand quickly. And your eyes should spend most of the time off your hands, listening rather than watching.'
+    ]}
+  ],
+  tip:'Use the practice loop below at a slow 70 bpm for several days before nudging the tempo up. Speed that\u2019s built on a shaky foundation falls apart under pressure \u2014 speed built on a relaxed, steady foundation doesn\u2019t.',
+  quiz:{
+    q:'According to this lesson, what should most of your attention be on while strumming?',
+    options:['Watching your strumming hand closely','Watching your fretting hand closely','Listening, with your eyes mostly off your hands','Watching the clock'],
+    correct:2,
+    explain:'Training your ear to judge your own timing and tone is more valuable long-term than watching your hands move.'
+  }
+},
+
+// ---------------- MODULE 4: PLAY & PERFORM ----------------
+{
+  id:'m4l1', module:4, number:1, title:'Bring Down The Hammer', duration:'10:48',
+  tagline:'Your first taste of a technique that makes chords sound alive without strumming more.',
+  single:{string:2, fret:2},
+  body:[
+    {h:'What a hammer-on is', p:[
+      'Normally, you pick a string to sound a note. A hammer-on is different: you pick the string once while it\u2019s open, then "hammer" a fretting finger down onto it firmly and quickly, sounding a second note without picking again.'
+    ]},
+    {h:'Try it on one string', p:[
+      'Pick the open D string, let it ring for a moment, then bring your finger down sharply onto the 2nd fret of that same string \u2014 firm and fast, almost like tapping a table. You should hear the pitch jump up without a second pick stroke.'
+    ]}
+  ],
+  tip:'The speed and firmness of the hammering finger is what makes the note sound clearly \u2014 a soft, slow hammer-on tends to fizzle out. Aim for a confident, decisive motion.',
+  quiz:{
+    q:'In a hammer-on, how many times do you pick the string?',
+    options:['Twice, once for each note','Once \u2014 the second note comes from the fretting hand alone','Never \u2014 hammer-ons don\u2019t need picking at all','Three times'],
+    correct:1,
+    explain:'You pick the string once, then the fretting hand "hammers" down to sound the second note without a second pick stroke.'
+  }
+},
+{
+  id:'m4l2', module:4, number:2, title:'Hammer-ons On All 4 Chords', duration:'10:27',
+  tagline:'Take the technique from a single string into your core chord shapes.',
+  chords:['FULL_G','EM','FULL_C','FULL_D'],
+  body:[
+    {h:'Adding flair to a chord strum', p:[
+      'You don\u2019t need to change the whole chord to use a hammer-on \u2014 just delay one finger. For example, on full G, strum the chord with your ring finger lifted off the high e string, then hammer it down onto the 3rd fret a beat later while the rest of the chord keeps ringing.'
+    ]},
+    {h:'Around the four chords', p:[
+      'The same idea works on Em (delay the D string finger), C (delay the B string finger), and D (delay the high e string finger). In every case, you\u2019re strumming an almost-complete chord and finishing it a beat later with a hammer-on.'
+    ]}
+  ],
+  tip:'Pick just one chord to practice this on first \u2014 don\u2019t try to add hammer-ons to all four chords in the same session. Master the feel on one shape, then it transfers quickly to the others.',
+  quiz:{
+    q:'What\u2019s the basic idea behind adding a hammer-on to a chord strum?',
+    options:[
+      'Strumming the chord twice as fast',
+      'Delaying one finger, strumming without it, then hammering it down a beat later',
+      'Removing a finger entirely and never replacing it',
+      'Playing the chord one octave higher'
+    ],
+    correct:1,
+    explain:'You strum the chord with one finger held back, then hammer that finger down a beat later, finishing the chord mid-strum.'
+  }
+},
+{
+  id:'m4l3', module:4, number:3, title:'Learn The Campfire Special', duration:'10:55',
+  tagline:'Everything from this course, combined into one complete song.',
+  chords:['FULL_G','EM','FULL_C','FULL_D'],
+  strum:{pattern:['D','D','U','U','D','U','-','-'], bpm:78},
+  body:[
+    {h:'Verse', p:[
+      'Play G \u2013 Em \u2013 C \u2013 D, two bars each, using the groovy strum pattern from Module 3. Add the hammer-on you practiced on full G as you move into the chord each time, for a little extra lift.'
+    ]},
+    {h:'Bridge', p:[
+      'Drop into Cadd9 \u2013 Dsus4 \u2013 Em7 \u2013 Am7, split rather than strummed, exactly as you learned in lessons 3.2 and 3.3. Let it breathe \u2014 this is the quiet, reflective heart of the song.'
+    ]},
+    {h:'Turnaround', p:[
+      'Resolve Am7 back to full G, and you\u2019re home \u2014 ready to loop back into the verse, or bring the song to a gentle close.'
+    ]}
+  ],
+  tip:'Run through the whole structure slowly first \u2014 verse, bridge, turnaround \u2014 without worrying about hammer-ons or perfect strumming. Get the map in your head before you worry about the details.',
+  quiz:{
+    q:'What chord does the bridge resolve back to at the turnaround?',
+    options:['Em7','Am7','Full G','Dsus4'],
+    correct:2,
+    explain:'The turnaround moves from Am7 back to full G, leading naturally back into the verse.'
+  }
+},
+{
+  id:'m4l4', module:4, number:4, title:'Get Ready To Perform', duration:'10:49',
+  tagline:'A few honest tips before you play this for someone other than yourself.',
+  body:[
+    {h:'Practice slower than feels necessary', p:[
+      'A week out from playing for anyone, drop your tempo well below comfortable and run the whole song that slow, every day. It feels almost too easy \u2014 that\u2019s the point. Speed under pressure comes from a foundation built slower than you think you need.'
+    ]},
+    {h:'Record yourself', p:[
+      'Use your phone to record a run-through, then actually listen back. It\u2019s uncomfortable the first time, but it\u2019s the fastest way to hear timing or buzzing issues your hands can\u2019t feel from the inside.'
+    ]},
+    {h:'Play through mistakes', p:[
+      'When you fumble a chord change, the instinct is to stop and fix it. In a performance, don\u2019t. Keep the rhythm going, even if a chord is wrong or late \u2014 a confident wrong note is far less noticeable than a confident stop.'
+    ]}
+  ],
+  tip:'Performance nerves are completely normal, even for people who\u2019ve played for decades. The goal isn\u2019t to eliminate the nerves, it\u2019s to have practiced enough that your hands know what to do even while you\u2019re feeling them.',
+  quiz:{
+    q:'According to this lesson, what should you do if you fumble a chord change mid-performance?',
+    options:['Stop and restart the song','Apologise to the audience','Keep the rhythm going and carry on','Switch to a different song'],
+    correct:2,
+    explain:'Keeping the rhythm moving through a mistake is far less noticeable to a listener than stopping.'
+  }
+},
+{
+  id:'m4l5', module:4, number:5, title:'Final Performance', duration:'11:55',
+  tagline:'Start to finish, The Campfire Special \u2014 you\u2019ve earned this one.',
+  chords:['FULL_G','EM','FULL_C','FULL_D'],
+  strum:{pattern:['D','D','U','U','D','U','-','-'], bpm:78},
+  body:[
+    {h:'The full run-through', p:[
+      'Verse: G \u2013 Em \u2013 C \u2013 D, groovy strum, hammer-on flourish. Bridge: Cadd9 \u2013 Dsus4 \u2013 Em7 \u2013 Am7, split and unhurried. Turnaround: back to G. That\u2019s the whole song \u2014 every piece you\u2019ve built since lesson one of this course.',
+      'Run it twice through, verse into bridge into verse again, and let the second pass feel a little more confident than the first.'
+    ]},
+    {h:'What comes next', p:[
+      'From here, the natural next steps are barre chords (which unlock every key, not just G/C/D-friendly ones), fingerstyle patterns beyond simple splitting, and a wider chord vocabulary. But none of that matters as much as what you\u2019ve already built: clean chord changes, steady strumming, and one complete song you can play for someone, start to finish.'
+    ]}
+  ],
+  tip:'Play this for someone today, even just one person. A song only half-belongs to you until someone else has heard it.',
+  quiz:{
+    q:'What are the three sections that make up The Campfire Special?',
+    options:[
+      'Intro, chorus, outro',
+      'Verse, bridge, turnaround',
+      'Verse, solo, chorus',
+      'Bridge, hook, breakdown'
+    ],
+    correct:1,
+    explain:'The song is built from a verse (G\u2013Em\u2013C\u2013D), a bridge (Cadd9\u2013Dsus4\u2013Em7\u2013Am7), and a turnaround back to G.'
+  }
+}
+];
+
+/* ============================== STATE ============================== */
+var completed = {};
+var currentId = LESSONS[0].id;
+
+/* ============================== SIDEBAR RENDER ============================== */
+function renderSidebar(){
+  var wrap = document.getElementById('moduleList');
+  wrap.className = 'module-list';
+  var html = '';
+  for(var m=1; m<=4; m++){
+    var lessons = LESSONS.filter(function(l){ return l.module === m; });
+    html += '<div class="module" data-module="'+m+'">';
+    html += '<div class="module-head"><span class="mname">Module '+m+' &middot; '+MODULES[m-1]+'</span><span class="mcount">'+lessons.length+' lessons</span></div>';
+    html += '<ul class="lesson-list">';
+    lessons.forEach(function(l){
+      var isActive = (l.id === currentId);
+      var isDone = !!completed[l.id];
+      html += '<li class="lesson-item'+(isActive?' active':'')+(isDone?' done':'')+'" data-id="'+l.id+'">';
+      html += '<span class="lesson-dot">'+(isDone ? '&#10003;' : l.number)+'</span>';
+      html += '<span class="lesson-text"><span class="lesson-title">'+l.title+'</span></span>';
+      html += '<span class="lesson-dur">'+l.duration+'</span>';
+      html += '</li>';
+    });
+    html += '</ul></div>';
+  }
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.lesson-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      currentId = item.getAttribute('data-id');
+      renderAll();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  var done = Object.keys(completed).filter(function(k){ return completed[k]; }).length;
+  document.getElementById('progressLabel').textContent = done + ' / ' + LESSONS.length;
+  document.getElementById('progressFill').style.width = (done / LESSONS.length * 100) + '%';
+}
+
+/* ============================== MAIN RENDER ============================== */
+function findLesson(id){
+  for(var i=0;i<LESSONS.length;i++){ if(LESSONS[i].id === id) return LESSONS[i]; }
+  return LESSONS[0];
+}
+function lessonIndex(id){
+  for(var i=0;i<LESSONS.length;i++){ if(LESSONS[i].id === id) return i; }
+  return 0;
+}
+
+function renderMain(){
+  var lesson = findLesson(currentId);
+  var main = document.getElementById('main');
+  var html = '';
+
+  html += '<div class="lesson-head">';
+  html += '<div class="crumb">Module '+lesson.module+' <span class="sep">/</span> <span class="mod">'+MODULES[lesson.module-1]+'</span></div>';
+  html += '<h2>'+lesson.number+'. '+lesson.title+'</h2>';
+  html += '<div class="meta-row"><span class="pill">'+lesson.duration+'</span><span class="pill amber">Lesson '+lesson.number+' of 5</span></div>';
+  html += '<p class="tagline">'+lesson.tagline+'</p>';
+  html += '</div>';
+
+  if(lesson.single){
+    html += '<div class="section"><h3>Find The Note</h3><div class="chord-row"><div class="chord-card">';
+    html += '<div class="cname">'+STRING_NAMES[lesson.single.string]+' string</div>';
+    html += '<div class="chint">fret '+lesson.single.fret+' &middot; tap to hear it</div>';
+    html += '<div class="chord-svg-wrap single-note-wrap">'+buildSingleNoteSVG(lesson.single.string, lesson.single.fret)+'</div>';
+    html += '</div></div></div>';
+  }
+
+  if(lesson.chords && lesson.chords.length){
+    html += '<div class="section"><h3>Chords In This Lesson</h3><div class="chord-row">';
+    lesson.chords.forEach(function(key){ html += renderChordCard(key); });
+    html += '</div></div>';
+  }
+
+  lesson.body.forEach(function(block){
+    html += '<div class="section"><h3>'+block.h+'</h3>';
+    block.p.forEach(function(para){ html += '<p>'+para+'</p>'; });
+    html += '</div>';
+  });
+
+  if(lesson.strum){
+    html += '<div class="section"><h3>Practice Loop</h3>';
+    html += renderStrumPlayer('strumPlayer_'+lesson.id, lesson.strum.pattern, lesson.strum.bpm);
+    html += '</div>';
+  }
+
+  if(lesson.tip){
+    html += '<div class="tip"><div class="tip-label">Practice Tip</div><p>'+lesson.tip+'</p></div>';
+  }
+
+  if(lesson.quiz){
+    html += '<div class="quiz" id="quizBlock">';
+    html += '<div class="qlabel">Quick Check</div>';
+    html += '<div class="qtext">'+lesson.quiz.q+'</div>';
+    html += '<div class="qopts">';
+    lesson.quiz.options.forEach(function(opt, idx){
+      html += '<button class="qopt" data-idx="'+idx+'">'+opt+'</button>';
+    });
+    html += '</div>';
+    html += '<div class="qexplain" id="qexplain">'+lesson.quiz.explain+'</div>';
+    html += '</div>';
+  }
+
+  var idx = lessonIndex(currentId);
+  var isDone = !!completed[currentId];
+  html += '<div class="lesson-footer">';
+  html += '<button class="btn" id="prevBtn" '+(idx===0?'disabled style="opacity:.35;cursor:default;"':'')+'>&#8592; Previous</button>';
+  html += '<button class="btn '+(isDone?'done':'primary')+'" id="completeBtn">'+(isDone ? '&#10003; Lesson Complete' : 'Mark Lesson Complete')+'</button>';
+  html += '<button class="btn" id="nextBtn" '+(idx===LESSONS.length-1?'disabled style="opacity:.35;cursor:default;"':'')+'>Next Lesson &#8594;</button>';
+  html += '</div>';
+
+  main.innerHTML = html;
+  wireChordCards(main);
+  if(lesson.strum){ wireStrumPlayer(main, 'strumPlayer_'+lesson.id, lesson.strum.pattern); }
+  wireQuiz(lesson);
+  wireFooter(idx);
+}
+
+function wireQuiz(lesson){
+  if(!lesson.quiz) return;
+  var block = document.getElementById('quizBlock');
+  var opts = block.querySelectorAll('.qopt');
+  var answered = false;
+  opts.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(answered) return;
+      answered = true;
+      var chosen = parseInt(btn.getAttribute('data-idx'), 10);
+      opts.forEach(function(o, i){
+        if(i === lesson.quiz.correct){ o.classList.add('correct'); }
+        else if(i === chosen){ o.classList.add('incorrect'); }
+      });
+      document.getElementById('qexplain').classList.add('show');
+    });
+  });
+}
+
+function wireFooter(idx){
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var completeBtn = document.getElementById('completeBtn');
+  if(prevBtn && idx > 0){
+    prevBtn.addEventListener('click', function(){
+      currentId = LESSONS[idx-1].id; renderAll(); window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
+  if(nextBtn && idx < LESSONS.length - 1){
+    nextBtn.addEventListener('click', function(){
+      currentId = LESSONS[idx+1].id; renderAll(); window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }
+  completeBtn.addEventListener('click', function(){
+    completed[currentId] = !completed[currentId];
+    renderAll();
+  });
+}
+
+function renderAll(){
+  renderSidebar();
+  renderMain();
+}
+
+/* mobile menu toggle */
+document.getElementById('menuToggle').addEventListener('click', function(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+renderAll();
+</script>
+</body>
+</html>

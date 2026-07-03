@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triad Formulas Across the Fretboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:      #0e0e10;
+  --surface: #16161a;
+  --surf2:   #1e1e24;
+  --surf3:   #26262e;
+  --border:  #2e2e38;
+  --text:    #eeeef2;
+  --muted:   #5a5a6e;
+  --muted2:  #8888a0;
+
+  --root-bg:  #d42b2b;
+  --root-fg:  #ffffff;
+  --third-bg: #1a6fd4;
+  --third-fg: #ffffff;
+  --fifth-bg: #1a9a4a;
+  --fifth-fg: #ffffff;
+
+  /* triad type accent colours */
+  --major-col:  #e8c84a;
+  --minor-col:  #5ecfff;
+  --aug-col:    #c96eff;
+  --dim-col:    #ff7b4a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  padding: 32px 16px 64px;
+}
+
+/* ── HEADER ── */
+.hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.hero-title {
+  font-size: clamp(22px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.hero-title .line2 { color: var(--major-col); }
+
+.hero-sub {
+  font-size: 13px;
+  color: var(--muted2);
+  margin-top: 8px;
+}
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.badge.root  { background: var(--root-bg);  color: var(--root-fg); }
+.badge.third { background: var(--third-bg); color: var(--third-fg); }
+.badge.fifth { background: var(--fifth-bg); color: var(--fifth-fg); }
+
+/* ── CONTROLS ── */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.ctrl-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+}
+
+select option { background: #1e1e24; }
+
+/* ── TYPE TABS ── */
+.type-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.tab-btn {
+  padding: 9px 22px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: var(--surface);
+  color: var(--muted2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); }
+.tab-btn[data-type="major"].active  { border-color: var(--major-col); color: var(--major-col); background: rgba(232,200,74,0.07); }
+.tab-btn[data-type="minor"].active  { border-color: var(--minor-col); color: var(--minor-col); background: rgba(94,207,255,0.07); }
+.tab-btn[data-type="aug"].active    { border-color: var(--aug-col);   color: var(--aug-col);   background: rgba(201,110,255,0.07); }
+.tab-btn[data-type="dim"].active    { border-color: var(--dim-col);   color: var(--dim-col);   background: rgba(255,123,74,0.07); }
+.tab-btn[data-type="all"].active    { border-color: var(--text);      color: var(--text);      background: rgba(255,255,255,0.05); }
+
+/* ── SHAPES GRID ── */
+.shapes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 980px;
+  margin: 0 auto 48px;
+}
+
+.shape-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 16px 16px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.shape-card:hover {
+  transform: translateY(-2px);
+}
+
+.shape-card[data-type="major"] { border-top: 3px solid var(--major-col); }
+.shape-card[data-type="minor"] { border-top: 3px solid var(--minor-col); }
+.shape-card[data-type="aug"]   { border-top: 3px solid var(--aug-col); }
+.shape-card[data-type="dim"]   { border-top: 3px solid var(--dim-col); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-type {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-type[data-type="major"] { color: var(--major-col); }
+.card-type[data-type="minor"] { color: var(--minor-col); }
+.card-type[data-type="aug"]   { color: var(--aug-col); }
+.card-type[data-type="dim"]   { color: var(--dim-col); }
+
+.card-shape {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted2);
+  background: var(--surf3);
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: 'Space Mono', monospace;
+}
+
+.shape-card svg { display: block; width: 100%; }
+
+/* ── FORMULA FOOTER ── */
+.formula-section {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.formula-title {
+  text-align: center;
+  font-size: clamp(14px, 3vw, 22px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--major-col);
+  margin-bottom: 20px;
+}
+
+.formula-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .formula-grid { grid-template-columns: 1fr 1fr; }
+  .shapes-grid  { grid-template-columns: 1fr 1fr; }
+}
+
+.formula-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.formula-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.formula-card-name[data-type="major"] { color: var(--major-col); }
+.formula-card-name[data-type="minor"] { color: var(--minor-col); }
+.formula-card-name[data-type="aug"]   { color: var(--aug-col); }
+.formula-card-name[data-type="dim"]   { color: var(--dim-col); }
+
+.formula-chips {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.f-chip {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.f-chip.root  { background: var(--root-bg);  color: #fff; }
+.f-chip.third { background: var(--third-bg); color: #fff; }
+.f-chip.fifth { background: var(--fifth-bg); color: #fff; }
+
+.f-dash { color: var(--muted2); font-size: 14px; font-weight: 700; }
+
+/* ── DOT ANIMATION ── */
+@keyframes dotIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dot-group { animation: dotIn 0.22s ease-out both; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Guitar Essential</div>
+  <h1 class="hero-title">
+    Triad Formulas<br>
+    <span class="line2">Across the Fretboard</span>
+  </h1>
+  <p class="hero-sub">A–shape · E–shape · D–shape &nbsp;·&nbsp; All 4 triad types &nbsp;·&nbsp; Every key</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="badge root">R</div> Root (R)</div>
+  <div class="legend-item"><div class="badge third">3</div> 3rd</div>
+  <div class="legend-item"><div class="badge fifth">5</div> 5th</div>
+</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Root Key</span>
+    <select id="root-sel">
+      <option value="A">A</option>
+      <option value="Bb">Bb</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="C#">C#</option>
+      <option value="D">D</option>
+      <option value="Eb">Eb</option>
+      <option value="E">E</option>
+      <option value="F">F</option>
+      <option value="F#">F#</option>
+      <option value="G">G</option>
+      <option value="Ab">Ab</option>
+    </select>
+  </div>
+</div>
+
+<div class="type-tabs">
+  <button class="tab-btn active" data-type="all">All</button>
+  <button class="tab-btn" data-type="major">Major</button>
+  <button class="tab-btn" data-type="minor">Minor</button>
+  <button class="tab-btn" data-type="aug">Augmented</button>
+  <button class="tab-btn" data-type="dim">Diminished</button>
+</div>
+
+<div class="shapes-grid" id="shapes-grid"></div>
+
+<div class="formula-section">
+  <div class="formula-title">— Triad Formulas —</div>
+  <div class="formula-grid">
+    <div class="formula-card">
+      <div class="formula-card-name" data-type="major">Major Triad</div>
+      <div class="formula-chips">
+        <div class="f-chip root">R</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip third">3</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip fifth">5</div>
+      </div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-card-name" data-type="minor">Minor Triad</div>
+      <div class="formula-chips">
+        <div class="f-chip root">R</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip third">b3</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip fifth">5</div>
+      </div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-card-name" data-type="aug">Augmented Triad</div>
+      <div class="formula-chips">
+        <div class="f-chip root">R</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip third">3</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip fifth">#5</div>
+      </div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-card-name" data-type="dim">Diminished Triad</div>
+      <div class="formula-chips">
+        <div class="f-chip root">R</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip third">b3</div>
+        <div class="f-dash">–</div>
+        <div class="f-chip fifth">b5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── NOTE DATA ──────────────────────────────────────────────────────────────
+
+var CHROMATIC = ['A','Bb','B','C','C#','D','Eb','E','F','F#','G','Ab'];
+
+function semitone(note) {
+  return CHROMATIC.indexOf(note);
+}
+
+function noteAt(rootNote, semis) {
+  var idx = (semitone(rootNote) + semis + 12) % 12;
+  return CHROMATIC[idx];
+}
+
+// Triad interval offsets from root
+var INTERVALS = {
+  major: { root: 0, third: 4, fifth: 7  },
+  minor: { root: 0, third: 3, fifth: 7  },
+  aug:   { root: 0, third: 4, fifth: 8  },
+  dim:   { root: 0, third: 3, fifth: 6  }
+};
+
+var THIRD_LABEL = { major:'3', minor:'b3', aug:'3', dim:'b3' };
+var FIFTH_LABEL = { major:'5', minor:'5',  aug:'#5', dim:'b5' };
+
+// ── FRETBOARD DIAGRAM DATA ─────────────────────────────────────────────────
+// Each shape: dots = [{str, fret, role}]
+// str: 0=low E, 1=A, 2=D, 3=G, 4=B, 5=high e
+// fret: relative to shape's reference fret (will be offset by key)
+// Reference fret = fret where root appears for this shape in A (fret 0 = open)
+
+// A-shape: root on A string (str 1), ref fret for A = 0 (open A)
+// E-shape: root on low E (str 0), ref fret for A = 5
+// D-shape: root on D string (str 2), ref fret for A = 0 (open D... actually A on D string = fret 7, but we show relative)
+
+// Strategy: define shapes relative to root fret on the anchor string.
+// rootFretOffset[shape][key] computed from open string notes.
+// Open strings (semitones from A): E=7, A=0, D=5, G=10, B=2, e=7
+
+var OPEN = [7, 0, 5, 10, 2, 7]; // low E, A, D, G, B, high e
+
+// Anchor strings per shape
+var ANCHOR = { 'A': 1, 'E': 0, 'D': 2 };
+
+function rootFret(shape, rootNote) {
+  var anchorStr = ANCHOR[shape];
+  var openSemi  = OPEN[anchorStr];
+  var rootSemi  = semitone(rootNote);
+  var fret = (rootSemi - openSemi + 12) % 12;
+  return fret;
+}
+
+// Shape dot definitions — fret offsets relative to the root fret on anchor string
+// {str, df, role}  df = delta from root fret on anchor string
+// Derived from standard CAGED triad voicings
+
+var SHAPE_DOTS = {
+  major: {
+    'A': [
+      {str:1, df:0,  role:'root'},
+      {str:2, df:2,  role:'third'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:2,  role:'root'},   // octave
+      // also low E partial
+    ],
+    'E': [
+      {str:0, df:0,  role:'root'},
+      {str:1, df:2,  role:'fifth'},
+      {str:2, df:2,  role:'root'},
+      {str:3, df:1,  role:'third'},
+      {str:4, df:0,  role:'fifth'}, // (open if fret=0)
+      {str:5, df:0,  role:'root'},
+    ],
+    'D': [
+      {str:2, df:0,  role:'root'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:3,  role:'third'},
+      {str:5, df:2,  role:'root'},
+    ]
+  },
+  minor: {
+    'A': [
+      {str:1, df:0,  role:'root'},
+      {str:2, df:2,  role:'third'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:1,  role:'root'},
+    ],
+    'E': [
+      {str:0, df:0,  role:'root'},
+      {str:1, df:2,  role:'fifth'},
+      {str:2, df:2,  role:'root'},
+      {str:3, df:0,  role:'third'},
+      {str:4, df:0,  role:'fifth'},
+      {str:5, df:0,  role:'root'},
+    ],
+    'D': [
+      {str:2, df:0,  role:'root'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:3,  role:'third'},
+      {str:5, df:1,  role:'root'},
+    ]
+  },
+  aug: {
+    'A': [
+      {str:1, df:0,  role:'root'},
+      {str:2, df:2,  role:'third'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:2,  role:'root'},
+    ],
+    'E': [
+      {str:0, df:0,  role:'root'},
+      {str:1, df:3,  role:'fifth'},
+      {str:2, df:2,  role:'root'},
+      {str:3, df:1,  role:'third'},
+      {str:5, df:1,  role:'root'},
+    ],
+    'D': [
+      {str:2, df:0,  role:'root'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:3,  role:'third'},
+      {str:5, df:2,  role:'root'},
+    ]
+  },
+  dim: {
+    'A': [
+      {str:1, df:0,  role:'root'},
+      {str:2, df:1,  role:'third'},
+      {str:3, df:2,  role:'fifth'},
+      {str:4, df:0,  role:'root'},
+    ],
+    'E': [
+      {str:0, df:0,  role:'root'},
+      {str:1, df:2,  role:'fifth'},
+      {str:2, df:2,  role:'root'},
+      {str:3, df:0,  role:'third'},
+      {str:5, df:-1, role:'fifth'},
+    ],
+    'D': [
+      {str:2, df:0,  role:'root'},
+      {str:3, df:1,  role:'fifth'},
+      {str:4, df:3,  role:'third'},
+      {str:5, df:1,  role:'root'},
+    ]
+  }
+};
+
+// ── SVG DIAGRAM RENDERER ───────────────────────────────────────────────────
+
+var SVG_NS = 'http://www.w3.org/2000/svg';
+
+function el(tag, attrs) {
+  var e = document.createElementNS(SVG_NS, tag);
+  var keys = Object.keys(attrs);
+  for (var i = 0; i < keys.length; i++) {
+    e.setAttribute(keys[i], attrs[keys[i]]);
+  }
+  return e;
+}
+
+var BADGE_COLOURS = {
+  root:  { bg: '#d42b2b', fg: '#ffffff' },
+  third: { bg: '#1a6fd4', fg: '#ffffff' },
+  fifth: { bg: '#1a9a4a', fg: '#ffffff' }
+};
+
+function buildDiagram(triadType, shape, rootNote) {
+  var COLS    = 5;   // frets shown
+  var ROWS    = 6;   // strings
+  var W       = 160;
+  var H       = 130;
+  var PAD_L   = 22;
+  var PAD_R   = 8;
+  var PAD_T   = 18;
+  var PAD_B   = 18;
+  var fw      = (W - PAD_L - PAD_R)  / COLS;
+  var sh      = (H - PAD_T - PAD_B) / (ROWS - 1);
+  var DR      = 9;
+
+  var svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.setAttribute('width', '100%');
+
+  // String lines (vertical — low E left, high e right in landscape diagrams)
+  // We draw horizontal strings (standard chord diagram: strings = vertical lines, frets = horizontal)
+  // Standard chord diagram: strings vertical (left=low E), frets horizontal
+  // So: x = string position, y = fret position
+  // String x: str 0 (low E) at left, str 5 (high e) at right
+  // Fret y: fret 0 (nut) at top
+
+  function sx(str) { return PAD_L + str * fw + fw * 0.5; }
+  function fy(fret) { return PAD_T + fret * sh; }
+
+  // Nut or fret number
+  var rf = rootFret(shape, rootNote);
+  // Show frets rf-1 to rf+COLS-2, but always at least fret 1-5
+  // We want root fret in position 2 (0-indexed)
+  var startFret = rf - 1;
+  if (startFret < 0) { startFret = 0; }
+
+  // Nut line if startFret == 0
+  if (startFret === 0) {
+    svg.appendChild(el('rect', {
+      x: PAD_L - 4, y: PAD_T - 2,
+      width: (ROWS - 1) * fw + 8, height: 4,
+      fill: '#888898', rx: 2
+    }));
+  } else {
+    // Fret position indicator
+    var ft = document.createElementNS(SVG_NS, 'text');
+    ft.setAttribute('x', PAD_L - 6);
+    ft.setAttribute('y', PAD_T + sh * 0.5 + 4);
+    ft.setAttribute('text-anchor', 'end');
+    ft.setAttribute('fill', '#888898');
+    ft.setAttribute('font-family', 'Space Mono, monospace');
+    ft.setAttribute('font-size', '8');
+    ft.textContent = rf + 'fr';
+    svg.appendChild(ft);
+  }
+
+  // String name labels at top
+  var strNames = ['E','A','D','G','B','e'];
+  for (var s = 0; s < 6; s++) {
+    var st = document.createElementNS(SVG_NS, 'text');
+    st.setAttribute('x', sx(s));
+    st.setAttribute('y', PAD_T - 6);
+    st.setAttribute('text-anchor', 'middle');
+    st.setAttribute('fill', '#44445a');
+    st.setAttribute('font-family', 'Space Mono, monospace');
+    st.setAttribute('font-size', '7');
+    st.textContent = strNames[s];
+    svg.appendChild(st);
+  }
+
+  // Horizontal fret lines
+  for (var f = 0; f <= COLS; f++) {
+    svg.appendChild(el('line', {
+      x1: PAD_L + fw * 0.5, y1: fy(f),
+      x2: PAD_L + (ROWS - 0.5) * fw, y2: fy(f),
+      stroke: '#2e2e38', 'stroke-width': 1
+    }));
+  }
+
+  // Vertical string lines
+  for (var ss = 0; ss < ROWS; ss++) {
+    var thick = 0.6 + ss * 0.18;
+    svg.appendChild(el('line', {
+      x1: sx(ss), y1: PAD_T,
+      x2: sx(ss), y2: PAD_T + COLS * sh,
+      stroke: '#2e2e3a', 'stroke-width': thick
+    }));
+  }
+
+  // Dots
+  var dotDefs = SHAPE_DOTS[triadType][shape];
+  var ints    = INTERVALS[triadType];
+  var dotGroup = document.createElementNS(SVG_NS, 'g');
+  dotGroup.setAttribute('class', 'dot-group');
+
+  for (var d = 0; d < dotDefs.length; d++) {
+    var dot     = dotDefs[d];
+    var absF    = rf + dot.df;           // absolute fret on guitar
+    var relF    = absF - startFret;      // position in diagram
+
+    if (relF < 0 || relF > COLS) { continue; }
+
+    var cx = sx(dot.str);
+    var cy;
+    if (absF === 0) {
+      // open string — place just above nut
+      cy = PAD_T - sh * 0.5;
+    } else {
+      cy = fy(relF) - sh * 0.5;
+    }
+
+    var col = BADGE_COLOURS[dot.role];
+
+    // Glow for root
+    if (dot.role === 'root') {
+      dotGroup.appendChild(el('circle', {
+        cx: cx, cy: cy, r: DR + 4,
+        fill: 'none', stroke: '#d42b2b',
+        'stroke-width': '1.2', opacity: '0.35'
+      }));
+    }
+
+    dotGroup.appendChild(el('circle', {
+      cx: cx, cy: cy, r: DR,
+      fill: col.bg
+    }));
+
+    // Label
+    var intLabel;
+    if (dot.role === 'root')  { intLabel = 'R'; }
+    else if (dot.role === 'third') { intLabel = THIRD_LABEL[triadType]; }
+    else                      { intLabel = FIFTH_LABEL[triadType]; }
+
+    var dt = document.createElementNS(SVG_NS, 'text');
+    dt.setAttribute('x', cx);
+    dt.setAttribute('y', cy + 3.5);
+    dt.setAttribute('text-anchor', 'middle');
+    dt.setAttribute('fill', col.fg);
+    dt.setAttribute('font-family', 'Space Mono, monospace');
+    dt.setAttribute('font-size', intLabel.length > 1 ? '6.5' : '8');
+    dt.setAttribute('font-weight', '700');
+    dt.setAttribute('pointer-events', 'none');
+    dt.textContent = intLabel;
+    dotGroup.appendChild(dt);
+  }
+
+  svg.appendChild(dotGroup);
+  return svg;
+}
+
+// ── RENDER CARDS ──────────────────────────────────────────────────────────
+
+var TYPE_NAMES  = { major:'Major', minor:'Minor', aug:'Augmented', dim:'Diminished' };
+var SHAPE_NAMES = ['A','E','D'];
+var ALL_TYPES   = ['major','minor','aug','dim'];
+
+var currentRoot   = 'A';
+var currentFilter = 'all';
+
+function renderGrid() {
+  var grid = document.getElementById('shapes-grid');
+  grid.innerHTML = '';
+
+  for (var ti = 0; ti < ALL_TYPES.length; ti++) {
+    var type = ALL_TYPES[ti];
+    if (currentFilter !== 'all' && currentFilter !== type) { continue; }
+
+    for (var si = 0; si < SHAPE_NAMES.length; si++) {
+      var shape = SHAPE_NAMES[si];
+
+      var card = document.createElement('div');
+      card.className = 'shape-card';
+      card.setAttribute('data-type', type);
+
+      var header = document.createElement('div');
+      header.className = 'card-header';
+
+      var typeLabel = document.createElement('div');
+      typeLabel.className = 'card-type';
+      typeLabel.setAttribute('data-type', type);
+      typeLabel.textContent = TYPE_NAMES[type];
+
+      var shapeLabel = document.createElement('div');
+      shapeLabel.className = 'card-shape';
+      shapeLabel.textContent = shape + '-shape';
+
+      header.appendChild(typeLabel);
+      header.appendChild(shapeLabel);
+      card.appendChild(header);
+
+      var diag = buildDiagram(type, shape, currentRoot);
+      card.appendChild(diag);
+
+      grid.appendChild(card);
+    }
+  }
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────────
+
+document.getElementById('root-sel').addEventListener('change', function() {
+  currentRoot = this.value;
+  renderGrid();
+});
+
+var tabs = document.querySelectorAll('.tab-btn');
+for (var t = 0; t < tabs.length; t++) {
+  tabs[t].addEventListener('click', (function(btn) {
+    return function() {
+      for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove('active'); }
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-type');
+      renderGrid();
+    };
+  })(tabs[t]));
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+
+renderGrid();
+</script>
+</body>
+</html>
