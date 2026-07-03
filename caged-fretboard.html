@@ -669,6 +669,235 @@
       }
     });
   });
+
+  // Fretboard drawing and functionality
+  const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const keySelect = document.getElementById('keySelect');
+  const btnMajor = document.getElementById('btnMajor');
+  const btnMinor = document.getElementById('btnMinor');
+  const viewSelect = document.getElementById('viewSelect');
+  const shapeSelect = document.getElementById('shapeSelect');
+  const posSlider = document.getElementById('posSlider');
+  const togChord = document.getElementById('togChord');
+  const togPenta = document.getElementById('togPenta');
+  const togLead = document.getElementById('togLead');
+  const togSusp = document.getElementById('togSusp');
+  const fb = document.getElementById('fb');
+  const infoBar = document.getElementById('infoBar');
+
+  let currentKey = 'C';
+  let isMinor = false;
+  let activeShapes = { C: true, A: true, G: true, E: true, D: true };
+  let activeLayers = { chord: true, penta: true, lead: true, susp: true };
+
+  // Populate key select
+  keys.forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = key;
+    if (key === 'C') opt.selected = true;
+    keySelect.appendChild(opt);
+  });
+
+  keySelect.addEventListener('change', (e) => {
+    currentKey = e.target.value;
+    draw();
+  });
+
+  btnMajor.addEventListener('click', () => {
+    isMinor = false;
+    btnMajor.classList.add('active');
+    btnMinor.classList.remove('active');
+    draw();
+  });
+
+  btnMinor.addEventListener('click', () => {
+    isMinor = true;
+    btnMinor.classList.add('active');
+    btnMajor.classList.remove('active');
+    draw();
+  });
+
+  viewSelect.addEventListener('change', draw);
+  shapeSelect.addEventListener('change', (e) => {
+    const shape = e.target.value;
+    if (shape === 'all') {
+      activeShapes = { C: true, A: true, G: true, E: true, D: true };
+    } else {
+      activeShapes = { C: false, A: false, G: false, E: false, D: false };
+      activeShapes[shape] = true;
+    }
+    draw();
+  });
+
+  posSlider.addEventListener('input', (e) => {
+    const pos = parseInt(e.target.value);
+    document.getElementById('posLabel').textContent = `${pos + 1}–${pos + 15}`;
+    document.getElementById('posMin').textContent = `Fret ${pos + 1}`;
+    document.getElementById('posMax').textContent = `Fret ${pos + 15}`;
+    draw();
+  });
+
+  togChord.addEventListener('click', () => {
+    activeLayers.chord = !activeLayers.chord;
+    togChord.classList.toggle('active');
+    draw();
+  });
+
+  togPenta.addEventListener('click', () => {
+    activeLayers.penta = !activeLayers.penta;
+    togPenta.classList.toggle('active');
+    draw();
+  });
+
+  togLead.addEventListener('click', () => {
+    activeLayers.lead = !activeLayers.lead;
+    togLead.classList.toggle('active');
+    draw();
+  });
+
+  togSusp.addEventListener('click', () => {
+    activeLayers.susp = !activeLayers.susp;
+    togSusp.classList.toggle('active');
+    draw();
+  });
+
+  function getScaleIntervals() {
+    if (isMinor) {
+      return [0, 2, 3, 5, 7, 8, 10]; // A minor scale
+    } else {
+      return [0, 2, 4, 5, 7, 9, 11]; // C major scale
+    }
+  }
+
+  function getNote(semitone) {
+    const idx = (keys.indexOf(currentKey) + semitone) % 12;
+    return keys[idx];
+  }
+
+  function draw() {
+    const svg = document.getElementById('fb');
+    svg.innerHTML = '';
+    svg.setAttribute('viewBox', '0 0 800 280');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '280');
+
+    const fretStart = parseInt(posSlider.value);
+    const fretEnd = fretStart + 14;
+    const fretW = 50;
+    const startX = 60;
+    const startY = 40;
+
+    // Draw frets
+    for (let f = fretStart; f <= fretEnd; f++) {
+      const x = startX + (f - fretStart) * fretW;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', startY);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', startY + 200);
+      line.setAttribute('stroke', '#6a5a3a');
+      line.setAttribute('stroke-width', '1');
+      svg.appendChild(line);
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', x);
+      label.setAttribute('y', startY + 225);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', '11');
+      label.setAttribute('fill', '#8860a0');
+      label.textContent = f;
+      svg.appendChild(label);
+    }
+
+    // Draw strings
+    for (let s = 0; s < 6; s++) {
+      const y = startY + s * 40;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', startX - 40);
+      line.setAttribute('y1', y);
+      line.setAttribute('x2', startX + (fretEnd - fretStart) * fretW);
+      line.setAttribute('y2', y);
+      line.setAttribute('stroke', 'rgba(200,176,120,0.5)');
+      line.setAttribute('stroke-width', '2');
+      svg.appendChild(line);
+    }
+
+    // Draw notes
+    const stringTuning = [40, 35, 30, 25, 20, 15]; // E, A, D, G, B, e
+    const intervals = getScaleIntervals();
+    const view = viewSelect.value;
+
+    for (let s = 0; s < 6; s++) {
+      const baseSemi = stringTuning[s];
+      const y = startY + s * 40;
+
+      for (let f = fretStart; f <= fretEnd; f++) {
+        const fretSemi = (baseSemi + f) % 12;
+        const interval = (fretSemi - keys.indexOf(currentKey) + 12) % 12;
+        const x = startX + (f - fretStart) * fretW;
+
+        let color = null;
+        let shape = null;
+
+        if (intervals.includes(interval)) {
+          if ([0, 3, 4, 7].includes(interval)) {
+            color = '#1a6fd8';
+            shape = (interval === 0) ? 'ring' : 'dot';
+          } else if ([1, 5].includes(interval)) {
+            color = '#1a9a3a';
+          }
+        }
+
+        if (interval === 10) color = '#d48800';
+        if (interval === 5 && isMinor) color = '#d48800';
+        if (interval === 5 && !isMinor) color = '#cc2020';
+
+        if (color) {
+          if (shape === 'ring') {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', '12');
+            circle.setAttribute('fill', 'none');
+            circle.setAttribute('stroke', color);
+            circle.setAttribute('stroke-width', '2');
+            circle.style.cursor = 'pointer';
+            circle.addEventListener('click', () => {
+              const note = getNote(interval);
+              infoBar.innerHTML = `<span class="info-note">${note}</span> <span class="info-sep">/</span> <span>Fret ${f}, String ${s + 1}</span>`;
+            });
+            svg.appendChild(circle);
+          } else {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', '8');
+            circle.setAttribute('fill', color);
+            circle.style.cursor = 'pointer';
+            circle.addEventListener('click', () => {
+              const note = getNote(interval);
+              infoBar.innerHTML = `<span class="info-note">${note}</span> <span class="info-sep">/</span> <span>Fret ${f}, String ${s + 1}</span>`;
+            });
+            svg.appendChild(circle);
+          }
+        }
+      }
+    }
+  }
+
+  // Arrow key navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      posSlider.value = Math.max(0, parseInt(posSlider.value) - 1);
+      posSlider.dispatchEvent(new Event('input'));
+    } else if (e.key === 'ArrowRight') {
+      posSlider.value = Math.min(12, parseInt(posSlider.value) + 1);
+      posSlider.dispatchEvent(new Event('input'));
+    }
+  });
+
+  draw();
 </script>
 
 </body>
