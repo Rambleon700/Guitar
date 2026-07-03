@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chord Flow — Song Progression Player</title>
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:       #0e0d0b;
+  --bg2:      #161510;
+  --bg3:      #1e1d18;
+  --bg4:      #252420;
+  --wood:     #3a2818;
+  --woodHi:   #5c3a20;
+  --amber:    #c9821a;
+  --amberDim: #2e1a04;
+  --fret:     #c4a03a;
+  --ivory:    #e5dece;
+  --muted:    #857d6e;
+  --string:   #a88c5a;
+  --green:    #4aaa78;
+  --red:      #b84a36;
+  --beat-glow: rgba(201,130,26,0.55);
+  --active-glow: rgba(196,160,58,0.35);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background: var(--bg);
+  color: var(--ivory);
+  font-family: 'Georgia', serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+}
+
+/* ── HEADER ── */
+.app-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--wood);
+}
+.app-title {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fret);
+  letter-spacing: 0.04em;
+}
+.app-sub {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── SONG LIBRARY ── */
+.library-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 22px;
+}
+.library-label {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.library-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.song-pill {
+  background: var(--bg3);
+  border: 1px solid var(--wood);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.song-pill:hover { border-color: var(--amber); color: var(--ivory); }
+.song-pill.active {
+  background: var(--amberDim);
+  border-color: var(--amber);
+  color: var(--fret);
+}
+
+/* ── NOW PLAYING BAR ── */
+.now-playing {
+  width: 100%;
+  max-width: 900px;
+  background: var(--bg2);
+  border: 1px solid var(--wood);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.song-info { flex: 1; min-width: 140px; }
+.song-title {
+  font-size: 1.0rem;
+  font-weight: bold;
+  color: var(--ivory);
+  line-height: 1.2;
+}
+.song-meta {
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.song-meta span { color: var(--amber); }
+
+/* ── TRANSPORT ── */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-play-main {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: none;
+  color: var(--bg);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.btn-play-main:hover { background: var(--fret); transform: scale(1.05); }
+.btn-play-main.playing { background: var(--green); }
+
+.btn-restart {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--woodHi);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-restart:hover { border-color: var(--amber); color: var(--ivory); }
+
+/* ── BPM CONTROL ── */
+.bpm-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.bpm-control input[type=range] {
+  accent-color: var(--amber);
+  width: 90px;
+  cursor: pointer;
+}
+.bpm-val { color: var(--amber); min-width: 54px; font-weight: bold; }
+
+/* ── TIME SIGNATURE ── */
+.tsig-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.tsig-btn {
+  background: var(--bg3);
+  border: 1px solid var(--wood);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.13s, color 0.13s;
+}
+.tsig-btn.active { border-color: var(--amber); color: var(--amber); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 22px;
+}
+.progress-track {
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--amber);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── BEAT PULSE ── */
+.beat-row {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.beat-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--wood);
+  transition: background 0.06s, border-color 0.06s, transform 0.06s;
+  flex-shrink: 0;
+}
+.beat-dot.beat-1 { width: 18px; height: 18px; }
+.beat-dot.lit {
+  background: var(--amber);
+  border-color: var(--fret);
+  transform: scale(1.2);
+}
+.beat-dot.beat-1.lit {
+  background: var(--fret);
+  box-shadow: 0 0 8px var(--beat-glow);
+}
+.beat-label {
+  font-family: monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+/* ── CHORD GRID ── */
+.chord-grid-outer {
+  width: 100%;
+  max-width: 900px;
+}
+.section-label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  margin-top: 6px;
+}
+.section-label {
+  font-family: monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 9px;
+  border-radius: 3px;
+  font-weight: 700;
+  border: 1px solid;
+}
+.section-label.intro  { color: #4880b0; border-color: #4880b0; background: rgba(72,128,176,0.1); }
+.section-label.verse  { color: #8862c2; border-color: #8862c2; background: rgba(136,98,194,0.1); }
+.section-label.chorus { color: var(--amber); border-color: var(--amber); background: rgba(201,130,26,0.1); }
+.section-label.bridge { color: #4aaa78; border-color: #4aaa78; background: rgba(74,170,120,0.1); }
+.section-label.outro  { color: var(--muted); border-color: var(--wood); background: transparent; }
+
+.chord-bar-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.chord-bar-row::-webkit-scrollbar { height: 3px; }
+.chord-bar-row::-webkit-scrollbar-thumb { background: var(--wood); }
+
+/* ── CHORD CELL ── */
+.chord-cell {
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: 8px;
+  border: 1.5px solid var(--wood);
+  background: var(--bg3);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, transform 0.08s;
+  overflow: hidden;
+  min-width: 72px;
+}
+.chord-cell:hover { border-color: var(--amber); }
+
+/* width driven by beats-per-cell */
+.chord-cell[data-beats="1"] { width: 72px; }
+.chord-cell[data-beats="2"] { width: 150px; }
+.chord-cell[data-beats="3"] { width: 228px; }
+.chord-cell[data-beats="4"] { width: 306px; }
+
+.chord-cell.active {
+  border-color: var(--fret);
+  background: var(--amberDim);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px var(--active-glow);
+}
+.chord-cell.played {
+  border-color: var(--woodHi);
+  background: var(--bg2);
+}
+.chord-cell.next-up {
+  border-color: var(--woodHi);
+  border-style: dashed;
+}
+
+/* beat subdivisions inside cell */
+.beat-ticks {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  display: flex;
+}
+.beat-tick {
+  flex: 1;
+  border-right: 1px solid var(--wood);
+  transition: background 0.08s;
+}
+.beat-tick:last-child { border-right: none; }
+.beat-tick.lit { background: var(--amber); }
+
+.chord-inner {
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.chord-name-big {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fret);
+  line-height: 1;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+.chord-cell.active .chord-name-big { color: var(--ivory); }
+.chord-beats-label {
+  font-family: monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+}
+.chord-cell.active .chord-beats-label { color: var(--amber); }
+
+/* chord diagram in cell */
+.mini-fret { display: block; margin: 4px auto 0; }
+
+/* ── ACTIVE CHORD DISPLAY ── */
+.active-display {
+  width: 100%;
+  max-width: 900px;
+  background: var(--bg2);
+  border: 1px solid var(--woodHi);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.active-chord-name {
+  font-family: monospace;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: var(--fret);
+  line-height: 1;
+  min-width: 120px;
+  transition: color 0.15s;
+}
+.active-chord-name.flash { color: var(--ivory); }
+.active-chord-detail { flex: 1; }
+.active-chord-beats {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.next-chord-label {
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.next-chord-label span { color: var(--amber); }
+
+/* big SVG diagram */
+.active-svg-wrap { flex-shrink: 0; }
+
+/* ── EDITOR ── */
+.editor-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 24px;
+}
+.editor-toggle {
+  background: none;
+  border: 1px solid var(--wood);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 0.72rem;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color 0.14s, color 0.14s;
+  margin-bottom: 10px;
+}
+.editor-toggle:hover { border-color: var(--amber); color: var(--ivory); }
+.editor-panel {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--wood);
+  border-radius: 8px;
+  padding: 18px;
+}
+.editor-panel.open { display: block; }
+.editor-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.editor-label {
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  min-width: 70px;
+}
+.editor-input {
+  background: var(--bg3);
+  border: 1px solid var(--wood);
+  border-radius: 4px;
+  color: var(--ivory);
+  font-family: monospace;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  flex: 1;
+  min-width: 200px;
+  outline: none;
+}
+.editor-input:focus { border-color: var(--amber); }
+.editor-input::placeholder { color: var(--muted); }
+.editor-select {
+  background: var(--bg3);
+  border: 1px solid var(--wood);
+  border-radius: 4px;
+  color: var(--ivory);
+  font-family: monospace;
+  font-size: 0.8rem;
+  padding: 5px 8px;
+  outline: none;
+  cursor: pointer;
+}
+.editor-select:focus { border-color: var(--amber); }
+.btn-load {
+  background: var(--amber);
+  border: none;
+  border-radius: 6px;
+  color: var(--bg);
+  font-family: monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+.btn-load:hover { background: var(--fret); }
+.editor-hint {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.editor-hint strong { color: var(--amber); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--wood); border-radius: 3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .active-chord-name { font-size: 2.2rem; min-width: 80px; }
+  .now-playing { gap: 10px; }
+  .bpm-control input[type=range] { width: 60px; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">Chord Flow</div>
+  <div class="app-sub">Real-time song progression player</div>
+</header>
+
+<!-- SONG LIBRARY -->
+<div class="library-wrap">
+  <div class="library-label">Songs</div>
+  <div class="library-pills" id="libraryPills"></div>
+</div>
+
+<!-- NOW PLAYING -->
+<div class="now-playing">
+  <div class="song-info">
+    <div class="song-title" id="nowTitle">—</div>
+    <div class="song-meta" id="nowMeta">Select a song above</div>
+  </div>
+  <div class="transport">
+    <button class="btn-restart" id="btnRestart" title="Restart">&#x21BA;</button>
+    <button class="btn-play-main" id="btnPlay" title="Play / Pause">&#x25B6;</button>
+  </div>
+  <div class="bpm-control">
+    <span>BPM</span>
+    <input type="range" id="bpmSlider" min="30" max="200" value="72"/>
+    <span class="bpm-val" id="bpmVal">72</span>
+  </div>
+  <div class="tsig-control">
+    <span>Time</span>
+    <button class="tsig-btn" data-beats="3">3/4</button>
+    <button class="tsig-btn active" data-beats="4">4/4</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-labels">
+    <span id="progressPos">Bar 1, Beat 1</span>
+    <span id="progressTotal"></span>
+  </div>
+</div>
+
+<!-- BEAT PULSE -->
+<div class="beat-row" id="beatRow"></div>
+
+<!-- ACTIVE CHORD DISPLAY -->
+<div class="active-display">
+  <div class="active-chord-name" id="activeChordName">—</div>
+  <div class="active-svg-wrap" id="activeSvg"></div>
+  <div class="active-chord-detail">
+    <div class="active-chord-beats" id="activeChordBeats"></div>
+    <div class="next-chord-label" id="nextChordLabel"></div>
+  </div>
+</div>
+
+<!-- CHORD GRID -->
+<div class="chord-grid-outer" id="chordGridOuter"></div>
+
+<!-- EDITOR -->
+<div class="editor-wrap">
+  <button class="editor-toggle" id="editorToggle">&#x270F; Custom song</button>
+  <div class="editor-panel" id="editorPanel">
+    <div class="editor-row">
+      <span class="editor-label">Title</span>
+      <input class="editor-input" id="customTitle" placeholder="My Song" style="max-width:260px"/>
+      <span class="editor-label" style="min-width:50px">Artist</span>
+      <input class="editor-input" id="customArtist" placeholder="Artist name" style="max-width:200px"/>
+    </div>
+    <div class="editor-row">
+      <span class="editor-label">Key</span>
+      <input class="editor-input" id="customKey" placeholder="G major" style="max-width:120px"/>
+      <span class="editor-label" style="min-width:40px">BPM</span>
+      <input class="editor-input" id="customBpm" placeholder="72" type="number" min="30" max="200" style="max-width:80px"/>
+    </div>
+    <div class="editor-row" style="align-items:flex-start">
+      <span class="editor-label" style="padding-top:6px">Chords</span>
+      <textarea class="editor-input" id="customChords" rows="5"
+        placeholder="[Intro]&#10;G:2 Bm7:2 Cmaj7:2 C/D:2&#10;&#10;[Verse]&#10;G:2 Bm7:2 C:2 C/D:2&#10;G:2 Bm7:2 C:2 C/D:2&#10;Cmaj7:2 Bm7:2 Am7:2 C/D:1 G:1&#10;&#10;[Chorus]&#10;Cmaj7:2 Bm7:2 Am7:2 D7:2&#10;Cmaj7:2 Bm7:2 C/D:2 G:2"
+        style="min-width:300px; font-size:0.75rem; line-height:1.8; resize:vertical"></textarea>
+    </div>
+    <div class="editor-hint">
+      Format: <strong>ChordName:beats</strong> per chord, space-separated. Section headers in <strong>[brackets]</strong>.<br>
+      Example: <strong>G:2 Bm7:2 Cmaj7:4</strong> &mdash; G for 2 beats, Bm7 for 2 beats, Cmaj7 for 4 beats.<br>
+      Supported names: G Bm Bm7 Am Am7 C Cmaj7 C/D G/B D D7 Dm Em Em7 F A A7 E Dsus4 Cadd9 and more.
+    </div>
+    <div class="editor-row" style="margin-top:12px; margin-bottom:0">
+      <button class="btn-load" id="btnLoadCustom">Load Song</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AUDIO
+═══════════════════════════════════════════ */
+var audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, dur, gain, type, delay) {
+  if (!freq) return;
+  gain = gain || 0.18; type = type || "triangle"; delay = delay || 0;
+  var ctx = getCtx();
+  var o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = type; o.frequency.value = freq;
+  var t = ctx.currentTime + delay;
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.linearRampToValueAtTime(gain, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.start(t); o.stop(t + dur + 0.05);
+}
+function playClick(accent) {
+  var freq = accent ? 1200 : 900;
+  var gain = accent ? 0.22 : 0.10;
+  playTone(freq, 0.04, gain, "square");
+}
+
+/* Chord freq map — precise frequencies from fret positions on standard-tuned guitar */
+/* String order: [E2, A2, D3, G3, B3, E4], null = muted string */
+var FREQS = {
+  "G":     [98.0,123.5,146.8,196.0,246.9,392.0],
+  "Gm":    [98.0,116.5,146.8,196.0,293.7,392.0],
+  "C":     [null,130.8,164.8,196.0,261.6,329.6],
+  "Cmaj7": [null,130.8,164.8,196.0,246.9,329.6],
+  "Cadd9": [null,130.8,164.8,196.0,293.7,329.6],
+  "G/B":   [null,123.5,146.8,196.0,246.9,392.0],
+  "C/D":   [null,null,146.8,196.0,261.6,329.6],
+  "Am":    [null,110.0,164.8,220.0,261.6,329.6],
+  "Am7":   [null,110.0,164.8,196.0,261.6,329.6],
+  "D":     [null,null,146.8,220.0,293.7,370.0],
+  "D7":    [null,null,146.8,220.0,261.6,370.0],
+  "Dsus4": [null,null,146.8,220.0,293.7,392.0],
+  "Dm":    [null,null,146.8,220.0,293.7,349.2],
+  "Dm7":   [null,null,146.8,220.0,261.6,349.2],
+  "Em":    [82.4,123.5,164.8,196.0,246.9,329.6],
+  "Em7":   [82.4,123.5,164.8,196.0,293.7,329.6],
+  "E":     [82.4,123.5,164.8,207.7,246.9,329.6],
+  "E7":    [82.4,123.5,146.8,207.7,246.9,329.6],
+  "F":     [null,null,174.6,220.0,261.6,349.2],
+  "Fmaj7": [null,null,174.6,220.0,261.6,329.6],
+  "A":     [null,110.0,164.8,220.0,277.2,329.6],
+  "A7":    [null,110.0,164.8,196.0,277.2,329.6],
+  "Bm":    [null,123.5,185.0,246.9,293.7,370.0],
+  "Bm7":   [null,123.5,146.8,220.0,246.9,370.0],
+  "Bb":    [null,116.5,174.6,233.1,293.7,349.2],
+  "Eb":    [null,null,155.6,233.1,311.1,392.0],
+  "Fm":    [null,null,174.6,207.7,277.2,349.2],
+  "Cm":    [null,130.8,196.0,261.6,311.1,392.0],
+  "Cm7":   [null,130.8,155.6,233.1,261.6,null],
+  "A7sus4":[null,110.0,164.8,196.0,293.7,329.6],
+};
+function pluckString(freq, delay, gain) {
+  /* Karplus-Strong style approximation:
+     attack burst of harmonics + exponential decay per string */
+  var ctx = getCtx();
+  var t = ctx.currentTime + delay;
+  var masterGain = ctx.createGain();
+  masterGain.connect(ctx.destination);
+  masterGain.gain.setValueAtTime(gain, t);
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+
+  /* Fundamental + harmonics with natural roll-off */
+  var harmonics = [1, 2, 3, 4, 5, 6];
+  var harmGains = [1.0, 0.45, 0.25, 0.12, 0.06, 0.03];
+
+  harmonics.forEach(function(h, hi) {
+    /* skip harmonics beyond 5000Hz — they disappear on real strings */
+    if (freq * h > 5000) return;
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.connect(g); g.connect(masterGain);
+
+    /* Sawtooth for low strings, triangle for high — mimics string thickness */
+    o.type = freq < 200 ? "sawtooth" : (freq < 300 ? "triangle" : "sine");
+    o.frequency.value = freq * h;
+
+    /* Slight frequency modulation for attack transient */
+    o.frequency.setValueAtTime(freq * h * 1.004, t);
+    o.frequency.exponentialRampToValueAtTime(freq * h, t + 0.03);
+
+    /* Higher harmonics decay faster */
+    var decayTime = 1.8 / (1 + hi * 0.5);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(harmGains[hi], t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
+
+    o.start(t); o.stop(t + decayTime + 0.05);
+  });
+}
+
+function strumChord(name) {
+  var freqs = FREQS[name] || FREQS["G"];
+  /* Strum delay: low strings first, ~18ms between each string */
+  var strumIdx = 0;
+  freqs.forEach(function(f, i) {
+    if (!f) return;
+    /* Scale gain by string position: bass strings slightly louder */
+    var gain = 0.10 - (i * 0.008);
+    gain = Math.max(gain, 0.04);
+    pluckString(f, strumIdx * 0.018, gain);
+    strumIdx++;
+  });
+}
+
+/* ═══════════════════════════════════════════
+   CHORD SVG (two sizes)
+═══════════════════════════════════════════ */
+var FRET_SHAPES = {
+  "G":     [3,0,0,0,2,3],
+  "Gm":    [3,1,0,0,3,3],
+  "Bm":    [2,3,4,4,2,-1],
+  "Bm7":   [2,0,2,0,2,-1],
+  "C":     [0,1,0,2,3,-1],
+  "Cmaj7": [0,0,0,2,3,-1],
+  "Cadd9": [0,3,0,2,3,-1],
+  "C/D":   [0,0,0,0,-1,-1],
+  "G/B":   [3,0,0,0,2,-1],
+  "Am":    [0,1,2,2,0,-1],
+  "Am7":   [0,0,2,2,0,-1],
+  "D":     [2,3,2,0,-1,-1],
+  "D7":    [2,1,2,0,-1,-1],
+  "Dsus4": [3,3,2,0,-1,-1],
+  "Dm":    [1,3,2,0,-1,-1],
+  "Dm7":   [1,1,2,0,-1,-1],
+  "Em":    [0,0,0,2,2,0],
+  "Em7":   [0,0,0,0,2,0],
+  "F":     [1,1,2,3,3,1],
+  "Fmaj7": [0,1,2,3,3,-1],
+  "A":     [0,2,2,2,0,-1],
+  "A7":    [0,2,0,2,0,-1],
+  "E":     [0,0,1,2,2,0],
+  "E7":    [0,0,1,0,2,0],
+  "Bb":    [1,3,3,3,1,1],
+  "Eb":    [3,4,5,5,3,3],
+  "Fm":    [1,1,1,3,3,1],
+  "Cm":    [3,4,5,5,3,3],
+  "Cm7":   [3,4,3,5,3,3],
+};
+function buildSvg(name, size) {
+  var frets = FRET_SHAPES[name];
+  if (!frets) frets = [0,0,0,0,0,0];
+  var big = size === "big";
+  var W = big ? 100 : 56, H = big ? 112 : 66;
+  var sx = big ? 12 : 7, sy = big ? 18 : 12;
+  var sw = (W - sx*2) / 5;
+  var fh = (H - sy - (big?14:10)) / 4;
+  var ns = "http://www.w3.org/2000/svg";
+  var svg = document.createElementNS(ns,"svg");
+  svg.setAttribute("width",W); svg.setAttribute("height",H);
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+
+  function line(x1,y1,x2,y2,stroke,w) {
+    var l=document.createElementNS(ns,"line");
+    l.setAttribute("x1",x1);l.setAttribute("y1",y1);
+    l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+    l.setAttribute("stroke",stroke);l.setAttribute("stroke-width",w||1);
+    svg.appendChild(l);
+  }
+  line(sx,sy,sx+sw*5,sy,"#c4a03a",big?2:1.5);
+  for(var f=1;f<=4;f++) line(sx,sy+fh*f,sx+sw*5,sy+fh*f,"#5c3a20",0.8);
+  for(var s=0;s<6;s++) line(sx+sw*s,sy,sx+sw*s,sy+fh*4,"#a88c5a",0.8);
+
+  frets.forEach(function(fr,si){
+    var cx=sx+sw*(5-si);
+    if(fr===-1){
+      var t=document.createElementNS(ns,"text");
+      t.setAttribute("x",cx);t.setAttribute("y",sy-3);
+      t.setAttribute("text-anchor","middle");t.setAttribute("font-size",big?"9":"7");
+      t.setAttribute("fill","#b84a36");t.textContent="x";svg.appendChild(t);
+    } else if(fr===0){
+      var co=document.createElementNS(ns,"circle");
+      co.setAttribute("cx",cx);co.setAttribute("cy",sy-(big?6:4));co.setAttribute("r",big?"3.5":"2.5");
+      co.setAttribute("fill","none");co.setAttribute("stroke","#857d6e");co.setAttribute("stroke-width","1");
+      svg.appendChild(co);
+    } else if(fr>0&&fr<=4){
+      var cy=sy+fh*(fr-0.5);
+      var cd=document.createElementNS(ns,"circle");
+      cd.setAttribute("cx",cx);cd.setAttribute("cy",cy);cd.setAttribute("r",fh*0.38);
+      cd.setAttribute("fill","#c9821a");svg.appendChild(cd);
+    }
+  });
+  return svg;
+}
+
+/* ═══════════════════════════════════════════
+   SONG LIBRARY
+═══════════════════════════════════════════ */
+var SONGS = [
+  {
+    /* ── Have I Told You Lately — Rod Stewart (1993) ──────────────────────
+       Key: Bb major, Capo 3, shapes in G. BPM ~72.
+       Progression: G Bm7 Cmaj7 C/D (intro/verse), descending Cmaj7-Bm7-Am7 pre-chorus,
+       chorus pivots via D7 (V7 of G). Verified against studio recording. */
+    id:"hityl", title:"Have I Told You Lately", artist:"Rod Stewart", key:"Bb (capo 3)", bpm:72,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["G:2","Bm7:2","Cmaj7:2","C/D:2"],
+        ["G:2","Bm7:2","Cmaj7:2","C/D:2"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["G:2","Bm7:2","C:2","C/D:2"],
+        ["G:2","Bm7:2","C:2","C/D:2"],
+        ["Cmaj7:2","Bm7:2","Am7:2","C/D:2"],
+        ["G:2","Am7:1","G/B:1","G:2"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Cmaj7:2","Bm7:2","Am7:2","D7:2"],
+        ["Cmaj7:2","Bm7:2","C/D:4"],
+        ["G:2","Am7:1","G/B:1","G:2"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["G:2","Bm7:2","C:2","C/D:2"],
+        ["G:2","Bm7:2","C:2","C/D:2"],
+        ["Cmaj7:2","Bm7:2","Am7:2","C/D:2"],
+        ["G:2","Am7:1","G/B:1","G:2"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Cmaj7:2","Bm7:2","Am7:2","D7:2"],
+        ["Cmaj7:2","Bm7:2","C/D:4"],
+        ["G:4","G:4"]
+      ]},
+    ]
+  },
+  {
+    /* ── Dancing in the Moonlight — Toploader (2000) ──────────────────────
+       Key: Fm, Capo 3, shapes in Dm. BPM ~120.
+       Entire song: Dm G C G/B Am. No variation between sections.
+       G/B is a passing chord (half bar) giving descending bass C-B-A. */
+    id:"ditm", title:"Dancing in the Moonlight", artist:"Toploader", key:"Fm (capo 3)", bpm:120,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"],
+        ["Dm:2","G:2","C:2","G/B:1","Am:1"]
+      ]},
+    ]
+  },
+  {
+    /* ── Who Wants To Live Forever — Queen (1986) ─────────────────────────
+       Key: E minor. BPM ~63.
+       Verse: Am D Em (×2 lines), each line = Am:2 D:2 Em:4
+       The descending Em-Em/D-Em/C#-G/D line is orchestral; guitar simplification
+       uses Am D Em. Chorus: C G/B Am (×2), C Bm Am D.
+       Final chorus has G D/F# Em pattern — use G D Em as playable approximation. */
+    id:"wwtlf", title:"Who Wants To Live Forever", artist:"Queen", key:"E minor", bpm:63,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["Em:4"],["Em:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Am:2","D:2"],
+        ["Em:4"],
+        ["Am:2","D:2"],
+        ["Em:4"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["C:2","G/B:2"],
+        ["Am:4"],
+        ["C:2","G/B:2"],
+        ["Am:2","D:2"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Am:2","D:2"],
+        ["Em:4"],
+        ["Am:2","D:2"],
+        ["Em:4"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["C:2","G/B:2"],
+        ["Am:4"],
+        ["C:2","Bm:2"],
+        ["Am:2","D:2"]
+      ]},
+      { label:"bridge", type:"bridge", bars:[
+        ["Em:2","C:2"],
+        ["Em:2","C:2"],
+        ["Em:2","C:2","D:2"]
+      ]},
+      { label:"final chorus", type:"chorus", bars:[
+        ["G:2","D:2"],
+        ["Em:4"],
+        ["G:2","D:2"],
+        ["Em:4"],
+        ["G:2","D:2"],
+        ["Em:4"]
+      ]},
+    ]
+  },
+  {
+    /* ── Wonderwall — Oasis (1995) ────────────────────────────────────────
+       Key: F#m / A, Capo 2. BPM ~87.
+       Verse/Intro: Em7 G | Dsus4 A7sus4 (×4), end of v1: C Dsus4 A7sus4
+       Bridge: C Dsus4 | Em (×2)
+       Chorus: Cadd9 Em7 | G Em7 (×4) — NOT C, not plain Dsus4.
+       Cadd9 (x32033) is the correct chorus chord, not plain C. */
+    id:"wonderwall", title:"Wonderwall", artist:"Oasis", key:"A major (capo 2)", bpm:87,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"]
+      ]},
+      { label:"verse 1", type:"verse", bars:[
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["C:2","Dsus4:2"],["A7sus4:4"]
+      ]},
+      { label:"verse 2", type:"verse", bars:[
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"]
+      ]},
+      { label:"bridge", type:"bridge", bars:[
+        ["C:2","Dsus4:2"],["Em:4"],
+        ["C:2","Dsus4:2"],["Em:4"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:4"]
+      ]},
+      { label:"verse 3", type:"verse", bars:[
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"],
+        ["Em7:2","G:2"],["Dsus4:2","A7sus4:2"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:2","Em7:2"],
+        ["Cadd9:2","Em7:2"],["G:4"]
+      ]},
+    ]
+  },
+  {
+    /* ── Wonderful Tonight — Eric Clapton (1977) ──────────────────────────
+       Key: G major. No capo. BPM ~96.
+       Verse: G D C D (×4 bars)
+       Chorus: C D G Em | C D G (×2) then C D D (last line).
+       Correct and verified — no changes from original. */
+    id:"wonderful", title:"Wonderful Tonight", artist:"Eric Clapton", key:"G major", bpm:96,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["G:2","D:2"],["C:2","D:2"],
+        ["G:2","D:2"],["C:2","D:2"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["G:2","D:2"],["C:2","D:2"],
+        ["G:2","D:2"],["C:2","D:2"],
+        ["G:2","D:2"],["C:2","D:2"],
+        ["C:2","D:2"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["C:2","D:2"],["G:2","Em:2"],
+        ["C:2","D:2"],["G:4"],
+        ["C:2","D:2"],["G:2","Em:2"],
+        ["C:2","D:2"],["D:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["G:2","D:2"],["C:2","D:2"],
+        ["G:2","D:2"],["C:2","D:2"],
+        ["G:2","D:2"],["C:2","D:2"],
+        ["C:2","D:2"]
+      ]},
+      { label:"chorus", type:"chorus", bars:[
+        ["C:2","D:2"],["G:2","Em:2"],
+        ["C:2","D:2"],["G:4"],
+        ["C:2","D:2"],["G:2","Em:2"],
+        ["C:2","D:2"],["D:4"]
+      ]},
+      { label:"outro", type:"outro", bars:[
+        ["G:2","D:2"],["C:2","D:2"],["G:4"]
+      ]},
+    ]
+  },
+  {
+    /* ── Fields of Gold — Sting (1993) ────────────────────────────────────
+       Key: D major (no capo). BPM ~104.
+       Verse: Bm G D (each line), ending walk Bm G D | G/B A Bm/D
+       Chorus/turnaround: G A D or G/B A D
+       Bridge: G D | G D | G D | G/B A D
+       Previous version had wrong key (Bm capo 2) and wrong BPM (93).
+       No Em in this song at all. */
+    id:"fields", title:"Fields of Gold", artist:"Sting", key:"D major", bpm:104,
+    sections:[
+      { label:"intro", type:"intro", bars:[
+        ["Bm:4"],["G:4"],["D:4"],["Bm:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Bm:2","G:2"],["D:4"],
+        ["Bm:2","G:2"],["D:4"],
+        ["G:2","A:2"],["Bm:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Bm:2","G:2"],["D:4"],
+        ["Bm:2","G:2"],["D:4"],
+        ["G/B:2","A:2"],["D:4"]
+      ]},
+      { label:"bridge", type:"bridge", bars:[
+        ["G:2","D:2"],["G:2","D:2"],
+        ["G:2","D:2"],["G/B:2","A:2"],["D:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Bm:2","G:2"],["D:4"],
+        ["Bm:2","G:2"],["D:4"],
+        ["G:2","A:2"],["Bm:4"]
+      ]},
+      { label:"verse", type:"verse", bars:[
+        ["Bm:2","G:2"],["D:4"],
+        ["Bm:2","G:2"],["D:4"],
+        ["G/B:2","A:2"],["D:4"]
+      ]},
+      { label:"bridge", type:"bridge", bars:[
+        ["G:2","D:2"],["G:2","D:2"],
+        ["G:2","D:2"],["G/B:2","A:2"],["D:4"]
+      ]},
+      { label:"outro", type:"outro", bars:[
+        ["Bm:2","G:2"],["D:4"],
+        ["G/B:2","A:2"],["D:4"]
+      ]},
+    ]
+  },
+]
+/* Extra chord shape needed for Wonderwall */
+FRET_SHAPES["A7sus4"] = [0,3,0,2,0,-1];
+/* Additional shapes for corrected songs */
+FRET_SHAPES["Cadd9"]  = [0,3,0,2,3,-1];
+FRET_SHAPES["A7sus4"] = [0,3,0,2,0,-1];
+/* A is already in FRET_SHAPES; Cadd9 adds 9th (D on B string fret 3) */
+
+/* ═══════════════════════════════════════════
+   PARSE FLAT BEAT LIST FROM SONG
+═══════════════════════════════════════════ */
+function parseSong(song) {
+  // Returns flat array of beat objects: {chord, barIndex, beatInBar, totalBeat, isBarStart, sectionType, sectionLabel}
+  var beats = [];
+  var totalBeat = 0;
+  var barIdx = 0;
+  song.sections.forEach(function(sec) {
+    sec.bars.forEach(function(bar) {
+      var beatInBar = 0;
+      bar.forEach(function(token) {
+        var parts = token.split(":");
+        var chord = parts[0];
+        var count = parseInt(parts[1]) || 1;
+        for (var b = 0; b < count; b++) {
+          beats.push({
+            chord: chord,
+            barIndex: barIdx,
+            beatInBar: beatInBar,
+            totalBeat: totalBeat,
+            isBarStart: (beatInBar === 0 && b === 0),
+            isChordStart: (b === 0),
+            sectionType: sec.type,
+            sectionLabel: sec.label
+          });
+          beatInBar++;
+          totalBeat++;
+        }
+      });
+      barIdx++;
+    });
+  });
+  return beats;
+}
+
+/* Parse chord cell definitions for grid display */
+function parseSongCells(song) {
+  // Returns sections > bars > cells: {chord, beats, sectionType, sectionLabel, cellIndex}
+  var result = [];
+  var cellIdx = 0;
+  song.sections.forEach(function(sec) {
+    var secObj = { label: sec.label, type: sec.type, bars: [] };
+    sec.bars.forEach(function(bar) {
+      var barCells = [];
+      bar.forEach(function(token) {
+        var parts = token.split(":");
+        barCells.push({ chord: parts[0], beats: parseInt(parts[1])||1, cellIndex: cellIdx });
+        cellIdx++;
+      });
+      secObj.bars.push(barCells);
+    });
+    result.push(secObj);
+  });
+  return result;
+}
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+var state = {
+  song: null,
+  beats: [],
+  cells: [],
+  cellElements: [],
+  bpm: 72,
+  beatsPerBar: 4,
+  playing: false,
+  currentBeat: 0,
+  timer: null,
+  lastChord: null,
+};
+
+/* ═══════════════════════════════════════════
+   BUILD BEAT ROW
+═══════════════════════════════════════════ */
+function buildBeatRow() {
+  var row = document.getElementById("beatRow");
+  row.innerHTML = "";
+  for (var i = 0; i < state.beatsPerBar; i++) {
+    var dot = document.createElement("div");
+    dot.className = "beat-dot" + (i === 0 ? " beat-1" : "");
+    dot.id = "beatDot" + i;
+    row.appendChild(dot);
+  }
+  var lbl = document.createElement("span");
+  lbl.className = "beat-label";
+  lbl.id = "beatLabel";
+  lbl.textContent = "";
+  row.appendChild(lbl);
+}
+
+function lightBeat(beatInBar) {
+  for (var i = 0; i < state.beatsPerBar; i++) {
+    var d = document.getElementById("beatDot" + i);
+    if (!d) continue;
+    d.classList.toggle("lit", i === beatInBar);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   BUILD CHORD GRID
+═══════════════════════════════════════════ */
+function buildChordGrid() {
+  var outer = document.getElementById("chordGridOuter");
+  outer.innerHTML = "";
+  state.cellElements = [];
+
+  var allCells = state.cells;
+  allCells.forEach(function(sec) {
+    /* Section label */
+    var labelRow = document.createElement("div");
+    labelRow.className = "section-label-row";
+    var badge = document.createElement("span");
+    badge.className = "section-label " + sec.type;
+    badge.textContent = sec.label.toUpperCase();
+    labelRow.appendChild(badge);
+    outer.appendChild(labelRow);
+
+    sec.bars.forEach(function(bar) {
+      var row = document.createElement("div");
+      row.className = "chord-bar-row";
+      bar.forEach(function(cell) {
+        var div = document.createElement("div");
+        div.className = "chord-cell";
+        div.setAttribute("data-beats", cell.beats);
+        div.setAttribute("data-cell", cell.cellIndex);
+
+        /* beat ticks */
+        var ticks = document.createElement("div");
+        ticks.className = "beat-ticks";
+        for (var t = 0; t < cell.beats; t++) {
+          var tk = document.createElement("div");
+          tk.className = "beat-tick";
+          tk.id = "tick-" + cell.cellIndex + "-" + t;
+          ticks.appendChild(tk);
+        }
+        div.appendChild(ticks);
+
+        /* chord content */
+        var inner = document.createElement("div");
+        inner.className = "chord-inner";
+        var nm = document.createElement("div");
+        nm.className = "chord-name-big";
+        nm.textContent = cell.chord;
+        var bl = document.createElement("div");
+        bl.className = "chord-beats-label";
+        bl.textContent = cell.beats + (cell.beats === 1 ? " beat" : " beats");
+        var svg = buildSvg(cell.chord, "small");
+        svg.classList.add("mini-fret");
+        inner.appendChild(nm); inner.appendChild(bl); inner.appendChild(svg);
+        div.appendChild(inner);
+
+        /* click to strum */
+        (function(ch) {
+          div.addEventListener("click", function() { strumChord(ch); });
+        })(cell.chord);
+
+        row.appendChild(div);
+        state.cellElements[cell.cellIndex] = div;
+      });
+      outer.appendChild(row);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   MAP BEAT -> CELL INDEX
+═══════════════════════════════════════════ */
+function buildBeatCellMap() {
+  /* For each beat in state.beats, find which cellIndex it belongs to */
+  var map = []; /* map[totalBeat] = { cellIndex, beatWithinCell } */
+  var cellIdx = 0;
+  if (!state.song) return map;
+  state.song.sections.forEach(function(sec) {
+    sec.bars.forEach(function(bar) {
+      bar.forEach(function(token) {
+        var parts = token.split(":");
+        var count = parseInt(parts[1])||1;
+        for (var b = 0; b < count; b++) {
+          map.push({ cellIndex: cellIdx, beatWithinCell: b });
+        }
+        cellIdx++;
+      });
+    });
+  });
+  return map;
+}
+
+/* ═══════════════════════════════════════════
+   PLAYBACK TICK
+═══════════════════════════════════════════ */
+var beatCellMap = [];
+
+function tick() {
+  if (state.currentBeat >= state.beats.length) {
+    /* loop — full reset */
+    state.currentBeat = 0;
+    state.lastActiveCellIdx = undefined;
+    state.cellElements.forEach(function(el) {
+      if (el) { el.classList.remove("active","played","next-up"); }
+    });
+    /* clear all tick highlights */
+    document.querySelectorAll(".beat-tick").forEach(function(tk) { tk.classList.remove("lit"); });
+  }
+
+  if (!state.beats.length) return;
+  var beat = state.beats[state.currentBeat];
+  if (!beat) return;
+  var mapEntry = beatCellMap[state.currentBeat];
+
+  /* Beat dots */
+  lightBeat(beat.beatInBar % state.beatsPerBar);
+
+  /* Position label */
+  var barNum = Math.floor(state.currentBeat / state.beatsPerBar) + 1;
+  document.getElementById("progressPos").textContent =
+    "Bar " + (beat.barIndex + 1) + ", Beat " + (beat.beatInBar + 1);
+
+  /* Progress */
+  document.getElementById("progressFill").style.width =
+    ((state.currentBeat / state.beats.length) * 100).toFixed(1) + "%";
+
+  /* Activate cell */
+  if (mapEntry) {
+    var ci = mapEntry.cellIndex;
+    var bwc = mapEntry.beatWithinCell;
+    var cellEl = state.cellElements[ci];
+
+    /* Clear previous active */
+    if (state.lastActiveCellIdx !== undefined && state.lastActiveCellIdx !== ci) {
+      var prev = state.cellElements[state.lastActiveCellIdx];
+      if (prev) { prev.classList.remove("active"); prev.classList.add("played"); }
+      /* clear tick highlights on previous cell */
+      var prevBeat = state.song ? state.beats[state.currentBeat - 1] : null;
+    }
+    state.lastActiveCellIdx = ci;
+
+    if (cellEl) {
+      cellEl.classList.add("active");
+      cellEl.classList.remove("played", "next-up");
+      /* light the tick for this beat-within-cell */
+      for (var t = 0; t < 4; t++) {
+        var tk = document.getElementById("tick-" + ci + "-" + t);
+        if (tk) tk.classList.toggle("lit", t === bwc);
+      }
+      /* scroll into view softly */
+      if (bwc === 0) {
+        cellEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+
+      /* next-up highlight */
+      var nextMap = beatCellMap[state.currentBeat + 1];
+      if (nextMap && nextMap.cellIndex !== ci) {
+        var nextEl = state.cellElements[nextMap.cellIndex];
+        if (nextEl) nextEl.classList.add("next-up");
+      }
+    }
+  }
+
+  /* Chord change? */
+  if (beat.isChordStart) {
+    strumChord(beat.chord);
+    playClick(beat.beatInBar === 0);
+    updateActiveDisplay(beat);
+  } else {
+    playClick(beat.beatInBar === 0);
+  }
+
+  state.currentBeat++;
+}
+
+function updateActiveDisplay(beat) {
+  var nameEl = document.getElementById("activeChordName");
+  var beatsEl = document.getElementById("activeChordBeats");
+  var nextEl = document.getElementById("nextChordLabel");
+  var svgWrap = document.getElementById("activeSvg");
+
+  nameEl.textContent = beat.chord;
+  nameEl.classList.add("flash");
+  setTimeout(function() { nameEl.classList.remove("flash"); }, 200);
+
+  /* count beats for this chord: scan forward from its start position */
+  var chordStart = state.currentBeat - 1;
+  var bcount = 0;
+  for (var j = chordStart; j < state.beats.length; j++) {
+    if (j === chordStart || !state.beats[j].isChordStart) { bcount++; }
+    else break;
+  }
+  beatsEl.textContent = bcount + (bcount === 1 ? " beat" : " beats") + " \u2014 " + beat.sectionLabel;
+
+  /* next chord: scan forward for next isChordStart with a different name */
+  var nextChord = null;
+  for (var k = chordStart + 1; k < state.beats.length; k++) {
+    if (state.beats[k] && state.beats[k].isChordStart && state.beats[k].chord !== beat.chord) {
+      nextChord = state.beats[k].chord;
+      break;
+    }
+  }
+  if (nextChord) {
+    nextEl.innerHTML = "Next: <span>" + nextChord + "</span>";
+  } else {
+    nextEl.textContent = "";
+  }
+
+  /* big SVG diagram */
+  svgWrap.innerHTML = "";
+  svgWrap.appendChild(buildSvg(beat.chord, "big"));
+}
+
+/* ═══════════════════════════════════════════
+   PLAY / PAUSE / RESTART
+═══════════════════════════════════════════ */
+function msPerBeat() {
+  return 60000 / state.bpm;
+}
+function startPlay() {
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(tick, msPerBeat());
+  state.playing = true;
+  var btn = document.getElementById("btnPlay");
+  btn.innerHTML = "&#x23F8;";
+  btn.classList.add("playing");
+}
+function pausePlay() {
+  if (state.timer) { clearInterval(state.timer); state.timer = null; }
+  state.playing = false;
+  var btn = document.getElementById("btnPlay");
+  btn.innerHTML = "&#x25B6;";
+  btn.classList.remove("playing");
+  /* clear beat dots */
+  for (var i = 0; i < state.beatsPerBar; i++) {
+    var d = document.getElementById("beatDot" + i);
+    if (d) d.classList.remove("lit");
+  }
+}
+function restartSong() {
+  pausePlay();
+  state.currentBeat = 0;
+  state.lastActiveCellIdx = undefined;
+  state.cellElements.forEach(function(el) {
+    if (el) el.classList.remove("active","played","next-up");
+    /* clear ticks */
+  });
+  document.getElementById("progressFill").style.width = "0%";
+  document.getElementById("progressPos").textContent = "Bar 1, Beat 1";
+  document.getElementById("activeChordName").textContent = state.beats.length ? state.beats[0].chord : "\u2014";
+  document.getElementById("activeChordBeats").textContent = "";
+  document.getElementById("nextChordLabel").textContent = "";
+  var svgWrap = document.getElementById("activeSvg");
+  svgWrap.innerHTML = "";
+  if (state.beats.length) svgWrap.appendChild(buildSvg(state.beats[0].chord, "big"));
+}
+
+/* ═══════════════════════════════════════════
+   LOAD SONG
+═══════════════════════════════════════════ */
+function loadSong(song) {
+  pausePlay();
+  state.song = song;
+  state.beats = parseSong(song);
+  state.cells = parseSongCells(song);
+  state.currentBeat = 0;
+  state.lastActiveCellIdx = undefined;
+  state.bpm = song.bpm;
+
+  /* update BPM slider */
+  document.getElementById("bpmSlider").value = song.bpm;
+  document.getElementById("bpmVal").textContent = song.bpm + " BPM";
+
+  /* now playing */
+  document.getElementById("nowTitle").textContent = song.title;
+  document.getElementById("nowMeta").innerHTML =
+    song.artist + " &nbsp;&middot;&nbsp; Key: <span>" + song.key + "</span> &nbsp;&middot;&nbsp; <span>" + song.bpm + " BPM</span>";
+
+  /* total */
+  var totalBars = 0;
+  song.sections.forEach(function(s) { totalBars += s.bars.length; });
+  document.getElementById("progressTotal").textContent = totalBars + " bars";
+
+  /* rebuild UI */
+  buildBeatRow();
+  buildChordGrid();
+  beatCellMap = buildBeatCellMap();
+
+  /* show initial chord */
+  document.getElementById("progressFill").style.width = "0%";
+  document.getElementById("progressPos").textContent = "Bar 1, Beat 1";
+  if (state.beats.length) {
+    document.getElementById("activeChordName").textContent = state.beats[0].chord;
+    var svgWrap = document.getElementById("activeSvg");
+    svgWrap.innerHTML = "";
+    svgWrap.appendChild(buildSvg(state.beats[0].chord, "big"));
+    /* next chord */
+    var nxt = null;
+    for (var k = 1; k < state.beats.length; k++) {
+      if (state.beats[k].isChordStart && state.beats[k].chord !== state.beats[0].chord) { nxt = state.beats[k].chord; break; }
+    }
+    document.getElementById("nextChordLabel").innerHTML = nxt ? "Next: <span>" + nxt + "</span>" : "";
+    document.getElementById("activeChordBeats").textContent = state.beats[0].sectionLabel;
+  }
+
+  /* library pills */
+  document.querySelectorAll(".song-pill").forEach(function(p) {
+    p.classList.toggle("active", p.dataset.songId === song.id);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   BUILD LIBRARY
+═══════════════════════════════════════════ */
+function buildLibrary() {
+  var pills = document.getElementById("libraryPills");
+  pills.innerHTML = "";
+  SONGS.forEach(function(song) {
+    var p = document.createElement("button");
+    p.className = "song-pill";
+    p.dataset.songId = song.id;
+    p.textContent = song.title + " \u2014 " + song.artist;
+    p.addEventListener("click", function() { loadSong(song); });
+    pills.appendChild(p);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   CUSTOM SONG PARSER
+═══════════════════════════════════════════ */
+function parseCustomSong() {
+  var title = document.getElementById("customTitle").value.trim() || "Custom Song";
+  var artist = document.getElementById("customArtist").value.trim() || "Unknown";
+  var key = document.getElementById("customKey").value.trim() || "G major";
+  var bpm = parseInt(document.getElementById("customBpm").value) || 72;
+  var raw = document.getElementById("customChords").value.trim();
+
+  var sections = [];
+  var currentSection = { label: "verse", type: "verse", bars: [] };
+  var currentBar = [];
+
+  var lines = raw.split("\n");
+  lines.forEach(function(line) {
+    line = line.trim();
+    if (!line) {
+      if (currentBar.length) { currentSection.bars.push(currentBar); currentBar = []; }
+      return;
+    }
+    /* Section header */
+    var headerMatch = line.match(/^\[(.+)\]$/);
+    if (headerMatch) {
+      if (currentBar.length) { currentSection.bars.push(currentBar); currentBar = []; }
+      if (currentSection.bars.length) sections.push(currentSection);
+      var rawLabel = headerMatch[1].toLowerCase();
+      var type = "verse";
+      if (rawLabel.indexOf("intro") >= 0) type = "intro";
+      else if (rawLabel.indexOf("chorus") >= 0) type = "chorus";
+      else if (rawLabel.indexOf("bridge") >= 0) type = "bridge";
+      else if (rawLabel.indexOf("outro") >= 0) type = "outro";
+      currentSection = { label: rawLabel, type: type, bars: [] };
+      return;
+    }
+    /* Chord tokens */
+    var tokens = line.split(/\s+/);
+    var barTokens = [];
+    tokens.forEach(function(tok) {
+      if (!tok) return;
+      if (!tok.includes(":")) tok = tok + ":2"; /* default 2 beats */
+      barTokens.push(tok);
+    });
+    if (barTokens.length) {
+      currentSection.bars.push(barTokens);
+    }
+  });
+  if (currentBar.length) currentSection.bars.push(currentBar);
+  if (currentSection.bars.length) sections.push(currentSection);
+  if (!sections.length) {
+    alert("No chords found. Check the format.");
+    return null;
+  }
+  return { id: "custom", title: title, artist: artist, key: key, bpm: bpm, sections: sections };
+}
+
+/* ═══════════════════════════════════════════
+   WIRE UP CONTROLS
+═══════════════════════════════════════════ */
+document.getElementById("btnPlay").addEventListener("click", function() {
+  if (!state.song) return;
+  if (state.playing) pausePlay();
+  else startPlay();
+});
+
+document.getElementById("btnRestart").addEventListener("click", function() {
+  restartSong();
+});
+
+document.getElementById("bpmSlider").addEventListener("input", function() {
+  state.bpm = parseInt(this.value);
+  document.getElementById("bpmVal").textContent = state.bpm + " BPM";
+  if (state.playing) { clearInterval(state.timer); state.timer = setInterval(tick, msPerBeat()); }
+  if (state.song) {
+    document.getElementById("nowMeta").innerHTML =
+      state.song.artist + " &nbsp;&middot;&nbsp; Key: <span>" + state.song.key + "</span> &nbsp;&middot;&nbsp; <span>" + state.bpm + " BPM</span>";
+  }
+});
+
+document.querySelectorAll(".tsig-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".tsig-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    state.beatsPerBar = parseInt(btn.dataset.beats);
+    buildBeatRow();
+  });
+});
+
+document.getElementById("editorToggle").addEventListener("click", function() {
+  var panel = document.getElementById("editorPanel");
+  panel.classList.toggle("open");
+  this.textContent = panel.classList.contains("open") ? "\u2715 Close editor" : "\u270F Custom song";
+});
+
+document.getElementById("btnLoadCustom").addEventListener("click", function() {
+  var song = parseCustomSong();
+  if (song) {
+    /* add to songs and load */
+    SONGS = SONGS.filter(function(s) { return s.id !== "custom"; });
+    SONGS.push(song);
+    buildLibrary();
+    loadSong(song);
+    document.getElementById("editorPanel").classList.remove("open");
+    document.getElementById("editorToggle").textContent = "\u270F Custom song";
+  }
+});
+
+/* Keyboard: space = play/pause, r = restart */
+document.addEventListener("keydown", function(e) {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.code === "Space") { e.preventDefault(); document.getElementById("btnPlay").click(); }
+  if (e.code === "KeyR")  { restartSong(); }
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+buildLibrary();
+loadSong(SONGS[0]);
+</script>
+</body>
+</html>
