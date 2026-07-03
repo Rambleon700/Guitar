@@ -116,6 +116,7 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 0 0 var(--radius) var(--radius);
+            will-change: auto;
         }
 
         .nav-item:hover > .submenu,
@@ -153,6 +154,7 @@
             margin-left: 0.5rem;
             font-size: 0.7rem;
             transition: transform var(--transition);
+            will-change: transform;
         }
 
         .nav-item:hover .dropdown-toggle::after,
@@ -218,6 +220,7 @@
                 border-left: 3px solid var(--accent-color);
                 box-shadow: none;
                 border-radius: 0;
+                will-change: auto;
             }
 
             .nav-item.active .submenu,
@@ -497,11 +500,29 @@
         });
     });
 
-    // Prevent default for dropdown toggles
+    // Prevent default for dropdown toggles on desktop
     document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
         toggle.addEventListener('click', (e) => {
+            // Only prevent default on desktop where hover behavior works
             if (window.innerWidth > 768) {
                 e.preventDefault();
+            }
+        });
+    });
+
+    // Prevent menu from flickering on mouse events
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            // Remove active class to avoid conflicts with CSS hover
+            if (window.innerWidth > 768) {
+                item.classList.remove('active');
+            }
+        });
+
+        item.addEventListener('mouseleave', () => {
+            // Clean up on mobile if needed
+            if (window.innerWidth > 768) {
+                item.classList.remove('active');
             }
         });
     });
