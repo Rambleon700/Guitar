@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Practice & Theory Hub</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        /* [All the CSS from before goes here] */
+        :root { color-scheme: dark; --bg-color: #121214; }
+        /* ... rest of your styles ... */
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <nav>
+      <div class="nav-container">
+        <a href="index.html" class="nav-brand">🎸 Music Hub</a>
+        <button class="mobile-toggle" @click="toggleMobileMenu">☰</button>
+        
+        <ul class="nav-menu" :class="{ 'active': isMobileMenuOpen }">
+          <li v-for="(menu, index) in navigation" :key="index" class="nav-item" :class="{ 'active': activeMobileDropdown === index }">
+            <a href="#" class="nav-link dropdown-toggle" @click.prevent="handleNavClick(index)">
+              {{ menu.title }}
+            </a>
+            <ul class="submenu" :class="{ 'active': activeMobileDropdown === index }">
+              <li v-for="(sub, sIndex) in menu.links" :key="sIndex">
+                <a :href="sub.url">{{ sub.label }}</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <header>
+        <h1>Music Practice & Theory Hub</h1>
+        <p>Select a lesson or practice tool to start improving your playing.</p>
+      </header>
+
+      <main class="grid">
+        <div v-for="(card, index) in cards" :key="index" class="card">
+          <div class="card-content">
+            <h2>{{ card.title }}</h2>
+            <p>{{ card.description }}</p>
+          </div>
+          <a v-if="!card.secondaryUrl" class="btn" :href="card.url">{{ card.buttonText }}</a>
+          <div v-else class="card-links">
+            <a class="btn" :href="card.url">{{ card.buttonText }}</a>
+            <a class="btn btn-secondary" :href="card.secondaryUrl">{{ card.secondaryButtonText }}</a>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <p>&copy; 2026 Music Practice Hub. Built for musicians.</p>
+      </footer>
+    </div>
+</div>
+
+<script>
+  const { createApp, ref } = Vue
+
+  createApp({
+    setup() {
+      const isMobileMenuOpen = ref(false)
+      const activeMobileDropdown = ref(null)
+
+      const navigation = ref([
+        {
+          title: 'Practice Tools',
+          links: [
+            { label: 'Chord Finder', url: 'chord-finder.html' },
+            { label: 'Chord Coach', url: 'chord-coach.html' },
+            { label: 'Chord Player', url: 'chord-player.html' },
+            { label: 'Phrase Trainer', url: 'scales-to-solo-phrase-trainer.html' },
+            { label: 'Riff Cell Generator', url: 'riff-cell-generator.html' }
+          ]
+        },
+        {
+          title: 'Lessons',
+          links: [
+            { label: 'Guitar Triads', url: 'guitar-triads.html' },
+            { label: 'Triad Formulas', url: 'triad-formulas.html' },
+            { label: 'Rhythm Theory', url: 'rhythm-theory-lessons.html' },
+            { label: 'Diagonal Pentatonics', url: 'diagonal-pentatonic.html' },
+            { label: 'CAGED Fretboard', url: 'caged-fretboard.html' }
+          ]
+        }
+        // ... include remaining navigation objects from the previous message
+      ])
+
+      const cards = ref([
+        {
+          title: 'Chord Finder',
+          description: 'Explore, visualize and identify chord shapes and variations across the guitar fretboard.',
+          buttonText: 'Open Chord Finder',
+          url: 'chord-finder.html'
+        }
+        // ... include remaining card objects from the previous message
+      ])
+
+      const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value }
+      const handleNavClick = (index) => {
+        if (window.innerWidth <= 768) {
+          activeMobileDropdown.value = activeMobileDropdown.value === index ? null : index
+        }
+      }
+
+      return { isMobileMenuOpen, activeMobileDropdown, navigation, cards, toggleMobileMenu, handleNavClick }
+    }
+  }).mount('#app')
+</script>
+
+</bod
+y>
+</html>
