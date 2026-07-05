@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riff Cell Generator — How to Use</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --panel:#ffffff;
+    --panel-raised:#ffffff;
+    --wood:#f1f3f6;
+    --wood-line:#d7dce2;
+    --amber:#2454d6;
+    --amber-light:#3f6fef;
+    --amber-dim:#5c78b0;
+    --text:#171a1f;
+    --text-dim:#6b7280;
+    --border:#e1e4e9;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  body{
+    background-image:
+      radial-gradient(circle at 20% -10%, rgba(36,84,214,0.05), transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(224,57,47,0.03), transparent 40%);
+  }
+  h1,h2,h3{ font-family:'Fraunces',Georgia,serif; font-weight:600; margin:0; color:var(--text); }
+  .mono{ font-family:'JetBrains Mono',monospace; }
+  .wrap{ max-width:760px; margin:0 auto; padding:36px 20px 80px; }
+
+  header.top{ text-align:center; margin-bottom:30px; }
+  header.top .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--amber-dim); margin-bottom:10px;
+  }
+  header.top h1{ font-size:32px; letter-spacing:-0.01em; }
+  header.top .sub{ color:var(--text-dim); font-size:14.5px; max-width:520px; margin:10px auto 0; line-height:1.55; }
+
+  header.top .howto-link{
+    display:inline-block;
+    margin-top:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--amber);
+    text-decoration:none;
+    border-bottom:1px solid rgba(36,84,214,0.35);
+    padding-bottom:2px;
+  }
+  header.top .howto-link:hover{ border-bottom-color:var(--amber); }
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel-raised), var(--panel));
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .panel-title{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em;
+    text-transform:uppercase; color:var(--amber-dim); margin-bottom:14px;
+  }
+  p{ line-height:1.65; font-size:15px; color:var(--text); margin:0 0 14px; }
+  p.dim{ color:var(--text-dim); font-size:13.5px; }
+
+  ol.steps{ margin:0; padding:0; list-style:none; counter-reset:step; }
+  ol.steps li{
+    counter-increment:step;
+    display:flex; gap:14px;
+    padding:14px 0;
+    border-bottom:1px solid var(--border);
+  }
+  ol.steps li:last-child{ border-bottom:none; }
+  ol.steps li::before{
+    content:counter(step);
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700; font-size:14px;
+    color:#ffffff;
+    background:var(--amber);
+    width:28px; height:28px; min-width:28px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  ol.steps li .body strong{ color:var(--amber-light); }
+  ol.steps li .body{ font-size:14.5px; line-height:1.6; }
+
+  ul.plain{ margin:0; padding-left:0; list-style:none; }
+  ul.plain li{
+    padding:10px 0 10px 22px;
+    border-bottom:1px solid var(--border);
+    font-size:14.5px;
+    line-height:1.55;
+    position:relative;
+  }
+  ul.plain li:last-child{ border-bottom:none; }
+  ul.plain li::before{
+    content:'—';
+    position:absolute; left:0; color:var(--amber-dim);
+  }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:560px){ .two-col{ grid-template-columns:1fr; } }
+  .col-title{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em;
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .col-title.free{ color:#caa23a; }
+  .col-title.pro{ color:#e0392f; }
+
+  .faq dt{
+    font-weight:700; color:var(--text); font-size:14.5px; margin-bottom:6px;
+  }
+  .faq dd{
+    margin:0 0 16px 0; color:var(--text-dim); font-size:14px; line-height:1.6;
+  }
+
+  .source-note{
+    text-align:center; font-size:12px; color:var(--text-dim); margin-top:8px;
+  }
+  .source-note a{ color:var(--amber-dim); text-decoration:none; border-bottom:1px dotted var(--amber-dim); }
+
+  footer.credit{ text-align:center; color:var(--text-dim); font-size:12px; margin-top:30px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Music Practice &amp; Theory Hub — Improvisation</div>
+    <h1>Riff Cell Generator — How to Use</h1>
+    <p class="sub">A condensed guide to the routine, the reasoning behind it, and what the free vs. full feature set covers.</p>
+    <a href="riff-cell-generator.html" class="howto-link">← Open the Riff Cell Generator</a>
+  </header>
+
+  <div class="panel">
+    <div class="panel-title">The idea in one line</div>
+    <p>Most scale practice turns into reciting the same one or two shapes on autopilot. This tool breaks that habit by dealing a random five-note cell over whatever root and chord you pick, then leaving you to make music out of it against a drone — no backing track, no decision fatigue, just notes and the job of phrasing them.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">The routine</div>
+    <ol class="steps">
+      <li>
+        <div class="body"><strong>Pick a root and a chord type.</strong> Major, Minor or Dominant 7 if you're keeping it simple — Dom 7 is the bluesiest starting point if you're not sure.</div>
+      </li>
+      <li>
+        <div class="body"><strong>Turn the drone on.</strong> That gives you a tonal centre to orient against before you play a note.</div>
+      </li>
+      <li>
+        <div class="body"><strong>Hit "Hear cell" once,</strong> then improvise over it. Use the on-screen practice prompt if you want a specific constraint to work inside.</div>
+      </li>
+      <li>
+        <div class="body"><strong>Once it feels comfortable, generate a new cell</strong> and repeat. A few focused minutes of this beats a long stretch of running scales on autopilot.</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Why five notes beats a full scale</div>
+    <p>A seven-note scale gives you enough options that your fingers quietly default to the box shape you already know — comfortable, but not actually creative. A five-note cell removes that escape route: fewer notes means every phrase has to be deliberate. You end up bending, repeating, leaving space, and resolving lines with intention, which is the actual skill a scale run never forces you to practise.</p>
+    <p class="dim">Randomising the cell also kills the moment of deliberation before you start — you're not choosing a scale, you're just playing the hand you're dealt. The awkward-sounding cells tend to teach you more about resolving a phrase than the easy ones do.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Who it suits</div>
+    <p>Best for players who already know their way around the neck but feel stuck running the same licks — blues and rock players especially, since the Dominant 7 cells sit naturally over a 12-bar. It works over any tonal centre though. If you're a complete beginner, it's worth spending time with a basic pentatonic shape first and coming back to this once you've got some footing.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Feature set</div>
+    <div class="two-col">
+      <div>
+        <div class="col-title free">Core</div>
+        <ul class="plain">
+          <li>Random 5-note cells over any of the 12 roots</li>
+          <li>Major, Minor, Dominant 7</li>
+          <li>Drone, tap-to-hear, hear-the-cell</li>
+          <li>One- and two-octave shapes</li>
+          <li>A fresh practice prompt with every cell</li>
+        </ul>
+      </div>
+      <div>
+        <div class="col-title pro">Extended</div>
+        <ul class="plain">
+          <li>Practice Mode — auto-advances on a timer with a metronome click, hands-free</li>
+          <li>9 more chord types: Min7, Maj7, 6, Min6, m7♭5, Dim7, Sus4, Sus2, Altered</li>
+          <li>8 tunings, cells re-mapped correctly to each</li>
+          <li>Roam Mode — full-neck view instead of one box</li>
+          <li>Saved cells you can bank and recall</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Quick FAQ</div>
+    <dl class="faq">
+      <dt>Do I need to know theory to use this?</dt>
+      <dd>No. Pick a root, turn on the drone, and play by ear. Note labels are there if you're curious, but you can ignore them entirely.</dd>
+      <dt>How should I practise improvising with it?</dt>
+      <dd>Give yourself a small fixed palette and a tonal centre, then add a constraint — start and end on the root, use only three of the five notes, phrase everything in triplets. Reshuffle the cell whenever you want a new challenge.</dd>
+      <dt>Is a random palette a good idea for total beginners?</dt>
+      <dd>Not immediately — it can feel disorienting with no frame of reference yet. Spend some time with a basic pentatonic shape first, then bring this in once the fretboard feels familiar.</dd>
+    </dl>
+  </div>
+
+  <p class="source-note">Summarised from the original tool's write-up at <a href="https://unlocktheguitar.net/guitar-improvisation-tool.html" target="_blank" rel="noopener">unlocktheguitar.net</a>.</p>
+
+  <footer class="credit">Music Practice &amp; Theory Hub</footer>
+
+</div>
+
+</body>
+</html>
