@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Maker — Full How-To Guide</title>
+<style>
+  :root{
+    --charcoal:#111215;
+    --panel:#181a20;
+    --panel-hi:#242832;
+    --wood:#3a2c23;
+    --wood-lt:#544033;
+    --amber:#f2a93b;
+    --amber-lt:#ffe9cc;
+    --cream:#e2e7ef;
+    --muted:#828d9c;
+    --good:#4372a6;
+    --bad:#c1544a;
+    --line:#2c303c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--charcoal);
+    color: var(--cream);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 28px 20px 80px; }
+  .hero {
+    background: linear-gradient(135deg, var(--panel-hi), var(--panel));
+    border: 1px solid var(--wood);
+    border-radius: 10px;
+    padding: 28px 26px;
+    margin-bottom: 26px;
+  }
+  .eyebrow { color: var(--amber); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+  h1 { color: var(--amber-lt); font-size: 28px; margin: 8px 0 10px; }
+  h2 { color: var(--amber-lt); font-size: 20px; margin: 0 0 6px; }
+  h3 { color: var(--cream); font-size: 15px; margin: 18px 0 6px; }
+  p { color: #c4cad6; margin: 0 0 10px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--wood);
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .card.good { border-left-color: var(--good); }
+  .card.amber { border-left-color: var(--amber); }
+  .card.bad { border-left-color: var(--bad); }
+  .step-list { margin: 10px 0 0; padding-left: 22px; }
+  .step-list li { margin-bottom: 8px; color: #c4cad6; }
+  .kbd, code {
+    background: var(--charcoal);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 13px;
+    color: var(--amber-lt);
+  }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--amber-lt); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { color: #c4cad6; }
+  .badge {
+    display: inline-block;
+    background: var(--charcoal);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .down { color: var(--amber); font-weight: 700; }
+  .up { color: var(--good); font-weight: 700; }
+  .missed { color: var(--muted); font-weight: 700; }
+  .chuck { color: var(--bad); font-weight: 700; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .toc a {
+    color: var(--amber-lt);
+    text-decoration: none;
+    background: var(--charcoal);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+  .toc a:hover { border-color: var(--amber); }
+  .tip {
+    background: rgba(242,169,59,0.08);
+    border: 1px solid rgba(242,169,59,0.3);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--amber-lt);
+    margin-top: 10px;
+  }
+  .warn {
+    background: rgba(193,84,74,0.1);
+    border: 1px solid rgba(193,84,74,0.35);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #f0a89f;
+    margin-top: 10px;
+  }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+  .footer-note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Music Practice & Theory Hub — Companion Guide</div>
+    <h1>Matrix Maker: Full How-To</h1>
+    <p>Matrix Maker builds custom strum-and-chord loops with realistic plucked-string audio, humanized groove, a live fretboard view, a practice-tempo engine, and full save/export support. This guide walks through every capability, start to finish.</p>
+    <div class="toc">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#blocks">Chord Blocks</a>
+      <a href="#strums">Strum Patterns</a>
+      <a href="#bank">Pattern Bank</a>
+      <a href="#archive">Loop Archive</a>
+      <a href="#engine">Playback Engine</a>
+      <a href="#practice">Practice Mode</a>
+      <a href="#groove">Groove & Realism</a>
+      <a href="#liveview">Live View</a>
+      <a href="#export">Audio Export & Sharing</a>
+      <a href="#embedding">Saving & Embedding Notes</a>
+      <a href="#reference">Quick Reference</a>
+    </div>
+  </div>
+
+  <div class="card good" id="quickstart">
+    <h2>Quick Start</h2>
+    <p>The fastest way to hear something:</p>
+    <ol class="step-list">
+      <li>The workspace loads with two starter blocks, <code>Am</code> and <code>C</code>, already in place.</li>
+      <li>Click <strong>▶ Run Matrix Loop</strong> (top of the page, under the fretboard, or the sticky bar pinned to the bottom of the screen — all three do the same thing).</li>
+      <li>You'll hear a 1-bar count-in click, then the loop plays: each chord strums through its pattern and the fretboard, ribbon, and big arrow all animate in sync.</li>
+      <li>Click <strong>■ Stop Loop</strong> any time.</li>
+    </ol>
+    <p>Everything below is about customizing that loop — which chords, which strums, what groove and tempo, and how to save or share what you build.</p>
+  </div>
+
+  <div class="card" id="blocks">
+    <h2>Building Chord Blocks</h2>
+    <p>Each block in the <strong>Matrix Grid</strong> represents one chord shape and its strum pattern. You can add blocks two ways:</p>
+    <ul class="step-list">
+      <li><strong>Load From Open Library</strong> — pick a common chord (open-position majors/minors, common barre shapes) from the dropdown; it's added instantly with correct fret placement.</li>
+      <li><strong>+ Append Custom Block</strong> — adds a blank block with all strings muted (<code>X</code>) so you can build any shape from scratch.</li>
+    </ul>
+    <h3>Editing frets</h3>
+    <p>Each block shows six fret fields, one per string (low E through high e). Type into any field:</p>
+    <table>
+      <tr><th>Value</th><th>Meaning</th></tr>
+      <tr><td><code>X</code></td><td>String is muted / not played</td></tr>
+      <tr><td><code>0</code></td><td>Open string</td></tr>
+      <tr><td><code>1</code>–<code>15</code></td><td>Fretted note at that fret number</td></tr>
+    </table>
+    <p>Changes apply instantly to the fretboard preview, so you can dial in a shape by ear and by eye before adding it to the loop.</p>
+    <h3>Naming and repeats</h3>
+    <p>The text field at the top of each card is the chord's display name (shown in the ribbon track and status strip). Next to it, <strong>Repeat ×N</strong> controls how many times that block's full strum pattern plays before the loop moves to the next chord — set it to 2, 3, or 4 to hold a chord for multiple bars, exactly like a real song's phrasing.</p>
+    <p>Click <strong>Delete</strong> on any card to remove it from the sequence.</p>
+  </div>
+
+  <div class="card" id="strums">
+    <h2>Strum Patterns</h2>
+    <p>Below each chord's fret grid is its <strong>Strum Patterns Blueprint</strong> — a row of tokens showing exactly what happens on every stroke in that chord's cycle:</p>
+    <p>
+      <span class="down">⬇ D = Downstroke</span> &nbsp;
+      <span class="up">⬆ U = Upstroke</span> &nbsp;
+      <span class="missed">✕ M = Missed Beat</span> &nbsp;
+      <span class="chuck">● P = Chuck (percussive mute)</span>
+    </p>
+    <p>Each block can have its own unique pattern — a slow ballad chord might just be <code>D</code>, while a strummy chorus chord might be <code>D D U U D U</code>.</p>
+    <h3>Missed beats (M)</h3>
+    <p>A missed beat still takes up its full slot in the timing — your strumming hand keeps moving on the beat — but no strings are actually struck, so it plays silent. For example <code>D D U M U D U</code> skips the string contact on one upstroke while keeping the rhythm hand moving evenly.</p>
+    <h3>Chuck / percussive mute (P)</h3>
+    <p>Different from a Missed beat: a Chuck is an <em>audible</em> short, low, percussive "thunk" — like resting your strumming hand on the strings to mute them and hitting them anyway. It's the classic muted-strum sound used in funk, pop, and reggae-adjacent rhythm parts. Add it via the <strong>+ Chuck (P)</strong> button in the Pattern Bank builder (see below).</p>
+    <h3>Accenting individual strokes</h3>
+    <p>Click any token in a chord's pattern (not the <code>×</code> remove button) to toggle an accent on that specific stroke — it gets a highlighted glow and plays louder than its neighbors, independent of the global Turn 2 accent setting. This is how you emphasize a specific beat in a bar, exactly like a real strumming hand naturally does.</p>
+    <p>If a block has no strums defined, it defaults to a single downstroke.</p>
+  </div>
+
+  <div class="card good" id="bank">
+    <h2>🔨 Strumming Pattern Blueprint Bank</h2>
+    <p>Instead of rebuilding the same strum pattern on every chord, build it once and save it for reuse:</p>
+    <ol class="step-list">
+      <li>Name the pattern (e.g. "Pop", "Waltz", "Reggae Skank") in the text field.</li>
+      <li>Click <strong>+ Down (D)</strong> / <strong>+ Up (U)</strong> / <strong>+ Missed (M)</strong> / <strong>+ Chuck (P)</strong> repeatedly to build the sequence — the preview box shows exactly what you're building.</li>
+      <li>Click <strong>💾 Save Pattern</strong> to store it. It appears as a chip below, with a small <strong>[⬇ File]</strong> link to export just that one pattern to disk.</li>
+      <li>Click <strong>Clear Work</strong> to reset the builder without saving.</li>
+    </ol>
+    <p>Saved patterns are stored in your browser and can be injected directly into any chord block's strum area from that block's inject-target buttons. Once injected, you can still click individual tokens on the chord card to add accents.</p>
+    <h3>Backing up your pattern bank</h3>
+    <p>Your whole pattern bank can be exported to a <code>.json</code> file with <strong>⬇ Export Bank</strong>, and restored (or merged onto another device/browser) with <strong>⬆ Import Bank</strong>. If an imported pattern name already exists, you'll be asked whether to overwrite it.</p>
+  </div>
+
+  <div class="card amber" id="archive">
+    <h2>📂 Persistent Full-Loop Archive</h2>
+    <p>This saves your <em>entire workspace</em> — every chord block, its frets, its strum pattern (including accents), its repeat count, and the tempo — as one named entry.</p>
+    <ol class="step-list">
+      <li>Type a name (e.g. "Verse Progression", "Song Intro") into the field.</li>
+      <li>Click <strong>💾 Archive Whole Workspace Layout</strong>.</li>
+      <li>It appears below as a chip with <strong>[Load]</strong> (restores it into the workspace, replacing what's there) and <strong>[⬇ File]</strong> (exports just that one loop).</li>
+    </ol>
+    <p><strong>⬇ Export All Loops</strong> downloads your whole archive as one <code>.json</code> file — a full backup. <strong>⬆ Import Loops</strong> restores from that file, merging into whatever's already saved (with an overwrite prompt on name collisions). This is the way to move your archive between devices or back it up somewhere safe.</p>
+    <div class="warn"><strong>Clear Entire Archive</strong> deletes everything in storage — export a backup first if you want to keep it.</div>
+  </div>
+
+  <div class="card" id="engine">
+    <h2>Playback Engine</h2>
+    <table>
+      <tr><th>Control</th><th>What it does</th></tr>
+      <tr><td>Tempo</td><td>50–150 BPM manually (Tempo Ramp, below, can push it higher automatically).</td></tr>
+      <tr><td>Drum Grid Track</td><td><strong>Metronome Click</strong> (simple click on beat 1, ticks elsewhere) or <strong>4/4 Standard Rock</strong> (kick / snare / hi-hat pattern).</td></tr>
+      <tr><td>Turn 2 Dynamic Accentuation</td><td>When enabled, every other pass through the full sequence plays with a louder, brighter accent — useful for hearing the difference between a soft verse strum and an accented chorus strum.</td></tr>
+    </table>
+    <p>The chord audio itself uses a plucked-string synthesis engine (not a simple beep) with natural decay, a warm body-resonance tone, and a touch of room reverb — it's meant to sound like a real strummed acoustic, not a toy. Chord tails naturally ring into the next chord's onset instead of being cut off, just like a real strum.</p>
+  </div>
+
+  <div class="card good" id="practice">
+    <h2>🏋️ Practice Mode</h2>
+    <h3>Count-in</h3>
+    <p>Enabled by default. Before the loop starts, you'll hear one bar (4 clicks) with a visible "Count-in: 4…3…2…1" readout, so you always come in on the beat.</p>
+    <h3>Tempo Ramp</h3>
+    <p>Turn this on to have the tempo automatically increase as you complete full loop passes — the classic "practice slow, build to full speed" method:</p>
+    <table>
+      <tr><th>Setting</th><th>Meaning</th></tr>
+      <tr><td>+BPM</td><td>How many BPM to add each time the ramp triggers.</td></tr>
+      <tr><td>Every N Loops</td><td>How many complete passes through the whole sequence before the tempo bumps up.</td></tr>
+      <tr><td>Cap At</td><td>The ramp will never push the tempo past this ceiling.</td></tr>
+    </table>
+    <p>The tempo display updates live as the ramp fires, so you can see your practice tempo climbing in real time.</p>
+  </div>
+
+  <div class="card bad" id="groove">
+    <h2>🎼 Groove & Realism</h2>
+    <p>These settings shape how "human" the loop feels, beyond just which notes play:</p>
+    <table>
+      <tr><th>Setting</th><th>What it does</th></tr>
+      <tr><td>Humanize Timing</td><td>On by default. Adds a small random timing offset (± the ms you set) to every strum and drum hit, instead of everything landing on a perfectly rigid grid.</td></tr>
+      <tr><td>Swing</td><td>Off by default. Offsets alternating strokes long-short for a shuffled feel (adjust the Swing % — 50% is straight, higher numbers swing harder). Total loop length stays the same either way.</td></tr>
+      <tr><td>Realistic Upstrokes</td><td>On by default. Automatically limits upstrokes to the top strings (when they're fretted) instead of ringing the full chord — matching how a real strumming hand naturally catches fewer strings on the way up.</td></tr>
+      <tr><td>Attack Tone</td><td><strong>Pick</strong> (bright, sharp attack, the default) or <strong>Fingers</strong> (mellower, softer attack) — changes the character of every note in the loop.</td></tr>
+    </table>
+    <p>Underneath the hood, every pluck also gets a small amount of automatic micro-variation in tone and timing — so the same chord struck twice in a row never sounds perfectly identical, the way a real instrument doesn't either.</p>
+  </div>
+
+  <div class="card" id="liveview">
+    <h2>Reading the Live View</h2>
+    <p>While the loop plays, several things update together:</p>
+    <ul class="step-list">
+      <li><strong>Fretboard</strong> — shows exactly which frets are held for the currently sounding chord.</li>
+      <li><strong>Color Coded Ribbon</strong> — a horizontal timeline of every block in your sequence; the currently playing block lights up so you can see where you are at a glance.</li>
+      <li><strong>Big Strum Arrow</strong> — a large pulsing symbol directly above the ribbon showing exactly what just happened: ⬇ amber for down, ⬆ blue for up, ✕ grey for a missed beat, and ▪ red for a chuck. An extra glow means that stroke was accented.</li>
+      <li><strong>Status Strip</strong> — text readout of the current step (with repeat progress like "2 / 4 (rep 1/2)" when a chord repeats), which loop pass you're on, engine status (accent on/off), and the exact fret values sounding right now.</li>
+      <li><strong>Sticky Transport Bar</strong> — a slim strip pinned to the bottom of the screen with its own Run/Stop buttons and loop counter, always reachable no matter how long your sequence gets or how the page is embedded.</li>
+    </ul>
+  </div>
+
+  <div class="card amber" id="export">
+    <h2>🎧 Audio Export & Sharing</h2>
+    <h3>Export Audio (WAV)</h3>
+    <p>Set <strong>Loops to Render</strong> (1–8) and click <strong>⬇ Export Audio (WAV)</strong>. This renders your current workspace offline — same engine, same tone, same tempo/drum/accent/repeat/groove settings — into a real downloadable <code>.wav</code> file. Because it's rendered offline rather than captured live, there's no dropped audio or timing jitter, even at high loop counts.</p>
+    <h3>Copy Share Link</h3>
+    <p>Click <strong>🔗 Copy Share Link</strong> to pack your entire workspace (chords, frets, strums with accents, repeats, tempo, drum style, accent setting) into a URL and copy it to your clipboard. Anyone who opens that link gets your exact loop pre-loaded — no file to send, just paste the link.</p>
+    <div class="tip">Share links and exported archive files both carry the full sequence — the difference is a share link is a one-click URL, while an archive file is something you keep and re-import later.</div>
+  </div>
+
+  <div class="card bad" id="embedding">
+    <h2>⚠ Saving & Embedding Notes</h2>
+    <p>Matrix Maker saves patterns and loops to your browser automatically as you work. In most cases this "just works" — but there's one situation worth knowing about:</p>
+    <p><strong>Embedded pages (e.g. a Google Sites gadget) can block browser storage entirely.</strong> Some embed methods run the page inside a sandboxed frame that doesn't allow saving data at all. If that happens, Matrix Maker detects it automatically and shows a warning banner at the top of the page — everything still works normally for that session, but nothing will survive a page refresh.</p>
+    <p>If you see that warning (or just want a guaranteed-safe backup no matter where you're using the tool):</p>
+    <ul class="step-list">
+      <li>Use <strong>⬇ Export Bank</strong> and <strong>⬇ Export All Loops</strong> right after building something you want to keep.</li>
+      <li>Keep those <code>.json</code> files somewhere safe (or in your GitHub repo alongside the tool itself).</li>
+      <li><strong>⬆ Import</strong> them back any time, on any device or browser — this always works regardless of storage restrictions.</li>
+    </ul>
+    <p>For guaranteed persistent in-page saving, host the file directly (e.g. GitHub Pages) rather than embedding it through a gadget that sandboxes storage.</p>
+  </div>
+
+  <hr>
+
+  <div class="card" id="reference">
+    <h2>Quick Reference</h2>
+    <table>
+      <tr><th>Button / Field</th><th>Where</th><th>Does</th></tr>
+      <tr><td><span class="badge">Run Matrix Loop</span></td><td>Top, bottom, sticky bar</td><td>Starts playback (with count-in, if enabled)</td></tr>
+      <tr><td><span class="badge">Stop Loop</span></td><td>Top, bottom, sticky bar</td><td>Stops playback immediately</td></tr>
+      <tr><td><span class="badge">Repeat ×N</span></td><td>Each chord card</td><td>Bars the chord holds before advancing</td></tr>
+      <tr><td><span class="badge">+ Missed (M)</span></td><td>Pattern Bank builder</td><td>Adds a silent, rhythm-holding rest to a strum pattern</td></tr>
+      <tr><td><span class="badge">+ Chuck (P)</span></td><td>Pattern Bank builder</td><td>Adds an audible percussive mute to a strum pattern</td></tr>
+      <tr><td><span class="badge">Click a token</span></td><td>Chord card strum pattern</td><td>Toggles an accent on that specific stroke</td></tr>
+      <tr><td><span class="badge">Save Pattern</span></td><td>Pattern Bank</td><td>Stores the built strum pattern for reuse</td></tr>
+      <tr><td><span class="badge">Export/Import Bank</span></td><td>Pattern Bank</td><td>Backs up or restores all saved strum patterns</td></tr>
+      <tr><td><span class="badge">Archive Whole Workspace</span></td><td>Loop Archive</td><td>Saves the entire current sequence under a name</td></tr>
+      <tr><td><span class="badge">Export/Import Loops</span></td><td>Loop Archive</td><td>Backs up or restores the whole loop archive</td></tr>
+      <tr><td><span class="badge">Export Audio (WAV)</span></td><td>Audio & Sharing</td><td>Renders the loop to a downloadable .wav file</td></tr>
+      <tr><td><span class="badge">Copy Share Link</span></td><td>Audio & Sharing</td><td>Encodes the workspace into a URL to share</td></tr>
+      <tr><td><span class="badge">Count-in</span></td><td>Practice Mode</td><td>One bar of click before playback starts</td></tr>
+      <tr><td><span class="badge">Tempo Ramp</span></td><td>Practice Mode</td><td>Auto-increases tempo across loop passes</td></tr>
+      <tr><td><span class="badge">Humanize Timing</span></td><td>Groove & Realism</td><td>Adds natural timing variance to strums and drums</td></tr>
+      <tr><td><span class="badge">Swing</span></td><td>Groove & Realism</td><td>Shuffles alternating strokes long-short</td></tr>
+      <tr><td><span class="badge">Realistic Upstrokes</span></td><td>Groove & Realism</td><td>Limits upstrokes to the top strings automatically</td></tr>
+      <tr><td><span class="badge">Attack Tone</span></td><td>Groove & Realism</td><td>Switches between Pick and Fingers tone character</td></tr>
+    </table>
+  </div>
+
+  <div class="footer-note">Part of the Music Practice & Theory Hub — Matrix Slider design system.</div>
+
+</div>
+</body>
+</html>
