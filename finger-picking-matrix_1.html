@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finger Picking Matrix</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght=9..144,400;9..144,600;9..144,700&family=Inter:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500;700&display=swap');
+
+:root{
+  --charcoal:#111215;
+  --panel:#181a20;
+  --panel-hi:#242832;
+  --wood:#3a2c23;
+  --wood-lt:#544033;
+  --amber:#f2a93b;
+  --amber-lt:#ffe9cc;
+  --cream:#e2e7ef;
+  --muted:#828d9c;
+  --good:#4372a6;
+  --bad:#c1544a;
+  --line:#2c303c;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--charcoal);color:var(--cream);font-family:'Inter',sans-serif;}
+body{padding:24px 16px 90px;}
+h1,h2,h3{font-family:'Fraunces',serif;margin:0;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.wrap{max-width:1100px;margin:0 auto;}
+
+.hero{text-align:center;margin-bottom:24px;}
+.hero .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--good);margin-bottom:6px;}
+.hero h1{font-size:36px;font-weight:700;color:var(--cream);}
+.hero p{color:var(--muted);font-size:14px;max-width:640px;margin:8px auto 0;line-height:1.5;}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px;}
+.card h2{font-size:20px;color:var(--amber-lt);margin-bottom:4px;}
+.card p.desc{color:var(--muted);font-size:13px;margin:0 0 16px 0;}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.matrix-item {
+  background: var(--panel-hi);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  position: relative;
+  transition: border-color 0.2s;
+}
+.matrix-item.active-playing {
+  border-color: var(--good);
+  box-shadow: 0 0 10px rgba(67, 114, 166, 0.3);
+}
+.matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chord-name-input {
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 4px 6px;
+  width: 84px;
+}
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--bad);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.fret-inputs {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.fret-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fret-field label {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--amber);
+  margin-bottom: 2px;
+}
+.fret-field input {
+  width: 100%;
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.pick-grid-area {
+  background: var(--charcoal);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.pick-grid-toolbar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pick-grid {
+  display: grid;
+  gap: 3px;
+}
+.pick-row-label {
+  font-size: 10px;
+  color: var(--amber-lt);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+.pick-step-header {
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.pick-cell {
+  background: var(--panel-hi);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  height: 22px;
+  cursor: pointer;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+.pick-cell:hover { border-color: var(--muted); }
+.pick-cell.on { background: var(--good); border-color: var(--good); box-shadow: 0 0 6px rgba(67,114,166,0.5); }
+.pick-cell.on.accented { background: var(--amber); border-color: var(--amber-lt); box-shadow: 0 0 10px rgba(242,169,59,0.7); }
+.pick-cell { position: relative; }
+.finger-badge {
+  display: none;
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+  background: rgba(0,0,0,0.35);
+  border-radius: 2px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  cursor: pointer;
+}
+.pick-cell.on .finger-badge { display: flex; }
+.pick-cell.on.accented .finger-badge { color: #111; background: rgba(255,255,255,0.35); }
+.pick-cell.current-step { outline: 2px solid var(--amber); outline-offset: -1px; }
+.pick-cell.plucking { background: var(--amber) !important; box-shadow: 0 0 12px var(--amber) !important; }
+
+.fretboard-container {
+  position: relative;
+  background: #171b22;
+  border: 4px solid var(--wood);
+  border-radius: 8px;
+  height: 190px;
+  margin: 20px 0 10px 0;
+  overflow: hidden;
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.9);
+}
+.fret-wire {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(90deg, #999, #ccc, #777);
+  box-shadow: 1px 0 2px rgba(0,0,0,0.6);
+  z-index: 2;
+}
+.fret-num {
+  position: absolute;
+  bottom: 4px;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #7b95b0;
+  z-index: 3;
+}
+.string-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, #fff, #bbb);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  z-index: 1;
+}
+.string-label {
+  position: absolute;
+  left: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--amber-lt);
+  z-index: 5;
+  background: rgba(20, 24, 32, 0.95);
+  padding: 1px 6px;
+  border-radius: 4px;
+  transform: translateY(-50%);
+}
+
+.finger-dot {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: #121214;
+  font-weight: bold;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px var(--amber);
+  z-index: 4;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+.finger-dot.open-string { background: var(--good); box-shadow: 0 0 8px var(--good); color: #fff; }
+.finger-dot.muted-string { background: var(--bad); box-shadow: none; color: #fff; }
+.finger-dot.plucking-now { box-shadow: 0 0 22px 6px #fff; transform: translate(-50%, -50%) scale(1.3); }
+
+.sticky-transport {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: var(--panel-hi);
+  border-top: 2px solid var(--wood);
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.45);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.sticky-transport .transport-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sticky-transport .transport-status b { color: var(--amber-lt); }
+
+.status-strip {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.status-strip b { color: var(--amber-lt); font-family: 'JetBrains Mono', monospace; }
+
+.color-track-ribbon {
+  display: flex;
+  gap: 8px;
+  background: var(--charcoal);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+.ribbon-cell {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 4px;
+  background: var(--panel-hi);
+  border: 1px solid var(--line);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.ribbon-cell.active-highlight {
+  background: #233145;
+  border-color: var(--good);
+  color: #fff;
+  box-shadow: inset 0 0 8px rgba(67, 114, 166, 0.4);
+}
+
+button.primary { background: var(--good); color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-weight: 600; font-size: 15px; cursor: pointer; transition: .15s; }
+button.primary:hover { background: #5587bf; }
+button.primary:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+button.secondary { background: transparent; border: 1px solid var(--line); color: var(--cream); border-radius: 6px; padding: 11px 18px; font-size: 14px; cursor: pointer; }
+button.secondary:hover { background: var(--panel-hi); }
+button.small-add { background: var(--panel-hi); border: 1px solid var(--line); color: var(--amber); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+button.small-add:hover { background: var(--line); }
+button.danger-small { background: transparent; border: 1px solid #4a2525; color: var(--bad); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: auto; }
+button.danger-small:hover { background: #3c1c1c; }
+
+label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+input[type=number], input[type=text], select { background: var(--charcoal); border: 1px solid var(--line); color: var(--cream); border-radius: 6px; padding: 9px 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+input[type=number] { width: 90px; }
+select { height: 40px; cursor: pointer; }
+
+.config-shelf {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.toggle-group {
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toggle-group input[type=radio], .toggle-group input[type=checkbox] { accent-color: var(--good); cursor: pointer; margin: 0; }
+.toggle-group label { display: inline-flex; align-items: center; gap: 4px; margin: 0; cursor: pointer; color: var(--cream); text-transform: none; font-size: 13px; }
+
+.creator-shelf {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: var(--panel-hi);
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.library-manager {
+  background: var(--charcoal);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 16px;
+}
+.library-flex {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.library-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.library-chip {
+  background: var(--panel-hi);
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.library-chip .load-link { color: var(--amber); cursor: pointer; font-weight: 600; }
+.library-chip .load-link:hover { text-decoration: underline; }
+.library-chip .del-link { color: var(--bad); cursor: pointer; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="sticky-transport">
+  <button class="primary" id="stickyStartBtn">▶ Run Picking Loop</button>
+  <button class="secondary" id="stickyStopBtn">■ Stop Loop</button>
+  <span class="transport-status">Loop Pass: <b id="stickyLoopCount">0</b></span>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Individual String Picking Sequencer</div>
+    <h1>Finger Picking Matrix</h1>
+    <p>Build fingerstyle patterns note-by-note: pick any chord from the library, then tick exactly which strings pluck on which step. Includes one-click arpeggio and alternating-bass presets that automatically adapt to whichever chord shape you're using.</p>
+  </div>
+
+  <div class="card">
+    <h2>Loop Engine Configurations</h2>
+    <p class="desc">Define core global configurations and playback tempo controls.</p>
+
+    <div class="config-shelf">
+      <div>
+        <label>Tempo (50 - 150 BPM)</label>
+        <input type="number" id="tempoInput" value="80" min="50" max="150">
+      </div>
+      <div>
+        <label>Metronome</label>
+        <div class="toggle-group">
+          <label><input type="checkbox" id="metronomeToggle"> Click on beat</label>
+        </div>
+      </div>
+      <div>
+        <label>Turn 2 Dynamic Accentuation</label>
+        <div class="toggle-group">
+          <label><input type="checkbox" id="alternateVoicingToggle" checked> Apply Accent on Turn 2</label>
+        </div>
+      </div>
+      <div>
+        <label>Attack Tone</label>
+        <select id="toneModeSelect">
+          <option value="fingers" selected>Fingers (mellow, soft attack)</option>
+          <option value="pick">Pick (bright, sharp attack)</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button class="primary" id="startBtn">Run Picking Loop</button>
+        <button class="secondary" id="stopBtn">Stop Loop</button>
+      </div>
+    </div>
+
+    <div class="library-manager" style="border-color: var(--bad);">
+      <label style="color: #f0a89f; font-weight: 600; margin-bottom: 8px;">🎼 Groove & Realism</label>
+      <div class="library-flex">
+        <div class="toggle-group">
+          <label><input type="checkbox" id="humanizeToggle" checked> Humanize Timing</label>
+        </div>
+        <div>
+          <label style="margin-bottom:2px;">± ms</label>
+          <input type="number" id="humanizeAmount" value="8" min="0" max="30" style="width:60px; height:36px;">
+        </div>
+        <div class="toggle-group">
+          <label><input type="checkbox" id="swingToggle"> Swing</label>
+        </div>
+        <div>
+          <label style="margin-bottom:2px;">Swing %</label>
+          <input type="number" id="swingAmount" value="58" min="50" max="75" style="width:60px; height:36px;">
+        </div>
+      </div>
+      <p class="desc" style="margin:8px 0 0 0;">Humanize adds tiny natural timing variance instead of a rigid grid. Swing offsets alternating steps for a shuffled feel. Click any lit-up cell a second time to accent that specific pluck (glows amber and plays louder); a third click clears it.</p>
+    </div>
+
+    <div class="library-manager" style="border-color: var(--amber);">
+      <label style="color: var(--amber-lt); font-weight: 600; margin-bottom: 8px;">🎧 Audio Export</label>
+      <div class="library-flex">
+        <div>
+          <label style="margin-bottom:2px;">Loops to Render</label>
+          <input type="number" id="exportLoopCount" value="2" min="1" max="8" style="width:70px; height:38px;">
+        </div>
+        <button class="small-add" id="exportAudioBtn" style="height:38px; background: var(--amber); color:#141414; font-weight:600;">⬇ Export Audio (WAV)</button>
+        <span id="exportStatus" style="font-size:12px; color:var(--muted);"></span>
+      </div>
+      <p class="desc" style="margin:8px 0 0 0;">Renders the current workspace offline into a real downloadable .wav file — same tone, tempo, groove, and accent settings as live playback.</p>
+    </div>
+
+    <div class="library-manager" style="border-color: var(--amber);">
+      <label style="color: var(--amber-lt); font-weight: 600; margin-bottom: 8px;">📂 Persistent Full-Loop Archive</label>
+      <div class="library-flex">
+        <input type="text" id="saveLoopNameInput" placeholder="Name this workspace...">
+        <button class="small-add" id="saveCurrentLoopBtn" style="height: 38px; padding: 0 16px; font-weight: 600;">💾 Archive Whole Workspace Layout</button>
+        <button class="danger-small" id="clearAllLibraryBtn">Clear Entire Archive</button>
+      </div>
+      <div class="library-flex" style="margin-top:10px;">
+        <button class="secondary" id="exportLoopsBtn" style="height:34px; padding:0 12px; font-size:12px;">⬇ Export All Loops (.json)</button>
+        <button class="secondary" id="importLoopsBtn" style="height:34px; padding:0 12px; font-size:12px;">⬆ Import Loops (.json)</button>
+        <input type="file" id="importLoopsFile" accept="application/json" style="display:none;">
+        <span style="font-size:11px; color:var(--muted);">Back up your archive to a file, then upload it here on any device to restore it.</span>
+      </div>
+      <div class="library-list" id="savedLoopsContainer"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Chord & Pattern Blocks</h2>
+    <p class="desc">Each block is one chord shape plus its own step-by-step picking pattern. Click any cell in a block's grid to toggle whether that string plucks on that step (click again to accent it). Each ticked string auto-assigns a sensible finger (thumb on the bass strings, index/middle/ring on the treble strings) shown as a small corner badge — tap that badge to change which finger plays it.</p>
+
+    <div class="creator-shelf">
+      <div>
+        <label>Load From Open Library</label>
+        <select id="chordLibrarySelect"></select>
+      </div>
+      <button class="secondary" id="addFromLibraryBtn">+ Add Selected Chord</button>
+      <button class="secondary" id="addBlankChordBtn">+ Append Custom Block</button>
+    </div>
+
+    <div class="matrix-grid" id="matrixGrid"></div>
+
+    <div class="fretboard-container" id="fretboard"></div>
+
+    <label>Color Coded Ribbon Sequence Track</label>
+    <div class="color-track-ribbon" id="colorTrackRibbon"></div>
+
+    <div class="status-strip mono">
+      <div>Playing Step: <b id="uiStep">0 / 0</b></div>
+      <div>Loop Pass: <b id="uiLoopCount">0</b></div>
+      <div>Engine Status: <b id="uiVoicing">Input Locked</b></div>
+      <div>Plucking Now: <b id="uiActive">None</b></div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 14px;">
+      <button class="primary" id="bottomStartBtn">Run Picking Loop</button>
+      <button class="secondary" id="bottomStopBtn">Stop Loop</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+var STRING_BASE_FREQS = { E: 82.41, A: 110.00, D: 146.83, G: 196.00, B: 246.94, e: 329.63 };
+
+var stringLayout = [
+  { label: "e (1st)", key: "e", y: 20 },
+  { label: "B (2nd)", key: "B", y: 48 },
+  { label: "G (3rd)", key: "G", y: 76 },
+  { label: "D (4th)", key: "D", y: 104 },
+  { label: "A (5th)", key: "A", y: 132 },
+  { label: "E (6th)", key: "E", y: 160 }
+];
+
+var CHORD_LIBRARY = {
+  "C":     { name: "C",     frets: { e:"0", B:"1", G:"0", D:"2", A:"3", E:"X" } },
+  "A":     { name: "A",     frets: { e:"0", B:"2", G:"2", D:"2", A:"0", E:"X" } },
+  "G":     { name: "G",     frets: { e:"3", B:"0", G:"0", D:"0", A:"2", E:"3" } },
+  "D":     { name: "D",     frets: { e:"2", B:"3", G:"2", D:"0", A:"X", E:"X" } },
+  "E":     { name: "E",     frets: { e:"0", B:"0", G:"1", D:"2", A:"2", E:"0" } },
+  "Fmaj7": { name: "Fmaj7", frets: { e:"0", B:"1", G:"2", D:"3", A:"X", E:"X" } },
+  "Am":    { name: "Am",    frets: { e:"0", B:"1", G:"2", D:"2", A:"0", E:"X" } },
+  "Dm":    { name: "Dm",    frets: { e:"1", B:"3", G:"2", D:"0", A:"X", E:"X" } },
+  "Em":    { name: "Em",    frets: { e:"0", B:"0", G:"0", D:"2", A:"2", E:"0" } },
+  "Bm7":   { name: "Bm7",   frets: { e:"2", B:"0", G:"2", D:"0", A:"2", E:"X" } }
+};
+
+var state = {
+  bpm: 80,
+  playing: false,
+  audioCtx: null,
+  masterGain: null,
+  convolver: null,
+  pluckCache: {},
+  nextNoteTime: 0.0,
+  currentChordIdx: 0,
+  currentStepIdx: 0,
+  currentBlockRepeat: 0,
+  loopIterationCount: 0,
+  globalSwingStepIdx: 0,
+  timerId: null,
+  maxFret: 15
+};
+
+/* ---- FAIL-SAFE STORAGE LAYER ----
+   Some hosting contexts (notably Google Sites' HTML embed gadget, and other
+   sandboxed <iframe> embeds without the "allow-same-origin" permission) block
+   localStorage entirely — every read/write throws a SecurityError. This
+   layer detects that up front and falls back to an in-memory store for the
+   current page view, so the tool still works normally during the session —
+   it just can't survive a refresh in that environment. The Export/Import
+   (.json) buttons remain the reliable way to keep work permanently there. */
+var memoryStore = {};
+var storageAvailable = (function() {
+  try {
+    var testKey = '__fpm_storage_test__';
+    window.localStorage.setItem(testKey, '1');
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
+
+function safeGetItem(key) {
+  if (!storageAvailable) return memoryStore.hasOwnProperty(key) ? memoryStore[key] : null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch (e) {
+    storageAvailable = false;
+    return memoryStore.hasOwnProperty(key) ? memoryStore[key] : null;
+  }
+}
+function safeSetItem(key, value) {
+  if (!storageAvailable) { memoryStore[key] = value; return; }
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (e) {
+    storageAvailable = false;
+    memoryStore[key] = value;
+  }
+}
+function safeRemoveItem(key) {
+  if (!storageAvailable) { delete memoryStore[key]; return; }
+  try {
+    window.localStorage.removeItem(key);
+  } catch (e) {
+    storageAvailable = false;
+    delete memoryStore[key];
+  }
+}
+function showStorageWarningIfNeeded() {
+  if (storageAvailable) return;
+  var banner = document.createElement('div');
+  banner.style.cssText = "background:rgba(193,84,74,0.12); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:13px; color:#f0a89f;";
+  banner.innerHTML = "⚠ <strong>Browser storage is blocked in this view</strong> (common when a page is embedded via an iframe, e.g. a Google Sites embed). Saved loops will only last for this page session and will reset on refresh. Use <strong>⬇ Export</strong> after building something you want to keep, and <strong>⬆ Import</strong> to bring it back — that works everywhere, embedded or not.";
+  var heroEl = document.querySelector('.hero');
+  if (heroEl && heroEl.parentNode) heroEl.parentNode.insertBefore(banner, heroEl.nextSibling);
+}
+
+var fretboard = document.getElementById('fretboard');
+var dotsLayer = null;
+var matrixGrid = document.getElementById('matrixGrid');
+var colorTrackRibbon = document.getElementById('colorTrackRibbon');
+
+function getFretPositionFactor(fretNum) {
+  if (fretNum === 0) return 0;
+  return 1 - Math.pow(2, -fretNum / 17.817);
+}
+
+function renderFretboardFrame() {
+  fretboard.innerHTML = "";
+  var paddingLeft = 85;
+  var usableWidth = fretboard.clientWidth - paddingLeft - 30;
+  var maxFactor = getFretPositionFactor(state.maxFret);
+
+  stringLayout.forEach(function(str) {
+    var sLine = document.createElement('div');
+    sLine.className = "string-line";
+    sLine.style.top = str.y + "px";
+    sLine.style.height = "2px";
+    fretboard.appendChild(sLine);
+
+    var sLbl = document.createElement('div');
+    sLbl.className = "string-label";
+    sLbl.style.top = str.y + "px";
+    sLbl.textContent = str.label;
+    fretboard.appendChild(sLbl);
+  });
+
+  var nutWire = document.createElement('div');
+  nutWire.className = "fret-wire";
+  nutWire.style.left = paddingLeft + "px";
+  nutWire.style.width = "4px";
+  nutWire.style.background = "#fff";
+  fretboard.appendChild(nutWire);
+
+  var openNum = document.createElement('div');
+  openNum.className = "fret-num";
+  openNum.style.left = (paddingLeft - 15) + "px";
+  openNum.textContent = "Nut";
+  fretboard.appendChild(openNum);
+
+  for (var f = 1; f <= state.maxFret; f++) {
+    var factor = getFretPositionFactor(f) / maxFactor;
+    var xPos = paddingLeft + factor * usableWidth;
+
+    var wire = document.createElement('div');
+    wire.className = "fret-wire";
+    wire.style.left = xPos + "px";
+    fretboard.appendChild(wire);
+
+    var prevFactor = getFretPositionFactor(f - 1) / maxFactor;
+    var prevX = paddingLeft + prevFactor * usableWidth;
+    var midX = (prevX + xPos) / 2;
+
+    var num = document.createElement('div');
+    num.className = "fret-num";
+    num.style.left = midX + "px";
+    num.textContent = f;
+    fretboard.appendChild(num);
+  }
+
+  dotsLayer = document.createElement('div');
+  fretboard.appendChild(dotsLayer);
+}
+
+function calculateFretX(fretNum) {
+  var paddingLeft = 85;
+  if (fretNum === 'X' || fretNum === 'x' || isNaN(fretNum) || fretNum === "") return paddingLeft / 2;
+  var parsed = parseInt(fretNum, 10);
+  if (parsed === 0) return paddingLeft - 15;
+
+  var usableWidth = fretboard.clientWidth - paddingLeft - 30;
+  var maxFactor = getFretPositionFactor(state.maxFret);
+
+  var factorPrev = getFretPositionFactor(parsed - 1) / maxFactor;
+  var factorCur = getFretPositionFactor(parsed) / maxFactor;
+
+  var xPrev = paddingLeft + factorPrev * usableWidth;
+  var xCur = paddingLeft + factorCur * usableWidth;
+  return (xPrev + xCur) / 2;
+}
+
+function updateFretboardDots(fretPositions) {
+  if (!dotsLayer) return;
+  dotsLayer.innerHTML = "";
+
+  stringLayout.forEach(function(str) {
+    var val = fretPositions[str.key];
+    if (val === undefined || val === "") return;
+
+    var dot = document.createElement('div');
+    dot.className = "finger-dot";
+    dot.dataset.string = str.key;
+    dot.style.top = str.y + "px";
+    dot.style.left = calculateFretX(val) + "px";
+    dot.textContent = val;
+
+    if (val === "0") {
+      dot.classList.add('open-string');
+    } else if (val === 'X' || val === 'x') {
+      dot.classList.add('muted-string');
+    }
+    dotsLayer.appendChild(dot);
+  });
+}
+
+/* ---- REALISTIC STRING TONE: Karplus-Strong plucked-string synthesis ---- */
+
+function createReverbImpulse(audioCtx, duration, decayPower) {
+  var rate = audioCtx.sampleRate;
+  var length = Math.floor(rate * duration);
+  var impulse = audioCtx.createBuffer(2, length, rate);
+  for (var ch = 0; ch < 2; ch++) {
+    var data = impulse.getChannelData(ch);
+    for (var i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decayPower);
+    }
+  }
+  return impulse;
+}
+
+function setupAudioBus(audioCtx) {
+  var masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.9;
+  masterGain.connect(audioCtx.destination);
+
+  var reverbSend = audioCtx.createGain();
+  reverbSend.gain.value = 0.22;
+  var convolver = audioCtx.createConvolver();
+  convolver.buffer = createReverbImpulse(audioCtx, 1.8, 2.4);
+  convolver.connect(reverbSend);
+  reverbSend.connect(masterGain);
+
+  return { masterGain: masterGain, convolver: convolver };
+}
+
+function getPluckedBuffer(freq, ctx, cache) {
+  var audioCtx = ctx || state.audioCtx;
+  var pluckCache = cache || state.pluckCache;
+  var cacheKey = Math.round(freq * 4);
+  if (pluckCache[cacheKey]) return pluckCache[cacheKey];
+
+  var sampleRate = audioCtx.sampleRate;
+  var duration = 2.1;
+  var totalSamples = Math.floor(sampleRate * duration);
+  var N = Math.max(2, Math.round(sampleRate / freq));
+  var buf = new Float32Array(totalSamples);
+
+  for (var i = 0; i < N; i++) {
+    var envelope = 1 - (i / N) * 0.3;
+    buf[i] = (Math.random() * 2 - 1) * envelope;
+  }
+  for (var s = 1; s < N; s++) {
+    buf[s] = buf[s] * 0.6 + buf[s - 1] * 0.4;
+  }
+
+  var lowStringBias = Math.min(1, 150 / freq);
+  var decay = 0.9935 + lowStringBias * 0.0045;
+
+  for (var n = N; n < totalSamples; n++) {
+    var i1 = n - N;
+    var i2 = i1 - 1 >= 0 ? i1 - 1 : i1;
+    buf[n] = decay * 0.5 * (buf[i1] + buf[i2]);
+  }
+
+  var audioBuffer = audioCtx.createBuffer(1, totalSamples, sampleRate);
+  audioBuffer.copyToChannel(buf, 0);
+  pluckCache[cacheKey] = audioBuffer;
+  return audioBuffer;
+}
+
+function pluckString(freq, startTime, velocity, ctx, bus, cache, toneMode) {
+  var audioCtx = ctx || state.audioCtx;
+  var targetBus = bus || { masterGain: state.masterGain, convolver: state.convolver };
+  var buffer = getPluckedBuffer(freq, audioCtx, cache);
+  var mode = toneMode || 'fingers';
+
+  var source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.value = 1 + (Math.random() * 0.009 - 0.0045);
+
+  var brightness = audioCtx.createBiquadFilter();
+  brightness.type = 'lowpass';
+  brightness.Q.value = 0.7;
+  var brightPeak = (mode === 'fingers' ? Math.min(6000, freq * 6) : Math.min(9000, freq * 10));
+  brightPeak *= (0.94 + Math.random() * 0.12);
+  var brightSettle = (mode === 'fingers' ? Math.max(450, freq * 1.6) : Math.max(600, freq * 2.2));
+  brightness.frequency.setValueAtTime(brightPeak, startTime);
+  brightness.frequency.exponentialRampToValueAtTime(brightSettle, startTime + 0.9);
+
+  var body = audioCtx.createBiquadFilter();
+  body.type = 'peaking';
+  body.frequency.value = 130 * (0.97 + Math.random() * 0.06);
+  body.Q.value = 0.9;
+  body.gain.value = 5;
+
+  var attackTime = (mode === 'fingers' ? 0.016 : 0.006);
+  var velocityJitter = velocity * (0.93 + Math.random() * 0.14);
+
+  var envelope = audioCtx.createGain();
+  envelope.gain.setValueAtTime(0.0001, startTime);
+  envelope.gain.linearRampToValueAtTime(velocityJitter, startTime + attackTime);
+  envelope.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.9);
+
+  source.connect(brightness);
+  brightness.connect(body);
+  body.connect(envelope);
+  envelope.connect(targetBus.masterGain);
+  envelope.connect(targetBus.convolver);
+
+  source.start(startTime);
+  source.stop(startTime + 2.0);
+}
+
+function triggerClick(time, accented, ctx, bus) {
+  var audioCtx = ctx || state.audioCtx;
+  var targetBus = bus || { masterGain: state.masterGain };
+  var osc = audioCtx.createOscillator();
+  var gain = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = accented ? 1500 : 1000;
+  gain.gain.setValueAtTime(accented ? 0.12 : 0.07, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+  osc.connect(gain);
+  gain.connect(targetBus.masterGain);
+  osc.start(time);
+  osc.stop(time + 0.05);
+}
+
+/* ---- PICKING GRID: build / read / preset-fill the per-block step grid ---- */
+
+// Classical/fingerstyle convention: thumb (p) covers the bass strings,
+// index/middle/ring (i/m/a) each cover one of the treble strings.
+function defaultFingerFor(stringKey) {
+  if (stringKey === 'E' || stringKey === 'A' || stringKey === 'D') return 'p';
+  if (stringKey === 'G') return 'i';
+  if (stringKey === 'B') return 'm';
+  return 'a'; // high e
+}
+
+// Token format: STRINGKEY[:FINGER][!]  e.g. "A", "A:p", "A:p!"
+// Older saved data without a finger or without a colon still parses fine —
+// it just falls back to the default finger for that string.
+function parseToken(token) {
+  var accented = token.charAt(token.length - 1) === '!';
+  var body = accented ? token.substring(0, token.length - 1) : token;
+  var parts = body.split(':');
+  var stringKey = parts[0];
+  var finger = parts[1] || defaultFingerFor(stringKey);
+  return { stringKey: stringKey, finger: finger, accented: accented };
+}
+
+function renderPickGrid(gridEl, steps, existingMatrix) {
+  gridEl.innerHTML = "";
+  gridEl.style.gridTemplateColumns = "34px repeat(" + steps + ", 1fr)";
+
+  var corner = document.createElement('div');
+  gridEl.appendChild(corner);
+  for (var s = 0; s < steps; s++) {
+    var head = document.createElement('div');
+    head.className = "pick-step-header";
+    head.textContent = (s + 1);
+    gridEl.appendChild(head);
+  }
+
+  stringLayout.forEach(function(str) {
+    var rowLabel = document.createElement('div');
+    rowLabel.className = "pick-row-label";
+    rowLabel.textContent = str.key;
+    gridEl.appendChild(rowLabel);
+
+    for (var s = 0; s < steps; s++) {
+      var cell = document.createElement('div');
+      cell.className = "pick-cell";
+      cell.dataset.string = str.key;
+      cell.dataset.step = s;
+
+      var isOn = false, isAccented = false, finger = defaultFingerFor(str.key);
+      if (existingMatrix && existingMatrix[s]) {
+        existingMatrix[s].forEach(function(tok) {
+          var parsed = parseToken(tok);
+          if (parsed.stringKey === str.key) { isOn = true; isAccented = parsed.accented; finger = parsed.finger; }
+        });
+      }
+      cell.dataset.finger = finger;
+      if (isOn) cell.classList.add('on');
+      if (isAccented) cell.classList.add('accented');
+
+      var badge = document.createElement('span');
+      badge.className = "finger-badge";
+      badge.textContent = finger;
+      cell.appendChild(badge);
+
+      cell.addEventListener('click', function(e) {
+        if (e.target.classList.contains('finger-badge')) return; // handled by its own listener below
+        // Three-state cycle: off -> on -> on+accented -> off. Accenting a
+        // specific pluck makes it glow amber and play louder than its
+        // neighbors, independent of the global Turn 2 accent setting.
+        if (!this.classList.contains('on')) {
+          this.classList.add('on');
+        } else if (!this.classList.contains('accented')) {
+          this.classList.add('accented');
+        } else {
+          this.classList.remove('on', 'accented');
+        }
+      });
+
+      badge.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var parentCell = this.parentNode;
+        if (!parentCell.classList.contains('on')) return; // no finger to assign until the string is on
+        var order = ['p', 'i', 'm', 'a'];
+        var idx = order.indexOf(parentCell.dataset.finger);
+        var next = order[(idx + 1) % order.length];
+        parentCell.dataset.finger = next;
+        this.textContent = next;
+      });
+      gridEl.appendChild(cell);
+    }
+  });
+}
+
+function readMatrixFromGrid(gridEl, steps) {
+  var matrix = [];
+  for (var s = 0; s < steps; s++) matrix.push([]);
+  gridEl.querySelectorAll('.pick-cell.on').forEach(function(cell) {
+    var s = parseInt(cell.dataset.step, 10);
+    var token = cell.dataset.string + ':' + cell.dataset.finger + (cell.classList.contains('accented') ? '!' : '');
+    if (matrix[s]) matrix[s].push(token);
+  });
+  return matrix;
+}
+
+function copyFrets(frets) {
+  var out = {};
+  for (var k in frets) { if (frets.hasOwnProperty(k)) out[k] = frets[k]; }
+  return out;
+}
+
+function getNonMutedLowToHigh(frets) {
+  var order = ['E', 'A', 'D', 'G', 'B', 'e'];
+  return order.filter(function(k) {
+    var v = frets[k];
+    return v !== 'X' && v !== 'x' && v !== "";
+  });
+}
+
+function applyPreset(item, presetName) {
+  var frets = {};
+  stringLayout.forEach(function(str) { frets[str.key] = item.querySelector('.fret-in-' + str.key).value.toUpperCase(); });
+  var nonMuted = getNonMutedLowToHigh(frets);
+
+  var stepsInput = item.querySelector('.steps-count-input');
+  var steps = parseInt(stepsInput.value, 10) || 8;
+  var matrix = [];
+  for (var s = 0; s < steps; s++) matrix.push([]);
+
+  if (nonMuted.length > 0) {
+    if (presetName === 'arp-up') {
+      for (var s1 = 0; s1 < steps; s1++) { matrix[s1] = [nonMuted[s1 % nonMuted.length]]; }
+    } else if (presetName === 'arp-down') {
+      var desc = nonMuted.slice().reverse();
+      for (var s2 = 0; s2 < steps; s2++) { matrix[s2] = [desc[s2 % desc.length]]; }
+    } else if (presetName === 'alt-bass') {
+      var bassStrings = nonMuted.slice(0, Math.min(2, nonMuted.length));
+      var trebleStrings = nonMuted.slice(bassStrings.length);
+      if (trebleStrings.length === 0) trebleStrings = bassStrings;
+      for (var s3 = 0; s3 < steps; s3++) {
+        if (s3 % 2 === 0) {
+          matrix[s3] = [bassStrings[Math.floor(s3 / 2) % bassStrings.length]];
+        } else {
+          matrix[s3] = [trebleStrings[Math.floor(s3 / 2) % trebleStrings.length]];
+        }
+      }
+    }
+    // 'clear' just leaves matrix empty
+  }
+
+  var gridEl = item.querySelector('.pick-grid');
+  renderPickGrid(gridEl, steps, matrix);
+}
+
+/* ---- CHORD BLOCK CREATION ---- */
+
+function createFingerpickBlock(data) {
+  var item = document.createElement('div');
+  item.className = "matrix-item";
+
+  var html = `
+    <div class="matrix-header">
+      <input type="text" class="chord-name-input" value="${data.name}">
+      <span style="display:flex; align-items:center; gap:3px; font-size:10px; color:var(--muted); text-transform:uppercase;">
+        Steps <input type="number" class="steps-count-input" value="${data.steps || 8}" min="2" max="32" style="width:46px; padding:2px 3px; font-size:12px;">
+      </span>
+      <span style="display:flex; align-items:center; gap:3px; font-size:10px; color:var(--muted); text-transform:uppercase;">
+        Repeat ×<input type="number" class="repeat-count-input" value="${data.repeatCount || 1}" min="1" max="8" style="width:38px; padding:2px 3px; font-size:12px;">
+      </span>
+      <button class="remove-btn">Delete</button>
+    </div>
+    <div class="fret-inputs"></div>
+    <div class="pick-grid-area">
+      <div class="pick-grid-toolbar">
+        <button class="small-add preset-btn" data-preset="arp-up">Arp ↑</button>
+        <button class="small-add preset-btn" data-preset="arp-down">Arp ↓</button>
+        <button class="small-add preset-btn" data-preset="alt-bass">Alt Bass</button>
+        <button class="small-add preset-btn" data-preset="clear" style="color:var(--bad);">Clear</button>
+        <button class="small-add reset-fingers-btn">🔄 Reset Fingers</button>
+        <span style="font-size:10px; color:var(--muted); margin-left:auto;">p=thumb i=index m=middle a=ring — tap the small corner badge to change</span>
+      </div>
+      <div class="pick-grid"></div>
+    </div>
+  `;
+  item.innerHTML = html;
+
+  var fretInputsEl = item.querySelector('.fret-inputs');
+  stringLayout.forEach(function(str) {
+    var field = document.createElement('div');
+    field.className = "fret-field";
+    field.innerHTML = `<label>${str.key}</label><input type="text" class="fret-in-${str.key}" maxlength="2" value="${data.frets[str.key]}">`;
+    fretInputsEl.appendChild(field);
+
+    var inputEl = field.querySelector('input');
+    inputEl.addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+      previewBlockOnFretboard(item);
+    });
+    inputEl.addEventListener('focus', function() { previewBlockOnFretboard(item); });
+  });
+
+  var gridEl = item.querySelector('.pick-grid');
+  renderPickGrid(gridEl, data.steps || 8, data.stepMatrix || []);
+
+  item.querySelector('.steps-count-input').addEventListener('change', function() {
+    var newSteps = parseInt(this.value, 10) || 8;
+    if (newSteps < 2) newSteps = 2;
+    if (newSteps > 32) newSteps = 32;
+    this.value = newSteps;
+    var oldSteps = parseInt(gridEl.dataset.stepsCached || (data.steps || 8), 10);
+    var oldMatrix = readMatrixFromGrid(gridEl, oldSteps);
+    renderPickGrid(gridEl, newSteps, oldMatrix);
+    gridEl.dataset.stepsCached = newSteps;
+  });
+  gridEl.dataset.stepsCached = data.steps || 8;
+
+  item.querySelectorAll('.preset-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      applyPreset(item, btn.dataset.preset);
+    });
+  });
+
+  item.querySelector('.reset-fingers-btn').addEventListener('click', function() {
+    gridEl.querySelectorAll('.pick-cell').forEach(function(cell) {
+      var def = defaultFingerFor(cell.dataset.string);
+      cell.dataset.finger = def;
+      var badge = cell.querySelector('.finger-badge');
+      if (badge) badge.textContent = def;
+    });
+  });
+
+  item.querySelector('.remove-btn').addEventListener('click', function() {
+    item.remove();
+    buildColorSequenceTrack();
+  });
+
+  item.querySelector('.chord-name-input').addEventListener('input', buildColorSequenceTrack);
+
+  matrixGrid.appendChild(item);
+  buildColorSequenceTrack();
+  previewBlockOnFretboard(item);
+  return item;
+}
+
+function previewBlockOnFretboard(item) {
+  if (state.playing) return;
+  var frets = {};
+  stringLayout.forEach(function(str) { frets[str.key] = item.querySelector('.fret-in-' + str.key).value.toUpperCase(); });
+  updateFretboardDots(frets);
+}
+
+/* ---- SEQUENCE COMPILATION ---- */
+
+function compileSequenceFromUI() {
+  var blocks = [];
+  var items = matrixGrid.querySelectorAll('.matrix-item');
+  items.forEach(function(item, index) {
+    var name = item.querySelector('.chord-name-input').value || "Custom";
+    var frets = {};
+    stringLayout.forEach(function(str) {
+      frets[str.key] = item.querySelector('.fret-in-' + str.key).value.toUpperCase();
+    });
+
+    var stepsInput = item.querySelector('.steps-count-input');
+    var steps = stepsInput ? (parseInt(stepsInput.value, 10) || 8) : 8;
+
+    var gridEl = item.querySelector('.pick-grid');
+    var stepMatrix = readMatrixFromGrid(gridEl, steps);
+
+    var repeatInput = item.querySelector('.repeat-count-input');
+    var repeatCount = repeatInput ? (parseInt(repeatInput.value, 10) || 1) : 1;
+    if (repeatCount < 1) repeatCount = 1;
+
+    blocks.push({ name: name, frets: frets, steps: steps, stepMatrix: stepMatrix, repeatCount: repeatCount, element: item, index: index });
+  });
+  return blocks;
+}
+
+function buildColorSequenceTrack() {
+  colorTrackRibbon.innerHTML = "";
+  var blocks = compileSequenceFromUI();
+  blocks.forEach(function(b) {
+    var cell = document.createElement('div');
+    cell.className = "ribbon-cell";
+    cell.id = "ribbon-cell-" + b.index;
+    cell.textContent = b.name;
+    var hash = 0;
+    for (var i = 0; i < b.name.length; i++) { hash = b.name.charCodeAt(i) + ((hash << 5) - hash); }
+    var hue = Math.abs(hash % 360);
+    cell.style.borderBottom = "4px solid hsl(" + hue + ", 65%, 50%)";
+    colorTrackRibbon.appendChild(cell);
+  });
+}
+
+/* ---- PLAYBACK ENGINE ---- */
+
+function scheduleStepEvents(chordIdx, stepIdx, time) {
+  var blocks = compileSequenceFromUI();
+  if (blocks.length === 0) return;
+
+  var activeBlock = blocks[chordIdx % blocks.length];
+  var stepIdxSafe = stepIdx % activeBlock.steps;
+  var pluckedTokens = activeBlock.stepMatrix[stepIdxSafe] || [];
+
+  var dynamicAccent = document.getElementById('alternateVoicingToggle').checked && (state.loopIterationCount % 2 === 1);
+  var toneMode = document.getElementById('toneModeSelect').value;
+  var metronomeOn = document.getElementById('metronomeToggle').checked;
+
+  // Humanize: nudge the actual trigger moment slightly off the rigid grid,
+  // without touching the underlying scheduling clock (so timing never drifts).
+  var humanizeEnabled = document.getElementById('humanizeToggle').checked;
+  var humanizeMs = parseInt(document.getElementById('humanizeAmount').value, 10) || 0;
+  var clickJitter = humanizeEnabled ? ((Math.random() * 2 - 1) * humanizeMs / 1000) : 0;
+  var pluckJitter = humanizeEnabled ? ((Math.random() * 2 - 1) * humanizeMs / 1000) : 0;
+  var clickTime = Math.max(state.audioCtx.currentTime, time + clickJitter);
+  var pluckTime = Math.max(state.audioCtx.currentTime, time + pluckJitter);
+
+  if (metronomeOn) {
+    triggerClick(clickTime, stepIdxSafe % 2 === 0, state.audioCtx, { masterGain: state.masterGain });
+  }
+
+  pluckedTokens.forEach(function(token) {
+    var parsed = parseToken(token);
+    var fretVal = activeBlock.frets[parsed.stringKey];
+    if (fretVal === 'X' || fretVal === 'x' || fretVal === "") return;
+    var fretNum = parseInt(fretVal, 10) || 0;
+    var freq = STRING_BASE_FREQS[parsed.stringKey] * Math.pow(2, fretNum / 12);
+    var velocity = (dynamicAccent || parsed.accented) ? 0.34 : 0.26;
+    pluckString(freq, pluckTime, velocity, state.audioCtx, { masterGain: state.masterGain, convolver: state.convolver }, state.pluckCache, toneMode);
+  });
+
+  var pluckedBaseKeys = pluckedTokens.map(function(t) { return parseToken(t).stringKey; });
+
+  setTimeout(function() {
+    if (!state.playing) return;
+
+    blocks.forEach(function(b) {
+      b.element.classList.remove('active-playing');
+      var cell = document.getElementById('ribbon-cell-' + b.index);
+      if (cell) cell.classList.remove('active-highlight');
+    });
+    matrixGrid.querySelectorAll('.pick-cell').forEach(function(c) {
+      c.classList.remove('current-step', 'plucking');
+    });
+
+    activeBlock.element.classList.add('active-playing');
+    var currentCell = document.getElementById('ribbon-cell-' + activeBlock.index);
+    if (currentCell) currentCell.classList.add('active-highlight');
+
+    activeBlock.element.querySelectorAll('.pick-cell[data-step="' + stepIdxSafe + '"]').forEach(function(c) {
+      c.classList.add('current-step');
+      if (pluckedBaseKeys.indexOf(c.dataset.string) !== -1) c.classList.add('plucking');
+    });
+
+    var repeatsNeeded = activeBlock.repeatCount || 1;
+    var repeatLabel = repeatsNeeded > 1 ? (" (rep " + (state.currentBlockRepeat + 1) + "/" + repeatsNeeded + ")") : "";
+    document.getElementById('uiStep').textContent = (stepIdxSafe + 1) + " / " + activeBlock.steps + " — " + activeBlock.name + repeatLabel;
+    document.getElementById('uiLoopCount').textContent = state.loopIterationCount + 1;
+    document.getElementById('stickyLoopCount').textContent = state.loopIterationCount + 1;
+    document.getElementById('uiVoicing').textContent = dynamicAccent ? "Turn 2 (Accent Mode)" : "Turn 1 (Standard)";
+    document.getElementById('uiActive').textContent = pluckedTokens.length > 0 ? pluckedTokens.map(function(t) {
+      var p = parseToken(t);
+      return p.stringKey + "(" + p.finger + ")";
+    }).join(", ") : "—";
+
+    updateFretboardDots(activeBlock.frets);
+    dotsLayer.querySelectorAll('.finger-dot').forEach(function(dot) {
+      if (pluckedBaseKeys.indexOf(dot.dataset.string) !== -1) dot.classList.add('plucking-now');
+    });
+  }, (pluckTime - state.audioCtx.currentTime) * 1000);
+}
+
+function advanceGlobalPointer() {
+  var blocks = compileSequenceFromUI();
+  if (blocks.length === 0) return;
+
+  var activeBlock = blocks[state.currentChordIdx % blocks.length];
+  var totalSteps = activeBlock.steps;
+
+  var secondsPerBeat = 60.0 / state.bpm;
+  var straightStepDuration = secondsPerBeat / 2;
+
+  var stepDuration = straightStepDuration;
+  var swingEnabled = document.getElementById('swingToggle').checked;
+  if (swingEnabled) {
+    var swingRatio = (parseInt(document.getElementById('swingAmount').value, 10) || 58) / 100;
+    var isEvenStep = (state.globalSwingStepIdx % 2 === 0);
+    stepDuration = isEvenStep ? straightStepDuration * (2 * swingRatio) : straightStepDuration * (2 * (1 - swingRatio));
+  }
+  state.globalSwingStepIdx++;
+
+  state.nextNoteTime += stepDuration;
+  state.currentStepIdx++;
+
+  if (state.currentStepIdx >= totalSteps) {
+    state.currentStepIdx = 0;
+    state.currentBlockRepeat = (state.currentBlockRepeat || 0) + 1;
+
+    var repeatsNeeded = activeBlock.repeatCount || 1;
+    if (state.currentBlockRepeat >= repeatsNeeded) {
+      state.currentBlockRepeat = 0;
+      var nextIdx = state.currentChordIdx + 1;
+      if (nextIdx >= blocks.length) {
+        state.currentChordIdx = 0;
+        state.loopIterationCount++;
+      } else {
+        state.currentChordIdx = nextIdx;
+      }
+    }
+  }
+}
+
+function stepScheduler() {
+  while (state.nextNoteTime < state.audioCtx.currentTime + 0.1) {
+    scheduleStepEvents(state.currentChordIdx, state.currentStepIdx, state.nextNoteTime);
+    advanceGlobalPointer();
+  }
+  if (state.playing) {
+    state.timerId = setTimeout(stepScheduler, 25);
+  }
+}
+
+/* ---- AUDIO EXPORT: render the loop offline and encode it as a downloadable WAV ---- */
+
+function writeAsciiString(view, offset, str) {
+  for (var i = 0; i < str.length; i++) { view.setUint8(offset + i, str.charCodeAt(i)); }
+}
+
+function audioBufferToWavBlob(buffer) {
+  var numChannels = buffer.numberOfChannels;
+  var sampleRate = buffer.sampleRate;
+  var bitDepth = 16;
+  var numSamples = buffer.length;
+
+  var channelData = [];
+  for (var c = 0; c < numChannels; c++) { channelData.push(buffer.getChannelData(c)); }
+
+  var dataLength = numSamples * numChannels * (bitDepth / 8);
+  var arrayBuffer = new ArrayBuffer(44 + dataLength);
+  var view = new DataView(arrayBuffer);
+
+  writeAsciiString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeAsciiString(view, 8, 'WAVE');
+  writeAsciiString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * (bitDepth / 8), true);
+  view.setUint16(32, numChannels * (bitDepth / 8), true);
+  view.setUint16(34, bitDepth, true);
+  writeAsciiString(view, 36, 'data');
+  view.setUint32(40, dataLength, true);
+
+  var offset = 44;
+  for (var i = 0; i < numSamples; i++) {
+    for (var ch = 0; ch < numChannels; ch++) {
+      var sample = Math.max(-1, Math.min(1, channelData[ch][i]));
+      var intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+      view.setInt16(offset, intSample, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+function exportLoopAsWav(numLoops) {
+  var blocks = compileSequenceFromUI();
+  if (blocks.length === 0) { alert("Add at least one chord block before exporting audio."); return; }
+
+  var bpm = parseInt(document.getElementById('tempoInput').value, 10) || 80;
+  var secondsPerBeat = 60.0 / bpm;
+  var straightStepDuration = secondsPerBeat / 2;
+
+  var swingEnabled = document.getElementById('swingToggle').checked;
+  var swingRatio = (parseInt(document.getElementById('swingAmount').value, 10) || 58) / 100;
+  var humanizeEnabled = document.getElementById('humanizeToggle').checked;
+  var humanizeMs = parseInt(document.getElementById('humanizeAmount').value, 10) || 0;
+  var toneMode = document.getElementById('toneModeSelect').value;
+  var metronomeOn = document.getElementById('metronomeToggle').checked;
+  var accentEnabled = document.getElementById('alternateVoicingToggle').checked;
+
+  var totalSteps = 0;
+  blocks.forEach(function(b) { totalSteps += b.steps * (b.repeatCount || 1); });
+  var loopDuration = totalSteps * straightStepDuration;
+  var totalDuration = loopDuration * numLoops + 2.2;
+
+  var sampleRate = 44100;
+  var offlineCtx = new OfflineAudioContext(2, Math.ceil(totalDuration * sampleRate), sampleRate);
+  var bus = setupAudioBus(offlineCtx);
+  var pluckCache = {};
+
+  var t = 0.05;
+  var loopIterationCount = 0;
+  var swingStepIdx = 0;
+
+  for (var loopN = 0; loopN < numLoops; loopN++) {
+    for (var ci = 0; ci < blocks.length; ci++) {
+      var block = blocks[ci];
+      var repeats = block.repeatCount || 1;
+
+      for (var rep = 0; rep < repeats; rep++) {
+        for (var si = 0; si < block.steps; si++) {
+          var dynamicAccent = accentEnabled && (loopIterationCount % 2 === 1);
+          var tokens = block.stepMatrix[si] || [];
+
+          var clickJitter = humanizeEnabled ? ((Math.random() * 2 - 1) * humanizeMs / 1000) : 0;
+          var pluckJitter = humanizeEnabled ? ((Math.random() * 2 - 1) * humanizeMs / 1000) : 0;
+          var clickTime = Math.max(0, t + clickJitter);
+          var pluckTime = Math.max(0, t + pluckJitter);
+
+          if (metronomeOn) {
+            triggerClick(clickTime, si % 2 === 0, offlineCtx, bus);
+          }
+
+          tokens.forEach(function(token) {
+            var parsed = parseToken(token);
+            var fretVal = block.frets[parsed.stringKey];
+            if (fretVal === 'X' || fretVal === 'x' || fretVal === "") return;
+            var fretNum = parseInt(fretVal, 10) || 0;
+            var freq = STRING_BASE_FREQS[parsed.stringKey] * Math.pow(2, fretNum / 12);
+            var velocity = (dynamicAccent || parsed.accented) ? 0.34 : 0.26;
+            pluckString(freq, pluckTime, velocity, offlineCtx, bus, pluckCache, toneMode);
+          });
+
+          var stepDuration = straightStepDuration;
+          if (swingEnabled) {
+            var isEvenStep = (swingStepIdx % 2 === 0);
+            stepDuration = isEvenStep ? straightStepDuration * (2 * swingRatio) : straightStepDuration * (2 * (1 - swingRatio));
+          }
+          swingStepIdx++;
+          t += stepDuration;
+        }
+      }
+    }
+    loopIterationCount++;
+  }
+
+  var statusEl = document.getElementById('exportStatus');
+  if (statusEl) statusEl.textContent = "Rendering audio…";
+
+  offlineCtx.startRendering().then(function(renderedBuffer) {
+    var blob = audioBufferToWavBlob(renderedBuffer);
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'fingerpicking_loop_' + new Date().toISOString().slice(0, 10) + '.wav';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    if (statusEl) statusEl.textContent = "Downloaded!";
+    setTimeout(function() { if (statusEl) statusEl.textContent = ""; }, 3000);
+  }).catch(function(err) {
+    console.error(err);
+    if (statusEl) statusEl.textContent = "Export failed.";
+  });
+}
+
+function startSequencer() {
+  if (state.playing) return;
+  var blocks = compileSequenceFromUI();
+  if (blocks.length === 0) { alert("Add at least one chord block before playing."); return; }
+
+  var rawBpm = parseInt(document.getElementById('tempoInput').value, 10) || 80;
+  if (rawBpm < 50) rawBpm = 50;
+  if (rawBpm > 150) rawBpm = 150;
+  document.getElementById('tempoInput').value = rawBpm;
+  state.bpm = rawBpm;
+
+  state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var bus = setupAudioBus(state.audioCtx);
+  state.masterGain = bus.masterGain;
+  state.convolver = bus.convolver;
+  state.pluckCache = {};
+  state.playing = true;
+  state.currentChordIdx = 0;
+  state.currentStepIdx = 0;
+  state.currentBlockRepeat = 0;
+  state.loopIterationCount = 0;
+  state.globalSwingStepIdx = 0;
+
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('bottomStartBtn').disabled = true;
+  document.getElementById('stickyStartBtn').disabled = true;
+  document.getElementById('uiLoopCount').textContent = "0";
+  document.getElementById('stickyLoopCount').textContent = "0";
+
+  state.nextNoteTime = state.audioCtx.currentTime + 0.05;
+  stepScheduler();
+}
+
+function stopSequencer() {
+  state.playing = false;
+  if (state.timerId) clearTimeout(state.timerId);
+  if (state.audioCtx) state.audioCtx.close();
+
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('bottomStartBtn').disabled = false;
+  document.getElementById('stickyStartBtn').disabled = false;
+
+  var items = matrixGrid.querySelectorAll('.matrix-item');
+  items.forEach(function(b) { b.classList.remove('active-playing'); });
+
+  var cells = colorTrackRibbon.querySelectorAll('.ribbon-cell');
+  cells.forEach(function(c) { c.classList.remove('active-highlight'); });
+
+  matrixGrid.querySelectorAll('.pick-cell').forEach(function(c) {
+    c.classList.remove('current-step', 'plucking');
+  });
+
+  document.getElementById('uiLoopCount').textContent = "0";
+  document.getElementById('stickyLoopCount').textContent = "0";
+  document.getElementById('uiStep').textContent = "0 / 0";
+  document.getElementById('uiVoicing').textContent = "Input Locked";
+  document.getElementById('uiActive').textContent = "None";
+  if (dotsLayer) dotsLayer.innerHTML = "";
+}
+
+document.getElementById('startBtn').addEventListener('click', startSequencer);
+document.getElementById('bottomStartBtn').addEventListener('click', startSequencer);
+document.getElementById('stickyStartBtn').addEventListener('click', startSequencer);
+document.getElementById('stopBtn').addEventListener('click', stopSequencer);
+document.getElementById('bottomStopBtn').addEventListener('click', stopSequencer);
+document.getElementById('stickyStopBtn').addEventListener('click', stopSequencer);
+
+document.getElementById('tempoInput').addEventListener('change', function() {
+  var v = parseInt(this.value, 10) || 80;
+  if (v < 50) v = 50;
+  if (v > 150) v = 150;
+  this.value = v;
+  state.bpm = v;
+});
+
+document.getElementById('exportAudioBtn').addEventListener('click', function() {
+  var n = parseInt(document.getElementById('exportLoopCount').value, 10) || 2;
+  if (n < 1) n = 1;
+  if (n > 8) n = 8;
+  document.getElementById('exportLoopCount').value = n;
+  exportLoopAsWav(n);
+});
+
+/* ---- CHORD LIBRARY DROPDOWN + BLOCK CREATION BUTTONS ---- */
+
+var chordSelect = document.getElementById('chordLibrarySelect');
+Object.keys(CHORD_LIBRARY).forEach(function(key) {
+  var opt = document.createElement('option');
+  opt.value = key;
+  opt.textContent = key;
+  chordSelect.appendChild(opt);
+});
+
+document.getElementById('addFromLibraryBtn').addEventListener('click', function() {
+  var key = chordSelect.value;
+  var chord = CHORD_LIBRARY[key];
+  createFingerpickBlock({ name: chord.name, frets: copyFrets(chord.frets), steps: 8, stepMatrix: [], repeatCount: 1 });
+});
+
+document.getElementById('addBlankChordBtn').addEventListener('click', function() {
+  createFingerpickBlock({ name: "Custom", frets: { E: "X", A: "X", D: "X", G: "X", B: "X", e: "X" }, steps: 8, stepMatrix: [], repeatCount: 1 });
+});
+
+/* ---- PERSISTENT FULL-LOOP ARCHIVE ---- */
+
+function downloadJSON(filename, dataObj) {
+  var blob = new Blob([JSON.stringify(dataObj, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function readJSONFile(file, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      callback(null, JSON.parse(e.target.result));
+    } catch (err) {
+      callback(err, null);
+    }
+  };
+  reader.onerror = function() { callback(new Error('File could not be read'), null); };
+  reader.readAsText(file);
+}
+
+function getLibraryFromStorage() {
+  var stored = safeGetItem('fpm_loop_library');
+  return stored ? JSON.parse(stored) : {};
+}
+
+function updateLibraryUI() {
+  var container = document.getElementById('savedLoopsContainer');
+  container.innerHTML = "";
+  var lib = getLibraryFromStorage();
+  var keys = Object.keys(lib);
+
+  if (keys.length === 0) {
+    container.innerHTML = `<span style="font-size:12px; color:var(--muted);">No loops archived yet.</span>`;
+    return;
+  }
+
+  keys.forEach(function(key) {
+    var chip = document.createElement('div');
+    chip.className = "library-chip";
+    chip.innerHTML = `
+      <span>📂 <b>${key}</b> (${lib[key].chords.length} blocks)</span>
+      <span class="load-link" data-name="${key}">[Load]</span>
+      <span class="load-link" data-name="${key}" style="color:var(--muted);">[⬇ File]</span>
+      <span class="del-link" data-name="${key}">&times;</span>
+    `;
+    var links = chip.querySelectorAll('.load-link');
+    links[0].addEventListener('click', function() { uploadSavedLoop(key); });
+    links[1].addEventListener('click', function() { downloadJSON(key.replace(/[^a-z0-9\-_]+/gi, '_') + '_loop.json', { name: key, data: lib[key] }); });
+    chip.querySelector('.del-link').addEventListener('click', function() { deleteSavedLoop(key); });
+    container.appendChild(chip);
+  });
+}
+
+function uploadSavedLoop(name) {
+  var lib = getLibraryFromStorage();
+  var loop = lib[name];
+  if (!loop) return;
+
+  matrixGrid.innerHTML = "";
+  document.getElementById('tempoInput').value = loop.bpm || 80;
+  state.bpm = loop.bpm || 80;
+
+  loop.chords.forEach(function(c) {
+    createFingerpickBlock({
+      name: c.name,
+      frets: c.frets,
+      steps: c.steps || 8,
+      stepMatrix: c.stepMatrix || [],
+      repeatCount: c.repeatCount || 1
+    });
+  });
+  buildColorSequenceTrack();
+}
+
+function deleteSavedLoop(name) {
+  if (!confirm('Delete the archived loop "' + name + '"?')) return;
+  var lib = getLibraryFromStorage();
+  delete lib[name];
+  safeSetItem('fpm_loop_library', JSON.stringify(lib));
+  updateLibraryUI();
+}
+
+function saveCurrentLoop() {
+  var nameInput = document.getElementById('saveLoopNameInput');
+  var name = nameInput.value.trim();
+  if (!name) { alert("Please enter an archive label before saving."); return; }
+
+  var currentSequence = compileSequenceFromUI();
+  if (currentSequence.length === 0) { alert("Workspace must contain entries before archiving."); return; }
+
+  var cleanChords = currentSequence.map(function(item) {
+    return { name: item.name, frets: item.frets, steps: item.steps, stepMatrix: item.stepMatrix, repeatCount: item.repeatCount };
+  });
+
+  var lib = getLibraryFromStorage();
+  lib[name] = {
+    bpm: parseInt(document.getElementById('tempoInput').value, 10) || 80,
+    chords: cleanChords
+  };
+
+  safeSetItem('fpm_loop_library', JSON.stringify(lib));
+  updateLibraryUI();
+  nameInput.value = "";
+}
+
+document.getElementById('saveCurrentLoopBtn').addEventListener('click', saveCurrentLoop);
+document.getElementById('clearAllLibraryBtn').addEventListener('click', function() {
+  if (confirm("Delete all archived loops in storage?")) {
+    safeRemoveItem('fpm_loop_library');
+    updateLibraryUI();
+  }
+});
+
+document.getElementById('exportLoopsBtn').addEventListener('click', function() {
+  var lib = getLibraryFromStorage();
+  if (Object.keys(lib).length === 0) { alert("No loops archived yet — nothing to export."); return; }
+  downloadJSON('fingerpicking_loop_archive_' + new Date().toISOString().slice(0, 10) + '.json', lib);
+});
+document.getElementById('importLoopsBtn').addEventListener('click', function() {
+  document.getElementById('importLoopsFile').click();
+});
+document.getElementById('importLoopsFile').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  readJSONFile(file, function(err, parsed) {
+    if (err) { alert("That file couldn't be read as valid JSON."); return; }
+    var lib = getLibraryFromStorage();
+    var incoming;
+    if (parsed && parsed.data && parsed.name && parsed.data.chords) {
+      incoming = {};
+      incoming[parsed.name] = parsed.data;
+    } else {
+      incoming = parsed;
+    }
+    var added = 0, skipped = 0;
+    Object.keys(incoming || {}).forEach(function(key) {
+      var entry = incoming[key];
+      if (!entry || !entry.chords) return;
+      if (lib[key]) {
+        if (!confirm('A loop named "' + key + '" already exists. Overwrite it?')) { skipped++; return; }
+      }
+      lib[key] = entry;
+      added++;
+    });
+    safeSetItem('fpm_loop_library', JSON.stringify(lib));
+    updateLibraryUI();
+    alert("Import complete: " + added + " loop(s) added/updated" + (skipped ? ", " + skipped + " skipped." : "."));
+  });
+  e.target.value = "";
+});
+
+/* ---- INIT ---- */
+
+showStorageWarningIfNeeded();
+window.addEventListener('resize', renderFretboardFrame);
+renderFretboardFrame();
+
+createFingerpickBlock({ name: "Am", frets: copyFrets(CHORD_LIBRARY["Am"].frets), steps: 8, stepMatrix: [["A"], ["D"], ["G"], ["B"], ["e"], ["G"], ["D"], ["B"]], repeatCount: 1 });
+createFingerpickBlock({ name: "C", frets: copyFrets(CHORD_LIBRARY["C"].frets), steps: 8, stepMatrix: [["A"], ["D"], ["G"], ["B"], ["e"], ["G"], ["D"], ["B"]], repeatCount: 1 });
+
+updateLibraryUI();
+
+</script>
+</body>
+</html>
