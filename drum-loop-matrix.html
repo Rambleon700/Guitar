@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drum Loop Matrix</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #111215;
+    color: #e8e6df;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; margin: 0; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; }
+
+  header { text-align: center; margin-bottom: 18px; }
+  header h1 {
+    font-size: 30px; letter-spacing: 1px; color: #ffe9cc;
+    text-shadow: 0 0 14px rgba(242,169,59,0.35);
+  }
+  header p { margin: 6px 0 0; color: #9aa0ac; font-size: 13px; }
+
+  /* ---- Transport bar ---- */
+  .transport {
+    position: sticky; top: 0; z-index: 50;
+    background: #181a20;
+    border: 2px solid #3a2c1a;
+    border-image: linear-gradient(180deg,#6b4a2b,#3a2c1a) 1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  }
+  .btn {
+    background: #242832; color: #e8e6df; border: 1px solid #3a3f4a;
+    border-radius: 7px; padding: 9px 14px; font-size: 13px; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .btn:hover { border-color: #f2a93b; color: #ffe9cc; }
+  .btn:active { transform: scale(0.96); }
+  .btn.primary {
+    background: linear-gradient(180deg,#f2a93b,#c9821f); color: #1a1206;
+    font-weight: 700; border: none;
+  }
+  .btn.primary:hover { box-shadow: 0 0 14px rgba(242,169,59,0.5); }
+  .btn.active {
+    background: #3a2410; border-color: #f2a93b; color: #ffe9cc;
+    box-shadow: 0 0 10px rgba(242,169,59,0.45) inset;
+  }
+  .btn.danger:hover { border-color: #d9534f; color: #ff9d99; }
+
+  .field-group { display: flex; align-items: center; gap: 6px; }
+  .field-group label { font-size: 11px; color: #9aa0ac; text-transform: uppercase; letter-spacing: .5px; }
+  input[type=number] {
+    width: 60px; background: #111215; color: #ffe9cc; border: 1px solid #3a3f4a;
+    border-radius: 6px; padding: 6px 8px; font-size: 14px;
+  }
+  input[type=range] { accent-color: #f2a93b; }
+  select {
+    background: #111215; color: #e8e6df; border: 1px solid #3a3f4a; border-radius: 6px;
+    padding: 6px 8px; font-size: 13px;
+  }
+  input[type=text] {
+    background: #111215; color: #e8e6df; border: 1px solid #3a3f4a; border-radius: 6px;
+    padding: 7px 9px; font-size: 13px;
+  }
+
+  .spacer { flex: 1 1 auto; }
+
+  /* ---- Drum kit pads ---- */
+  .kit-panel {
+    background: #181a20; border: 2px solid #3a2c1a;
+    border-image: linear-gradient(180deg,#6b4a2b,#3a2c1a) 1;
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+  }
+  .kit-panel h2 { font-size: 15px; color: #f2a93b; margin-bottom: 10px; letter-spacing: .5px; }
+  .kit-sub { font-size: 12px; color: #767c88; margin-bottom: 12px; }
+  .kit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+      "crash tom1 tom2 ride"
+      "hho   .    .    tom3"
+      "hhc   snare kick rim"
+      "clap  .    .    .";
+    gap: 10px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .pad {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 4px solid #5c3a21;
+    background: radial-gradient(circle at 35% 30%, #2c2f38, #16181d 70%);
+    color: #e8e6df;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    cursor: pointer; user-select: none;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+    transition: transform .05s ease, box-shadow .1s ease;
+  }
+  .pad:hover { box-shadow: inset 0 0 12px rgba(0,0,0,0.6), 0 0 10px rgba(242,169,59,0.35); }
+  .pad.hit { transform: scale(0.9); box-shadow: 0 0 22px rgba(242,169,59,0.85), inset 0 0 10px rgba(0,0,0,0.5); border-color: #f2a93b; }
+  .pad.cymbal { border-color: #b8860b; background: radial-gradient(circle at 35% 30%, #33301f, #16181d 70%); }
+
+  /* ---- Sequencer grid ---- */
+  .seq-panel {
+    background: #181a20; border: 2px solid #3a2c1a;
+    border-image: linear-gradient(180deg,#6b4a2b,#3a2c1a) 1;
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .seq-panel h2 { font-size: 15px; color: #f2a93b; margin-bottom: 4px; letter-spacing: .5px; }
+  .row-cursor-info { font-size: 12px; color: #767c88; margin-bottom: 10px; }
+
+  .grid-table { border-collapse: collapse; min-width: 720px; }
+  .grid-table td, .grid-table th { padding: 0; }
+  .row-label {
+    width: 130px; text-align: right; padding-right: 10px !important;
+    font-size: 12px; color: #cfd3da; white-space: nowrap; cursor: pointer;
+  }
+  .row-label .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .row-label:hover { color: #ffe9cc; }
+
+  .step-head {
+    width: 28px; height: 20px; text-align: center; font-size: 10px; color: #575c66;
+  }
+  .step-head.beat { color: #f2a93b; font-weight: 700; }
+
+  .cell {
+    width: 28px; height: 26px; border: 1px solid #20232b;
+    cursor: pointer;
+  }
+  .cell.beat-boundary { border-left: 2px solid #3a3f4a; }
+  .cell .fill { width: 100%; height: 100%; background: #20232b; transition: background .08s; }
+  .cell.on .fill { background: var(--drum-color, #f2a93b); box-shadow: 0 0 6px var(--drum-color, #f2a93b) inset; }
+  .cell.playhead .fill { outline: 2px solid #ffe9cc; outline-offset: -2px; }
+  .cell.cursor .fill { outline: 2px dashed #f2a93b; outline-offset: -2px; }
+  .cell:hover .fill { background: #2c303a; }
+
+  /* ---- Saved loops ---- */
+  .save-panel {
+    background: #181a20; border: 2px solid #3a2c1a;
+    border-image: linear-gradient(180deg,#6b4a2b,#3a2c1a) 1;
+    border-radius: 10px; padding: 16px;
+  }
+  .save-panel h2 { font-size: 15px; color: #f2a93b; margin-bottom: 10px; letter-spacing: .5px; }
+  .save-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .loop-list { display: flex; flex-direction: column; gap: 6px; }
+  .loop-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #111215; border: 1px solid #2c303a; border-radius: 7px;
+    padding: 8px 10px; font-size: 13px;
+  }
+  .loop-item .name { flex: 1 1 auto; color: #ffe9cc; }
+  .loop-item .meta { font-size: 11px; color: #767c88; }
+  .empty-note { font-size: 12px; color: #575c66; font-style: italic; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #242832; border: 1px solid #f2a93b; color: #ffe9cc;
+    padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0;
+    pointer-events: none; transition: opacity .25s ease, transform .25s ease;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+  .file-input-hidden { display: none; }
+
+  @media (max-width: 640px) {
+    .row-label { width: 84px; font-size: 10px; }
+    .kit-grid { max-width: 360px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Drum Loop Matrix</h1>
+    <p>Rock &amp; pop starter grooves with genuine swung eighths — tap the kit, edit the grid, save what you build.</p>
+  </header>
+
+  <div class="transport">
+    <button class="btn primary" id="playBtn">&#9654; Play</button>
+    <button class="btn" id="clearBtn">Clear</button>
+    <button class="btn" id="recordBtn" title="While playing, tapping a pad records a hit at the live step. While stopped, tapping a pad writes to the cursor step and advances it.">&#9679; Record</button>
+
+    <div class="field-group">
+      <label for="bpmInput">BPM</label>
+      <input type="number" id="bpmInput" min="40" max="260" value="100">
+      <input type="range" id="bpmSlider" min="40" max="260" value="100">
+      <button class="btn" id="tapTempoBtn">Tap</button>
+    </div>
+
+    <div class="field-group">
+      <label for="genreSelect">Preset</label>
+      <select id="genreSelect">
+        <option value="">— choose a starter groove —</option>
+        <optgroup label="Rock">
+          <option value="rock1">Rock — Basic</option>
+          <option value="rock2">Rock — Driving 16ths</option>
+          <option value="rock3">Rock — Ballad</option>
+        </optgroup>
+        <optgroup label="Pop">
+          <option value="pop1">Pop — Groove</option>
+          <option value="pop2">Pop — Four on the Floor</option>
+          <option value="pop3">Pop — Ballad</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="swingSlider">Swing</label>
+      <input type="range" id="swingSlider" min="0" max="100" value="0">
+      <span id="swingValue" style="font-size:12px;color:#9aa0ac;min-width:32px;display:inline-block;">0%</span>
+    </div>
+
+    <div class="field-group">
+      <label for="stepsSelect">Length</label>
+      <select id="stepsSelect">
+        <option value="16">1 bar (16)</option>
+        <option value="32">2 bars (32)</option>
+      </select>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="field-group">
+      <label for="volSlider">Volume</label>
+      <input type="range" id="volSlider" min="0" max="100" value="80">
+    </div>
+  </div>
+
+  <div class="kit-panel">
+    <h2>Tap the Kit</h2>
+    <p class="kit-sub">Tap any drum to preview it. Turn on <strong>Record</strong> to write hits into the grid below as you tap.</p>
+    <div class="kit-grid" id="kitGrid"></div>
+  </div>
+
+  <div class="seq-panel">
+    <h2>Loop Grid</h2>
+    <p class="row-cursor-info" id="cursorInfo">Cursor step: 1 — click a row label to preview that drum, click any cell to toggle it.</p>
+    <div id="gridHost"></div>
+  </div>
+
+  <div class="save-panel">
+    <h2>Save &amp; Exchange Loops</h2>
+    <div class="save-row">
+      <input type="text" id="loopNameInput" placeholder="Name this loop...">
+      <button class="btn primary" id="saveLoopBtn">Save Loop</button>
+      <button class="btn" id="exportJsonBtn">Export JSON</button>
+      <button class="btn" id="exportWavBtn">Export WAV</button>
+      <button class="btn" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" class="file-input-hidden" accept="application/json,.json">
+    </div>
+    <div class="loop-list" id="loopList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     Drum definitions
+  ========================================================= */
+  var DRUMS = [
+    { id: 'crash',  name: 'Crash',        color: '#f2c14e', area: 'crash', cymbal: true  },
+    { id: 'tom1',   name: 'Tom High',     color: '#e88b6a', area: 'tom1',  cymbal: false },
+    { id: 'tom2',   name: 'Tom Mid',      color: '#d97b5a', area: 'tom2',  cymbal: false },
+    { id: 'ride',   name: 'Ride',         color: '#f2e07a', area: 'ride',  cymbal: true  },
+    { id: 'hho',    name: 'Hi-Hat Open',  color: '#8fd0e0', area: 'hho',   cymbal: true  },
+    { id: 'tom3',   name: 'Tom Low (Floor)', color: '#c25f45', area: 'tom3', cymbal: false },
+    { id: 'hhc',    name: 'Hi-Hat Closed', color: '#7ec8db', area: 'hhc',  cymbal: true  },
+    { id: 'snare',  name: 'Snare',        color: '#f2a93b', area: 'snare', cymbal: false },
+    { id: 'kick',   name: 'Kick',         color: '#e05a4e', area: 'kick',  cymbal: false },
+    { id: 'rim',    name: 'Rimshot',      color: '#c9a0e0', area: 'rim',   cymbal: false },
+    { id: 'clap',   name: 'Clap',         color: '#9adba0', area: 'clap',  cymbal: false }
+  ];
+
+  var GENRE_PRESETS = {
+    rock1: { name: 'Rock — Basic', steps: 16, pattern: {
+      kick:  [0,8],
+      snare: [4,12],
+      hhc:   [0,2,4,6,8,10,12,14]
+    }},
+    rock2: { name: 'Rock — Driving 16ths', steps: 16, pattern: {
+      kick:  [0,3,8,10,14],
+      snare: [4,12],
+      hhc:   [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    }},
+    rock3: { name: 'Rock — Ballad', steps: 16, pattern: {
+      kick:  [0,8],
+      snare: [4,12],
+      hhc:   [0,2,4,6,8,10,12,14],
+      crash: [0]
+    }},
+    pop1: { name: 'Pop — Groove', steps: 16, pattern: {
+      kick:  [0,6,8,12],
+      snare: [4,12],
+      hhc:   [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+      hho:   [14]
+    }},
+    pop2: { name: 'Pop — Four on the Floor', steps: 16, pattern: {
+      kick:  [0,4,8,12],
+      clap:  [4,12],
+      hho:   [2,6,10,14]
+    }},
+    pop3: { name: 'Pop — Ballad', steps: 16, pattern: {
+      kick:  [0,8],
+      snare: [4,12],
+      hhc:   [0,2,4,6,8,10,12,14]
+    }}
+  };
+
+  var STORAGE_KEY = 'drumLoopMatrix_savedLoops_v1';
+
+  /* =========================================================
+     State
+  ========================================================= */
+  var totalSteps = 16;
+  var pattern = {};
+  DRUMS.forEach(function (d) { pattern[d.id] = new Array(totalSteps); });
+  clearPatternArrays();
+
+  var bpm = 100;
+  var swingAmount = 0; // fraction 0 to ~0.33, applied to odd (off-16th) steps
+  var volume = 0.8;
+  var isPlaying = false;
+  var recordMode = false;
+  var cursorStep = 0;
+  var visualCurrentStep = -1;
+
+  var audioCtx = null;
+  var masterGain = null;
+  var schedulerTimer = null;
+  var nextNoteTime = 0.0;
+  var currentStep16 = 0;
+  var lookahead = 25.0;      // ms
+  var scheduleAheadTime = 0.1; // seconds
+  var noteQueue = [];        // {step, time}
+  var rafId = null;
+
+  var tapTimes = [];
+
+  var memoryStore = {}; // in-memory fallback if localStorage unavailable
+
+  /* =========================================================
+     Helpers
+  ========================================================= */
+  function clearPatternArrays() {
+    DRUMS.forEach(function (d) {
+      var arr = [];
+      for (var i = 0; i < totalSteps; i++) { arr.push(false); }
+      pattern[d.id] = arr;
+    });
+  }
+
+  function resizePattern(newSteps) {
+    DRUMS.forEach(function (d) {
+      var old = pattern[d.id];
+      var arr = [];
+      for (var i = 0; i < newSteps; i++) {
+        arr.push(i < old.length ? old[i] : false);
+      }
+      pattern[d.id] = arr;
+    });
+    totalSteps = newSteps;
+    cursorStep = 0;
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    window.clearTimeout(showToast._tid);
+    showToast._tid = window.setTimeout(function () { t.classList.remove('show'); }, 2200);
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new Ctx();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = volume;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+    return audioCtx;
+  }
+
+  /* =========================================================
+     Drum synthesis (Web Audio, no samples/dependencies)
+  ========================================================= */
+  function makeNoiseBuffer(ctx, duration) {
+    var length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    var buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    var data = buffer.getChannelData(0);
+    for (var i = 0; i < length; i++) { data[i] = Math.random() * 2 - 1; }
+    return buffer;
+  }
+
+  function playKick(ctx, dest, time, gainVal) {
+    var osc = ctx.createOscillator();
+    var g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(45, time + 0.28);
+    g.gain.setValueAtTime(gainVal, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.32);
+    osc.connect(g); g.connect(dest);
+    osc.start(time); osc.stop(time + 0.34);
+
+    var click = ctx.createBufferSource();
+    click.buffer = makeNoiseBuffer(ctx, 0.01);
+    var cg = ctx.createGain();
+    cg.gain.setValueAtTime(gainVal * 0.5, time);
+    cg.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+    click.connect(cg); cg.connect(dest);
+    click.start(time);
+  }
+
+  function playSnare(ctx, dest, time, gainVal) {
+    var osc = ctx.createOscillator();
+    var og = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(190, time);
+    og.gain.setValueAtTime(gainVal * 0.5, time);
+    og.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+    osc.connect(og); og.connect(dest);
+    osc.start(time); osc.stop(time + 0.16);
+
+    var noise = ctx.createBufferSource();
+    noise.buffer = makeNoiseBuffer(ctx, 0.2);
+    var filt = ctx.createBiquadFilter();
+    filt.type = 'highpass'; filt.frequency.value = 900;
+    var ng = ctx.createGain();
+    ng.gain.setValueAtTime(gainVal * 0.9, time);
+    ng.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+    noise.connect(filt); filt.connect(ng); ng.connect(dest);
+    noise.start(time);
+  }
+
+  function playHat(ctx, dest, time, gainVal, open) {
+    var dur = open ? 0.5 : 0.09;
+    var noise = ctx.createBufferSource();
+    noise.buffer = makeNoiseBuffer(ctx, dur);
+    var bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 9000; bp.Q.value = 0.7;
+    var hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 7000;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(gainVal * 0.6, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    noise.connect(bp); bp.connect(hp); hp.connect(g); g.connect(dest);
+    noise.start(time);
+  }
+
+  function playCymbal(ctx, dest, time, gainVal, brightness, dur) {
+    var noise = ctx.createBufferSource();
+    noise.buffer = makeNoiseBuffer(ctx, dur);
+    var bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = brightness; bp.Q.value = 0.5;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(gainVal * 0.55, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    noise.connect(bp); bp.connect(g); g.connect(dest);
+    noise.start(time);
+
+    var bell = ctx.createOscillator();
+    bell.type = 'sine'; bell.frequency.value = brightness / 3;
+    var bg = ctx.createGain();
+    bg.gain.setValueAtTime(gainVal * 0.12, time);
+    bg.gain.exponentialRampToValueAtTime(0.001, time + dur * 0.6);
+    bell.connect(bg); bg.connect(dest);
+    bell.start(time); bell.stop(time + dur * 0.6);
+  }
+
+  function playTom(ctx, dest, time, gainVal, freq) {
+    var osc = ctx.createOscillator();
+    var g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, time);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.6, time + 0.22);
+    g.gain.setValueAtTime(gainVal * 0.8, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.26);
+    osc.connect(g); g.connect(dest);
+    osc.start(time); osc.stop(time + 0.28);
+  }
+
+  function playRim(ctx, dest, time, gainVal) {
+    var osc = ctx.createOscillator();
+    var g = ctx.createGain();
+    osc.type = 'square'; osc.frequency.value = 420;
+    g.gain.setValueAtTime(gainVal * 0.4, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+    osc.connect(g); g.connect(dest);
+    osc.start(time); osc.stop(time + 0.05);
+
+    var noise = ctx.createBufferSource();
+    noise.buffer = makeNoiseBuffer(ctx, 0.03);
+    var hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 2000;
+    var ng = ctx.createGain();
+    ng.gain.setValueAtTime(gainVal * 0.5, time);
+    ng.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+    noise.connect(hp); hp.connect(ng); ng.connect(dest);
+    noise.start(time);
+  }
+
+  function playClap(ctx, dest, time, gainVal) {
+    var offsets = [0, 0.012, 0.024, 0.045];
+    offsets.forEach(function (off) {
+      var noise = ctx.createBufferSource();
+      noise.buffer = makeNoiseBuffer(ctx, 0.06);
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 1.2;
+      var g = ctx.createGain();
+      var t0 = time + off;
+      g.gain.setValueAtTime(gainVal * 0.5, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
+      noise.connect(bp); bp.connect(g); g.connect(dest);
+      noise.start(t0);
+    });
+  }
+
+  function triggerDrum(drumId, time, gainVal) {
+    var ctx = ensureAudio();
+    var dest = masterGain;
+    var t = (typeof time === 'number') ? time : ctx.currentTime;
+    var gv = (typeof gainVal === 'number') ? gainVal : 1.0;
+    switch (drumId) {
+      case 'kick':  playKick(ctx, dest, t, gv); break;
+      case 'snare': playSnare(ctx, dest, t, gv); break;
+      case 'hhc':   playHat(ctx, dest, t, gv, false); break;
+      case 'hho':   playHat(ctx, dest, t, gv, true); break;
+      case 'crash': playCymbal(ctx, dest, t, gv, 7000, 1.1); break;
+      case 'ride':  playCymbal(ctx, dest, t, gv, 5200, 0.6); break;
+      case 'tom1':  playTom(ctx, dest, t, gv, 220); break;
+      case 'tom2':  playTom(ctx, dest, t, gv, 170); break;
+      case 'tom3':  playTom(ctx, dest, t, gv, 110); break;
+      case 'rim':   playRim(ctx, dest, t, gv); break;
+      case 'clap':  playClap(ctx, dest, t, gv); break;
+    }
+  }
+
+  /* =========================================================
+     Scheduler
+  ========================================================= */
+  function stepDuration() { return 60.0 / bpm / 4.0; }
+
+  // Genuine swing: delays the off-16th (odd step) within each eighth-note pair,
+  // then shortens the following interval to keep overall tempo steady.
+  function stepIncrement(fromStep) {
+    var base = stepDuration();
+    if (swingAmount <= 0) { return base; }
+    var isEven = (fromStep % 2 === 0);
+    return isEven ? base * (1 + swingAmount) : base * (1 - swingAmount);
+  }
+
+  function scheduleStep(step, time) {
+    DRUMS.forEach(function (d) {
+      if (pattern[d.id][step]) { triggerDrum(d.id, time, 0.9); }
+    });
+    noteQueue.push({ step: step, time: time });
+  }
+
+  function schedulerTick() {
+    var ctx = ensureAudio();
+    while (nextNoteTime < ctx.currentTime + scheduleAheadTime) {
+      scheduleStep(currentStep16, nextNoteTime);
+      nextNoteTime += stepIncrement(currentStep16);
+      currentStep16 = (currentStep16 + 1) % totalSteps;
+    }
+  }
+
+  function drawLoop() {
+    var ctx = audioCtx;
+    if (ctx) {
+      var now = ctx.currentTime;
+      while (noteQueue.length && noteQueue[0].time < now) {
+        visualCurrentStep = noteQueue[0].step;
+        if (recordMode) { cursorStep = visualCurrentStep; }
+        noteQueue.shift();
+      }
+      updatePlayheadHighlight();
+    }
+    if (isPlaying) { rafId = window.requestAnimationFrame(drawLoop); }
+  }
+
+  function startPlayback() {
+    if (isPlaying) return;
+    var ctx = ensureAudio();
+    isPlaying = true;
+    currentStep16 = 0;
+    nextNoteTime = ctx.currentTime + 0.05;
+    noteQueue = [];
+    schedulerTimer = window.setInterval(schedulerTick, lookahead);
+    rafId = window.requestAnimationFrame(drawLoop);
+    document.getElementById('playBtn').innerHTML = '&#9632; Stop';
+    document.getElementById('playBtn').classList.add('active');
+  }
+
+  function stopPlayback() {
+    isPlaying = false;
+    if (schedulerTimer) { window.clearInterval(schedulerTimer); schedulerTimer = null; }
+    if (rafId) { window.cancelAnimationFrame(rafId); rafId = null; }
+    visualCurrentStep = -1;
+    noteQueue = [];
+    updatePlayheadHighlight();
+    document.getElementById('playBtn').innerHTML = '&#9654; Play';
+    document.getElementById('playBtn').classList.remove('active');
+  }
+
+  /* =========================================================
+     UI: Kit pads
+  ========================================================= */
+  function buildKit() {
+    var host = document.getElementById('kitGrid');
+    host.innerHTML = '';
+    DRUMS.forEach(function (d) {
+      var pad = document.createElement('div');
+      pad.className = 'pad' + (d.cymbal ? ' cymbal' : '');
+      pad.style.gridArea = d.area;
+      pad.textContent = d.name;
+      pad.dataset.drum = d.id;
+      pad.addEventListener('click', function () { onPadTap(d.id, pad); });
+      host.appendChild(pad);
+    });
+  }
+
+  function onPadTap(drumId, padEl) {
+    padEl.classList.add('hit');
+    window.setTimeout(function () { padEl.classList.remove('hit'); }, 140);
+
+    if (recordMode && isPlaying) {
+      var step = visualCurrentStep >= 0 ? visualCurrentStep : 0;
+      pattern[drumId][step] = true;
+      triggerDrum(drumId, undefined, 0.9);
+      renderGrid();
+    } else if (recordMode && !isPlaying) {
+      pattern[drumId][cursorStep] = true;
+      triggerDrum(drumId, undefined, 0.9);
+      cursorStep = (cursorStep + 1) % totalSteps;
+      renderGrid();
+      updateCursorInfo();
+    } else {
+      triggerDrum(drumId, undefined, 0.9);
+    }
+  }
+
+  /* =========================================================
+     UI: Sequencer grid
+  ========================================================= */
+  function renderGrid() {
+    var host = document.getElementById('gridHost');
+    var table = document.createElement('table');
+    table.className = 'grid-table';
+
+    var headRow = document.createElement('tr');
+    var blank = document.createElement('th');
+    headRow.appendChild(blank);
+    for (var s = 0; s < totalSteps; s++) {
+      var th = document.createElement('th');
+      th.className = 'step-head' + (s % 4 === 0 ? ' beat' : '');
+      th.textContent = (s % 4 === 0) ? String(s / 4 + 1) : '';
+      headRow.appendChild(th);
+    }
+    table.appendChild(headRow);
+
+    DRUMS.forEach(function (d) {
+      var row = document.createElement('tr');
+      var label = document.createElement('td');
+      label.className = 'row-label';
+      label.innerHTML = '<span class="dot" style="background:' + d.color + '"></span>' + d.name;
+      label.addEventListener('click', function () { triggerDrum(d.id, undefined, 0.9); });
+      row.appendChild(label);
+
+      for (var i = 0; i < totalSteps; i++) {
+        (function (drumId, step) {
+          var cell = document.createElement('td');
+          var isOn = pattern[drumId][step];
+          cell.className = 'cell' + (isOn ? ' on' : '') + (step % 4 === 0 ? ' beat-boundary' : '') +
+            (step === visualCurrentStep ? ' playhead' : '') +
+            (!isPlaying && step === cursorStep ? ' cursor' : '');
+          cell.style.setProperty('--drum-color', d.color);
+          var fill = document.createElement('div');
+          fill.className = 'fill';
+          cell.appendChild(fill);
+          cell.addEventListener('click', function () {
+            pattern[drumId][step] = !pattern[drumId][step];
+            cursorStep = step;
+            renderGrid();
+            updateCursorInfo();
+          });
+          row.appendChild(cell);
+        })(d.id, i);
+      }
+      table.appendChild(row);
+    });
+
+    host.innerHTML = '';
+    host.appendChild(table);
+  }
+
+  function updatePlayheadHighlight() {
+    var cells = document.querySelectorAll('.grid-table td.cell');
+    if (!cells.length) return;
+    var rowsCount = DRUMS.length;
+    var colsCount = totalSteps;
+    for (var r = 0; r < rowsCount; r++) {
+      for (var c = 0; c < colsCount; c++) {
+        var idx = r * colsCount + c;
+        var cell = cells[idx];
+        if (!cell) continue;
+        if (c === visualCurrentStep) { cell.classList.add('playhead'); }
+        else { cell.classList.remove('playhead'); }
+      }
+    }
+  }
+
+  function updateCursorInfo() {
+    var info = document.getElementById('cursorInfo');
+    if (isPlaying) {
+      info.textContent = recordMode ?
+        'Recording live — tap pads to add hits at the playhead.' :
+        'Playing — turn on Record to add hits live.';
+    } else {
+      info.textContent = 'Cursor step: ' + (cursorStep + 1) + ' of ' + totalSteps +
+        (recordMode ? ' — tap a pad to write a hit and advance.' : ' — click any cell to toggle it.');
+    }
+  }
+
+  /* =========================================================
+     Transport controls
+  ========================================================= */
+  function setBpm(v) {
+    v = Math.max(40, Math.min(260, Math.round(v)));
+    bpm = v;
+    document.getElementById('bpmInput').value = v;
+    document.getElementById('bpmSlider').value = v;
+  }
+
+  document.getElementById('playBtn').addEventListener('click', function () {
+    if (isPlaying) { stopPlayback(); } else { startPlayback(); }
+    updateCursorInfo();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    clearPatternArrays();
+    renderGrid();
+    showToast('Grid cleared');
+  });
+
+  document.getElementById('recordBtn').addEventListener('click', function () {
+    recordMode = !recordMode;
+    var btn = document.getElementById('recordBtn');
+    btn.classList.toggle('active', recordMode);
+    updateCursorInfo();
+  });
+
+  document.getElementById('bpmInput').addEventListener('input', function (e) {
+    setBpm(parseInt(e.target.value, 10) || 100);
+  });
+  document.getElementById('bpmSlider').addEventListener('input', function (e) {
+    setBpm(parseInt(e.target.value, 10) || 100);
+  });
+
+  document.getElementById('tapTempoBtn').addEventListener('click', function () {
+    var now = Date.now();
+    tapTimes.push(now);
+    if (tapTimes.length > 5) { tapTimes.shift(); }
+    if (tapTimes.length >= 2) {
+      var intervals = [];
+      for (var i = 1; i < tapTimes.length; i++) { intervals.push(tapTimes[i] - tapTimes[i - 1]); }
+      var avg = intervals.reduce(function (a, b) { return a + b; }, 0) / intervals.length;
+      var newBpm = Math.round(60000 / avg);
+      if (newBpm >= 40 && newBpm <= 260) { setBpm(newBpm); }
+    }
+    window.clearTimeout(document.getElementById('tapTempoBtn')._resetId);
+    document.getElementById('tapTempoBtn')._resetId = window.setTimeout(function () { tapTimes = []; }, 2000);
+  });
+
+  document.getElementById('volSlider').addEventListener('input', function (e) {
+    volume = parseInt(e.target.value, 10) / 100;
+    if (masterGain) { masterGain.gain.value = volume; }
+  });
+
+  document.getElementById('swingSlider').addEventListener('input', function (e) {
+    var pct = parseInt(e.target.value, 10) || 0;
+    swingAmount = (pct / 100) * 0.33; // 100% slider ≈ triplet-feel swing
+    document.getElementById('swingValue').textContent = pct + '%';
+  });
+
+  document.getElementById('genreSelect').addEventListener('change', function (e) {
+    var key = e.target.value;
+    if (!key) return;
+    var preset = GENRE_PRESETS[key];
+    if (preset.steps !== totalSteps) {
+      document.getElementById('stepsSelect').value = String(preset.steps);
+      resizePattern(preset.steps);
+    } else {
+      clearPatternArrays();
+    }
+    Object.keys(preset.pattern).forEach(function (drumId) {
+      preset.pattern[drumId].forEach(function (step) {
+        if (step < totalSteps) { pattern[drumId][step] = true; }
+      });
+    });
+    renderGrid();
+    showToast('Loaded preset: ' + preset.name);
+    e.target.value = '';
+  });
+
+  document.getElementById('stepsSelect').addEventListener('change', function (e) {
+    resizePattern(parseInt(e.target.value, 10));
+    renderGrid();
+    updateCursorInfo();
+  });
+
+  /* =========================================================
+     Save / Load / Export / Import
+  ========================================================= */
+  function loadSavedLoops() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return memoryStore;
+    }
+  }
+
+  function persistSavedLoops(obj) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      memoryStore = obj;
+    }
+  }
+
+  function currentLoopData(name) {
+    return {
+      name: name || 'Untitled Loop',
+      bpm: bpm,
+      steps: totalSteps,
+      swing: Math.round((swingAmount / 0.33) * 100),
+      pattern: pattern,
+      savedAt: new Date().toISOString()
+    };
+  }
+
+  function renderLoopList() {
+    var loops = loadSavedLoops();
+    var host = document.getElementById('loopList');
+    var keys = Object.keys(loops);
+    if (!keys.length) {
+      host.innerHTML = '<div class="empty-note">No saved loops yet — build a groove and click Save Loop.</div>';
+      return;
+    }
+    host.innerHTML = '';
+    keys.forEach(function (name) {
+      var loop = loops[name];
+      var row = document.createElement('div');
+      row.className = 'loop-item';
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'name';
+      nameSpan.textContent = name;
+      var meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = loop.bpm + ' BPM · ' + loop.steps + ' steps';
+      var loadBtn = document.createElement('button');
+      loadBtn.className = 'btn'; loadBtn.textContent = 'Load';
+      loadBtn.addEventListener('click', function () { applyLoopData(loop); });
+      var expBtn = document.createElement('button');
+      expBtn.className = 'btn'; expBtn.textContent = 'Export';
+      expBtn.addEventListener('click', function () { downloadJson(loop); });
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn danger'; delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', function () {
+        var all = loadSavedLoops();
+        delete all[name];
+        persistSavedLoops(all);
+        renderLoopList();
+        showToast('Deleted "' + name + '"');
+      });
+      row.appendChild(nameSpan);
+      row.appendChild(meta);
+      row.appendChild(loadBtn);
+      row.appendChild(expBtn);
+      row.appendChild(delBtn);
+      host.appendChild(row);
+    });
+  }
+
+  function applyLoopData(loop) {
+    if (loop.steps !== totalSteps) {
+      document.getElementById('stepsSelect').value = String(loop.steps);
+      totalSteps = loop.steps;
+    }
+    clearPatternArrays();
+    DRUMS.forEach(function (d) {
+      if (loop.pattern[d.id]) {
+        for (var i = 0; i < totalSteps; i++) {
+          pattern[d.id][i] = !!loop.pattern[d.id][i];
+        }
+      }
+    });
+    setBpm(loop.bpm);
+    var pct = (typeof loop.swing === 'number') ? loop.swing : 0;
+    swingAmount = (pct / 100) * 0.33;
+    document.getElementById('swingSlider').value = pct;
+    document.getElementById('swingValue').textContent = pct + '%';
+    renderGrid();
+    updateCursorInfo();
+    showToast('Loaded "' + loop.name + '"');
+  }
+
+  function downloadJson(loop) {
+    var blob = new Blob([JSON.stringify(loop, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (loop.name || 'drum-loop').replace(/[^a-z0-9\-_ ]/gi, '') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  document.getElementById('saveLoopBtn').addEventListener('click', function () {
+    var input = document.getElementById('loopNameInput');
+    var name = (input.value || '').trim() || ('Loop ' + new Date().toLocaleString());
+    var loops = loadSavedLoops();
+    loops[name] = currentLoopData(name);
+    persistSavedLoops(loops);
+    renderLoopList();
+    input.value = '';
+    showToast('Saved "' + name + '"');
+  });
+
+  document.getElementById('exportJsonBtn').addEventListener('click', function () {
+    var input = document.getElementById('loopNameInput');
+    var name = (input.value || '').trim() || 'Current Loop';
+    downloadJson(currentLoopData(name));
+  });
+
+  document.getElementById('importBtn').addEventListener('click', function () {
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (evt) {
+      try {
+        var loop = JSON.parse(evt.target.result);
+        if (!loop.pattern || !loop.bpm || !loop.steps) { throw new Error('bad file'); }
+        var loops = loadSavedLoops();
+        var name = loop.name || file.name.replace(/\.json$/i, '');
+        loops[name] = loop;
+        persistSavedLoops(loops);
+        renderLoopList();
+        applyLoopData(loop);
+        showToast('Imported "' + name + '"');
+      } catch (err) {
+        showToast('Could not read that file — is it a Drum Loop Matrix export?');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  /* =========================================================
+     WAV export (offline render of the current loop)
+  ========================================================= */
+  function audioBufferToWav(buffer) {
+    var numChannels = buffer.numberOfChannels;
+    var sampleRate = buffer.sampleRate;
+    var format = 1; // PCM
+    var bitDepth = 16;
+    var samples = buffer.length * numChannels;
+    var bytesPerSample = bitDepth / 8;
+    var blockAlign = numChannels * bytesPerSample;
+    var dataSize = samples * bytesPerSample;
+    var bufferArr = new ArrayBuffer(44 + dataSize);
+    var view = new DataView(bufferArr);
+
+    function writeString(offset, str) {
+      for (var i = 0; i < str.length; i++) { view.setUint8(offset + i, str.charCodeAt(i)); }
+    }
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    var offset = 44;
+    var channelData = [];
+    for (var ch = 0; ch < numChannels; ch++) { channelData.push(buffer.getChannelData(ch)); }
+    for (var i = 0; i < buffer.length; i++) {
+      for (var c = 0; c < numChannels; c++) {
+        var sample = Math.max(-1, Math.min(1, channelData[c][i]));
+        sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(offset, sample, true);
+        offset += 2;
+      }
+    }
+    return bufferArr;
+  }
+
+  document.getElementById('exportWavBtn').addEventListener('click', function () {
+    var OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OfflineCtx) { showToast('WAV export is not supported in this browser'); return; }
+
+    var loopSeconds = totalSteps * stepDuration() * (1 + swingAmount) + 0.6;
+    var offline = new OfflineCtx(2, Math.ceil(loopSeconds * 44100), 44100);
+    var offlineGain = offline.createGain();
+    offlineGain.gain.value = volume;
+    offlineGain.connect(offline.destination);
+
+    var stepTimes = [];
+    var acc = 0.05;
+    for (var s = 0; s < totalSteps; s++) {
+      stepTimes.push(acc);
+      acc += stepIncrement(s);
+    }
+    stepTimes.forEach(function (t, s) {
+      DRUMS.forEach(function (d) {
+        if (pattern[d.id][s]) {
+          triggerOffline(offline, offlineGain, d.id, t, 0.9);
+        }
+      });
+    });
+
+    showToast('Rendering WAV...');
+    offline.startRendering().then(function (renderedBuffer) {
+      var wavData = audioBufferToWav(renderedBuffer);
+      var blob = new Blob([wavData], { type: 'audio/wav' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var input = document.getElementById('loopNameInput');
+      var name = (input.value || '').trim() || 'drum-loop';
+      a.href = url;
+      a.download = name.replace(/[^a-z0-9\-_ ]/gi, '') + '.wav';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      showToast('WAV exported');
+    }).catch(function () {
+      showToast('WAV export failed');
+    });
+  });
+
+  function triggerOffline(ctx, dest, drumId, time, gainVal) {
+    switch (drumId) {
+      case 'kick':  playKick(ctx, dest, time, gainVal); break;
+      case 'snare': playSnare(ctx, dest, time, gainVal); break;
+      case 'hhc':   playHat(ctx, dest, time, gainVal, false); break;
+      case 'hho':   playHat(ctx, dest, time, gainVal, true); break;
+      case 'crash': playCymbal(ctx, dest, time, gainVal, 7000, 1.1); break;
+      case 'ride':  playCymbal(ctx, dest, time, gainVal, 5200, 0.6); break;
+      case 'tom1':  playTom(ctx, dest, time, gainVal, 220); break;
+      case 'tom2':  playTom(ctx, dest, time, gainVal, 170); break;
+      case 'tom3':  playTom(ctx, dest, time, gainVal, 110); break;
+      case 'rim':   playRim(ctx, dest, time, gainVal); break;
+      case 'clap':  playClap(ctx, dest, time, gainVal); break;
+    }
+  }
+
+  /* =========================================================
+     Init
+  ========================================================= */
+  buildKit();
+  renderGrid();
+  updateCursorInfo();
+  renderLoopList();
+})();
+</script>
+</body>
+</html>
